@@ -1,7 +1,85 @@
-<h1>나의 홈페이지에 오신 것을 환영합니다!</h1>
-<p>아래 메뉴를 클릭해서 구경해보세요.</p>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheezetomato의 홈페이지</title>
+    <style>
+        /* 기본 스타일 설정 (배경, 글꼴, 정렬) */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0d1117; /* 깃허브 테마와 어울리는 어두운 배경 */
+            color: #c9d1d9; /* 연한 회색 글자색 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 세로 중앙 정렬 */
+            align-items: center; /* 가로 중앙 정렬 */
+            height: 100vh; /* 화면 꽉 차게 */
+            margin: 0;
+        }
 
-<ul>
-  <li><a href="game.html">🎮 내가 만든 게임</a></li>
-  <li><a href="movie.html">🎬 나의 영화 리스트</a></li>
-</ul>
+        /* 큰 제목 스타일 */
+        h1 {
+            margin-bottom: 50px; /* 버튼과 간격 */
+            color: #ffffff; /* 하얀색 제목 */
+            font-size: 2.5rem;
+        }
+
+        /* 버튼 컨테이너 (버튼들을 가로로 나열) */
+        .button-container {
+            display: flex;
+            gap: 20px; /* 버튼 사이 간격 */
+        }
+
+        /* 버튼 공통 기본 스타일 */
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-decoration: none; /* 밑줄 없애기 */
+            border-radius: 8px; /* 둥근 모서리 */
+            cursor: pointer;
+            
+            /* 핵심: 부드러운 변화를 위한 transition 효과 */
+            transition: background-color 0.2s, transform 0.1s ease-in-out;
+        }
+
+        /* 각각 버튼의 색상 설정 */
+        .btn-movie {
+            background-color: #238636; /* 🎬 영화 리스트 버튼 색상 (깃허브 초록) */
+        }
+        .btn-movie:hover {
+            background-color: #2ea043; /* 마우스 올렸을 때 살짝 밝게 */
+        }
+
+        .btn-game {
+            background-color: #f7b731; /* 🎮 사과 게임 버튼 색상 (앰버 색상) */
+            color: #21262d; /* 게임 버튼은 글자색을 어둡게 */
+        }
+        .btn-game:hover {
+            background-color: #f9ca3f; /* 마우스 올렸을 때 살짝 밝게 */
+        }
+
+        /* ⭐ [핵심 기능] 버튼 눌리는 모션 설정 (:active 사용) ⭐ */
+        .btn:active {
+            /* 버튼을 클릭했을 때(눌렸을 때) 아래로 2px 이동시킵니다. */
+            transform: translateY(2px);
+            /* 살짝 어둡게 만들어 피드백을 줍니다. */
+            filter: brightness(0.9);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cheezetomato's Portal에 오신 것을 환영합니다!</h1>
+
+    <div class="button-container">
+        <a href="movie list.html" class="btn btn-movie">🎬 나의 영화 리스트</a>
+
+        <a href="사과게임.html" class="btn btn-game">🎮 나의 사과 게임</a>
+    </div>
+
+</body>
+</html>
