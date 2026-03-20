@@ -334,20 +334,20 @@
             return await response.json();
         }
 
-        // 💡 [비밀 무기 2] "다크나이트" -> "다크 나이트" 로 쪼개주는 자동 띄어쓰기 기계!
+        // 💡 [비밀 무기 2] 자동 띄어쓰기 기계 (6~8글자 시리즈물도 커버하도록 업그레이드!)
         function getSpaceVariations(str) {
-            if (str.includes(' ') || str.length < 2 || str.length > 7) return [];
+            if (str.includes(' ') || str.length < 2 || str.length > 8) return [];
             const vars = [];
-            // 한국어 영화 제목에서 가장 흔한 띄어쓰기 패턴(2+2, 2+3, 3+2 등)을 생성합니다.
             if (str.length === 3) { vars.push(str.slice(0,1)+' '+str.slice(1), str.slice(0,2)+' '+str.slice(2)); }
             else if (str.length === 4) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,1)+' '+str.slice(1), str.slice(0,3)+' '+str.slice(3)); }
             else if (str.length === 5) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,3)+' '+str.slice(3)); }
             else if (str.length === 6) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,3)+' '+str.slice(3), str.slice(0,4)+' '+str.slice(4)); }
             else if (str.length === 7) { vars.push(str.slice(0,3)+' '+str.slice(3), str.slice(0,4)+' '+str.slice(4)); }
+            else if (str.length === 8) { vars.push(str.slice(0,4)+' '+str.slice(4)); }
             return vars;
         }
 
-        // 🌟 메인 검색 함수 (자동 띄어쓰기 보정 + 국가 자동 분류 적용 완결판)
+        // 🌟 메인 검색 함수 (무조건 띄어쓰기 병합 + 인기도 정렬 + 10개 출력 완결판)
         window.searchTMDB = async function() {
             const query = document.getElementById('search-title-input').value.trim();
             if (!query) return;
@@ -356,29 +356,42 @@
             const resultsContainer = document.getElementById('tmdb-results-list');
             
             overlay.style.display = 'flex';
-            resultsContainer.innerHTML = '<div class="loading-text">영화를 찾고 있습니다... 🔍</div>';
+            resultsContainer.innerHTML = '<div class="loading-text">영화 데이터를 끌어모으고 있습니다... 🚀</div>';
 
             try {
-                // 1차 시도: 사용자가 입력한 그대로 검색!
-                let data = await fetchMoviesFromTMDB(query);
-                
-                // 2차 시도: 결과가 하나도 없고, 사용자가 띄어쓰기를 안 했다면? -> 마법 발동!
-                if ((!data.results || data.results.length === 0) && !query.includes(' ')) {
-                    const variations = getSpaceVariations(query); // 띄어쓰기 패턴 생성
-                    
-                    for (const v of variations) {
-                        const retryData = await fetchMoviesFromTMDB(v); // 몰래 다시 검색
-                        if (retryData.results && retryData.results.length > 0) {
-                            data = retryData; // 성공한 결과로 싹 바꿔치기!
-                            break; 
-                        }
+                // 1. 원본 검색어와 띄어쓰기 변형 검색어를 모두 리스트에 담습니다.
+                let searchQueries = [query];
+                if (!query.includes(' ')) {
+                    searchQueries = searchQueries.concat(getSpaceVariations(query));
+                }
+
+                // 2. 준비된 모든 검색어로 TMDB에 동시에 요청을 보냅니다! (결과 싹쓸이)
+                const fetchPromises = searchQueries.map(q => fetchMoviesFromTMDB(q));
+                const responses = await Promise.all(fetchPromises);
+
+                // 3. 받아온 모든 결과를 하나의 배열에 쏟아붓습니다.
+                let allMovies = [];
+                responses.forEach(res => {
+                    if (res.results) allMovies.push(...res.results);
+                });
+
+                // 4. 중복 제거 (다크나이트, 다크 나이트 둘 다 검색돼서 똑같은 영화가 2번 들어오는 것 방지)
+                const uniqueMovies = [];
+                const seenIds = new Set();
+                for (const movie of allMovies) {
+                    if (!seenIds.has(movie.id)) {
+                        seenIds.add(movie.id);
+                        uniqueMovies.push(movie);
                     }
                 }
 
-                // 결과를 화면에 뿌려주는 로직
-                if (data.results && data.results.length > 0) {
-                    const top5 = data.results.slice(0, 5);
-                    const detailedResults = await Promise.all(top5.map(async movie => {
+                // 5. ⭐️ 핵심: TMDB 인기도(popularity) 점수가 높은 순서대로 줄을 세웁니다! (듣보잡 방지)
+                uniqueMovies.sort((a, b) => b.popularity - a.popularity);
+
+                if (uniqueMovies.length > 0) {
+                    // 6. 상위 10개(기존 5개)를 잘라서 감독/국가 등 상세 정보를 가져옵니다.
+                    const top10 = uniqueMovies.slice(0, 10);
+                    const detailedResults = await Promise.all(top10.map(async movie => {
                         const detailUrl = `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&language=ko-KR&append_to_response=credits`;
                         const detailRes = await fetch(detailUrl);
                         return await detailRes.json();
