@@ -32,7 +32,6 @@
         #timer-bar { width: 100%; height: 100%; background: #4cd137; }
         #countdown { font-size: 120px; color: #ff6b6b; font-weight: bold; }
 
-        /* 홈으로 돌아가는 버튼 스타일 */
         .home-btn {
             position: absolute; top: 20px; left: 20px; background-color: #444; color: white; 
             padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 1rem; transition: 0.3s; z-index: 1000;
@@ -51,9 +50,9 @@
         
         <input type="text" id="nickname" placeholder="닉네임 입력 (최대 15자)" maxlength="15">
 
-        <button class="btn btn-start" onclick="prepareGame()">게임 시작!</button>
-        <button class="btn btn-history" onclick="showHistoryScreen()">기록 확인</button>
-        <button class="btn btn-info" onclick="showCreator()">게임 제작</button>
+        <button class="btn btn-start" onclick="window.prepareGame()">게임 시작!</button>
+        <button class="btn btn-history" onclick="window.showHistoryScreen()">기록 확인</button>
+        <button class="btn btn-info" onclick="window.showCreator()">게임 제작</button>
     </div>
 
     <div id="history-screen" class="overlay hidden">
@@ -68,7 +67,7 @@
                 <div id="recent-log-list"></div>
             </div>
         </div>
-        <button class="btn" style="background:#666; box-shadow:0 4px 0 #444;" onclick="showMain()">뒤로가기</button>
+        <button class="btn" style="background:#666; box-shadow:0 4px 0 #444;" onclick="window.showMain()">뒤로가기</button>
     </div>
 
     <div id="hall-screen" class="overlay hidden">
@@ -97,7 +96,22 @@
     <div id="timer-wrapper"><div id="timer-bar"></div></div>
 </div>
 
-<script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC1hcxeEpsGo-N75xyPxWb7RuTjspvpzNw",
+        authDomain: "my-first-page-931dd.firebaseapp.com",
+        projectId: "my-first-page-931dd",
+        storageBucket: "my-first-page-931dd.firebasestorage.app",
+        messagingSenderId: "905407958433",
+        appId: "1:905407958433:web:e9ea7fa164807ad8ebcfe0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const timerBar = document.getElementById('timer-bar');
@@ -107,38 +121,54 @@
     let isDragging = false, startX, startY, curX, curY;
     let gameActive = false, currentUser = "";
 
-    function showMain() {
+    window.showMain = function() {
         document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
         document.getElementById('main-menu').classList.remove('hidden');
     }
 
-    function showCreator() {
+    window.showCreator = function() {
         alert("🍎 사과 게임 제작\n------------------\n기획: 그린토마토\n개발 지원: Gemini");
     }
 
-    function showHistoryScreen() {
+    // 🌟 기록 불러오기 (파이어베이스 연동)
+    window.showHistoryScreen = async function() {
         document.getElementById('main-menu').classList.add('hidden');
         document.getElementById('history-screen').classList.remove('hidden');
-        const records = JSON.parse(localStorage.getItem('appleRecords') || '[]');
         
-        const top10 = [...records].sort((a, b) => b.score - a.score).slice(0, 10);
-        document.getElementById('top-rank-list').innerHTML = top10.map((r, i) => `
-            <div class="record-row">
-                <span><b>${i+1}위</b> ${r.name}</span>
-                <span style="color:#ff6b6b;">${r.score}점</span>
-            </div>
-        `).join('') || "기록 없음";
+        document.getElementById('top-rank-list').innerHTML = "데이터를 불러오는 중... ⏳";
+        document.getElementById('recent-log-list').innerHTML = "데이터를 불러오는 중... ⏳";
 
-        const recent10 = records.slice(0, 10);
-        document.getElementById('recent-log-list').innerHTML = recent10.map(r => `
-            <div class="record-row">
-                <span>${r.name} <small>(${r.date})</small></span>
-                <span style="color:#ff9f43;">${r.score}점</span>
-            </div>
-        `).join('') || "기록 없음";
+        try {
+            const records = [];
+            const querySnapshot = await getDocs(collection(db, "appleRecords"));
+            querySnapshot.forEach((doc) => {
+                records.push(doc.data());
+            });
+
+            // 점수순(내림차순) 정렬 -> TOP 10
+            const top10 = [...records].sort((a, b) => b.score - a.score).slice(0, 10);
+            document.getElementById('top-rank-list').innerHTML = top10.map((r, i) => `
+                <div class="record-row">
+                    <span><b>${i+1}위</b> ${r.name}</span>
+                    <span style="color:#ff6b6b;">${r.score}점</span>
+                </div>
+            `).join('') || "아직 기록이 없습니다.";
+
+            // 최신순(내림차순) 정렬 -> 최근 10
+            const recent10 = [...records].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+            document.getElementById('recent-log-list').innerHTML = recent10.map(r => `
+                <div class="record-row">
+                    <span>${r.name} <small>(${r.date})</small></span>
+                    <span style="color:#ff9f43;">${r.score}점</span>
+                </div>
+            `).join('') || "아직 기록이 없습니다.";
+        } catch (error) {
+            console.error("기록 불러오기 에러:", error);
+            document.getElementById('top-rank-list').innerHTML = "기록을 불러올 수 없습니다.";
+        }
     }
 
-    function prepareGame() {
+    window.prepareGame = function() {
         const nick = document.getElementById('nickname').value.trim();
         if(!nick) { alert("닉네임을 입력해주세요!"); return; }
         currentUser = nick;
@@ -271,12 +301,20 @@
         }
     }
 
-    function endGame(isClear) {
+    // 🌟 기록 저장 (파이어베이스 연동)
+    async function endGame(isClear) {
         gameActive = false;
         
-        const records = JSON.parse(localStorage.getItem('appleRecords') || '[]');
-        records.unshift({ name: currentUser, score: score, date: new Date().toLocaleDateString(), remainTime: timeLeft.toFixed(1) });
-        localStorage.setItem('appleRecords', JSON.stringify(records.slice(0, 50)));
+        try {
+            await addDoc(collection(db, "appleRecords"), {
+                name: currentUser,
+                score: score,
+                date: new Date().toLocaleDateString(),
+                timestamp: Date.now() // 최신순 정렬을 위한 시간값
+            });
+        } catch (error) {
+            console.error("기록 저장 중 에러 발생:", error);
+        }
 
         if(isClear) {
             document.getElementById('hall-of-fame-content').innerHTML = `
