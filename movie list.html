@@ -16,7 +16,6 @@
             position: absolute; top: 20px; right: 20px; background-color: #e50914; color: white; border: none;
             padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s;
         }
-        /* 홈으로 돌아가는 버튼 스타일 */
         .home-btn {
             position: absolute; top: 20px; left: 20px; background-color: #444; color: white; 
             padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 1rem; transition: 0.3s;
@@ -70,7 +69,6 @@
         .movie-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 5px; }
         .movie-meta { font-size: 0.85rem; color: #888; margin-bottom: 10px; }
         
-        /* 심플해진 별점 스타일 */
         .movie-rating { color: #ffd700; font-size: 1.2rem; margin-bottom: 15px; letter-spacing: 2px; }
         .movie-rating span.score { color: #888; font-size: 0.9rem; letter-spacing: normal; margin-left: 5px; }
 
@@ -81,7 +79,6 @@
 
         .empty-msg { text-align: center; color: #777; font-size: 1.2rem; padding: 50px; width: 100%; }
 
-        /* 모달창 */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000;
@@ -100,7 +97,6 @@
         .btn-cancel { background-color: #444; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
         .btn-save { background-color: #e50914; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
 
-        /* API 검색 전용 UI */
         .tmdb-search-box { display: flex; gap: 10px; margin-bottom: 5px; }
         .tmdb-search-btn { background-color: #4a4a4a; color: white; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; white-space: nowrap; }
         .tmdb-search-btn:hover { background-color: #5a5a5a; }
@@ -135,17 +131,17 @@
 
         <h1>나만의 영화 갤러리 🎬</h1>
         <p class="subtitle" id="stats-subtitle">나의 인생 영화 아카이빙</p>
-        <button class="add-btn" onclick="openModal()">+ 영화 추가</button>
+        <button class="add-btn" onclick="window.openModal()">+ 영화 추가</button>
     </header>
 
     <div class="nav-container">
         <input type="text" id="search-input" class="search-bar" placeholder="영화 제목이나 초성을 검색해보세요 (예: ㅎㅇㅈ)">
         <div class="nav-tabs">
-            <button id="tab-home" class="active" onclick="changeView('home')">🏠 홈 (최근 감상작)</button>
-            <button id="tab-all" onclick="changeView('all')">📋 전체 목록</button>
-            <button id="tab-rating" onclick="changeView('rating')">⭐ 평점별 보기</button>
-            <button id="tab-genre" onclick="changeView('genre')">🎭 장르별 보기</button>
-            <button id="tab-region" onclick="changeView('region')">🌍 국가별 보기</button>
+            <button id="tab-home" class="active" onclick="window.changeView('home')">🏠 홈 (최근 감상작)</button>
+            <button id="tab-all" onclick="window.changeView('all')">📋 전체 목록</button>
+            <button id="tab-rating" onclick="window.changeView('rating')">⭐ 평점별 보기</button>
+            <button id="tab-genre" onclick="window.changeView('genre')">🎭 장르별 보기</button>
+            <button id="tab-region" onclick="window.changeView('region')">🌍 국가별 보기</button>
         </div>
     </div>
 
@@ -158,14 +154,14 @@
             
             <label>🔎 영화 자동 검색</label>
             <div class="tmdb-search-box">
-                <input type="text" id="search-title-input" placeholder="영화 제목을 검색하세요" onkeypress="if(event.key === 'Enter') { searchTMDB(); event.preventDefault(); }">
-                <button type="button" class="tmdb-search-btn" onclick="searchTMDB()">검색</button>
+                <input type="text" id="search-title-input" placeholder="영화 제목을 검색하세요" onkeypress="if(event.key === 'Enter') { window.searchTMDB(); event.preventDefault(); }">
+                <button type="button" class="tmdb-search-btn" onclick="window.searchTMDB()">검색</button>
             </div>
 
             <div class="search-result-overlay" id="search-result-overlay">
                 <div class="search-result-header">
                     <h3>검색 결과 🍿</h3>
-                    <button type="button" class="close-search-btn" onclick="closeSearchOverlay()">&times;</button>
+                    <button type="button" class="close-search-btn" onclick="window.closeSearchOverlay()">&times;</button>
                 </div>
                 <div id="tmdb-results-list"></div>
             </div>
@@ -212,16 +208,31 @@
             <textarea id="input-memo" rows="3" placeholder="기억에 남는 명대사나 감상을 적어주세요!" required></textarea>
             
             <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeModal()">취소</button>
-                <button class="btn-save" onclick="saveMovie()">저장하기</button>
+                <button class="btn-cancel" onclick="window.closeModal()">취소</button>
+                <button class="btn-save" onclick="window.saveMovie()">저장하기</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // 전해주신 API 키 완벽 적용 완료!
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC1hcxeEpsGo-N75xyPxWb7RuTjspvpzNw",
+            authDomain: "my-first-page-931dd.firebaseapp.com",
+            projectId: "my-first-page-931dd",
+            storageBucket: "my-first-page-931dd.firebasestorage.app",
+            messagingSenderId: "905407958433",
+            appId: "1:905407958433:web:e9ea7fa164807ad8ebcfe0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const TMDB_API_KEY = 'e278ce0c0cebe5a0bc50bbb80474f592';
 
+        // 기존에 들고 있던 44개의 초기 데이터 (DB가 텅 비었을 때 한 번만 채워넣는 용도)
         const fullMoviesData = [
             { title:"헤어질 결심", watchDate:"2025-12-19", region:"한국", genre:"로맨스/스릴러", director:"박찬욱", year:2022, rating:5.0, memo:"영화에 입문한 나마저도 너무나 잘 만든 영화라고 생각할 만큼 연출과 배우의 연기력이 완벽했던 영화" },
             { title:"올드보이", watchDate:"2025-12-28", region:"한국", genre:"스릴러/액션", director:"박찬욱", year:2003, rating:5.0, memo:"단순히 군만두만 먹던 영화라고 생각하던 나를 반성하게 만들었던 영화" },
@@ -244,7 +255,7 @@
             { title:"유전", watchDate:"2026-01-11", region:"서양", genre:"공포/오컬트", director:"아리 에스터", year:2018, rating:4.0, memo:"무서움과 기괴함을 오컬트 소재를 통하여 느낄 수 있는 영화" },
             { title:"킬빌", watchDate:"2026-01-28", region:"서양", genre:"액션", director:"쿠엔틴 타란티노", year:2003, rating:4.0, memo:"생각외로 몰입이 잘되고 전체적인 장면 연출이 좋다고 느낀 영화" },
             { title:"광해", watchDate:"2026-03-18", region:"한국", genre:"사극/드라마", director:"추창민", year:2012, rating:3.5, memo:"이병헌의 1인 2역 연기가 돋보이는 작품" },
-            { title:"그것만이 내 세상", watchDate:"2025-12-12", region:"한국", genre:"코미디/드라마", director:"최성현", year:2018, rating:3.5, memo:"이병헌, 박정민의 연기력에 감탄한 영화" },
+            { title:"그것만이 내 세상", watchDate:"2025-12-12", region:"한국", genre:"코미디/드라마", director:"최성현", year:2018, rating:3.5, memo:"이병헌, 박정민의 연기력이 감탄한 영화" },
             { title:"신의 한수1", watchDate:"2025-12-12", region:"한국", genre:"범죄/액션", director:"조범구", year:2014, rating:3.5, memo:"바둑에 관한 심도있는 내용이 아니었어서 오히려 더 재밌었던 영화" },
             { title:"천공의 섬 : 라퓨타", watchDate:"2025-12-13", region:"일본", genre:"애니메이션", director:"미야자키 하야오", year:1986, rating:3.5, memo:"약 30년 전 애니메이션임에도 좋은 작화와 이어지는 이야기" },
             { title:"주토피아2", watchDate:"2025-12-15", region:"서양", genre:"애니메이션", director:"바이론 하워드", year:2025, rating:3.5, memo:"주토피아1을 좋아하는 나로서 재미있게 보았던 영화" },
@@ -269,16 +280,38 @@
             { title:"신의 한수2", watchDate:"2025-12-12", region:"한국", genre:"범죄/액션", director:"리건", year:2019, rating:1.0, memo:"난 세상이 활활 타올랐으면 좋겠어" }
         ];
 
-        let movies = JSON.parse(localStorage.getItem('myMoviesStarMaster'));
-        if (!movies || movies.length < fullMoviesData.length) {
-            movies = fullMoviesData;
-            localStorage.setItem('myMoviesStarMaster', JSON.stringify(movies));
-        }
-
+        let movies = [];
         let currentView = 'home';
         let searchQuery = '';
 
-        async function searchTMDB() {
+        // 🌟 파이어베이스 데이터 초기 로드 함수
+        async function loadMoviesFromFirebase() {
+            document.getElementById('main-content').innerHTML = '<div class="empty-msg">클라우드에서 영화 기록을 불러오는 중입니다... 🍿</div>';
+            
+            try {
+                const snapshot = await getDocs(collection(db, "myMoviesGallery"));
+                
+                // 만약 DB가 텅 비어있다면, 기존의 fullMoviesData 44개를 DB에 최초 1회 넣어줍니다!
+                if (snapshot.empty) {
+                    document.getElementById('main-content').innerHTML = '<div class="empty-msg">기본 명작 리스트를 클라우드에 세팅 중입니다. 잠시만 기다려주세요! 🎬</div>';
+                    for (const m of fullMoviesData) {
+                        const docRef = await addDoc(collection(db, "myMoviesGallery"), m);
+                        movies.push({ ...m, id: docRef.id });
+                    }
+                } else {
+                    // 데이터가 있으면 싹 불러오기
+                    snapshot.forEach(doc => {
+                        movies.push({ ...doc.data(), id: doc.id });
+                    });
+                }
+                renderMovies();
+            } catch (error) {
+                console.error("데이터 로딩 실패:", error);
+                document.getElementById('main-content').innerHTML = '<div class="empty-msg">데이터를 불러오지 못했습니다. 새로고침 해주세요!</div>';
+            }
+        }
+
+        window.searchTMDB = async function() {
             const query = document.getElementById('search-title-input').value;
             if (!query) return;
 
@@ -337,7 +370,7 @@
                     resultsContainer.innerHTML = '<div class="loading-text">검색 결과가 없습니다 🥲</div>';
                 }
             } catch (error) {
-                resultsContainer.innerHTML = '<div class="loading-text">데이터를 불러오는데 실패했습니다. API 키를 확인해주세요.</div>';
+                resultsContainer.innerHTML = '<div class="loading-text">데이터를 불러오는데 실패했습니다.</div>';
             }
         }
 
@@ -348,10 +381,10 @@
             if (genre !== '') document.getElementById('input-genre').value = genre;
             
             document.getElementById('search-title-input').value = '';
-            closeSearchOverlay();
+            window.closeSearchOverlay();
         }
 
-        function closeSearchOverlay() { document.getElementById('search-result-overlay').style.display = 'none'; }
+        window.closeSearchOverlay = function() { document.getElementById('search-result-overlay').style.display = 'none'; }
 
         function getChosung(str) {
             const cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
@@ -364,24 +397,17 @@
             return result;
         }
 
-        // 🌟 수정된 심플 별점 렌더링 로직 (1점 = ★, 0.5점 = ☆)
         function createCardHTML(movie, originalIndex) {
             let starsHTML = '';
             const fullStars = Math.floor(movie.rating);
             const hasHalf = (movie.rating % 1 !== 0);
 
-            // 꽉 찬 별 추가
-            for (let i = 0; i < fullStars; i++) {
-                starsHTML += '★';
-            }
-            // 0.5점이 있으면 빈 별 하나 딱 추가
-            if (hasHalf) {
-                starsHTML += '☆';
-            }
+            for (let i = 0; i < fullStars; i++) starsHTML += '★';
+            if (hasHalf) starsHTML += '☆';
 
             return `
                 <div class="movie-card">
-                    <button class="edit-btn" onclick="openModal(${originalIndex})">✏️</button>
+                    <button class="edit-btn" onclick="window.openModal(${originalIndex})">✏️</button>
                     <div class="tag-container">
                         <span class="tag date">${movie.watchDate}</span>
                         <span class="tag region">${movie.region}</span>
@@ -433,7 +459,7 @@
                 let recent = displayMovies.slice(0, 10);
                 let html = `
                     <div class="group-section">
-                        <div class="group-header" onclick="toggleSection('recent')">
+                        <div class="group-header" onclick="window.toggleSection('recent')">
                             <h2 class="group-title">🆕 가장 최근에 본 영화 (10편)</h2>
                             <span class="toggle-icon open" id="icon-recent">▼</span>
                         </div>
@@ -468,7 +494,7 @@
                     const safeId = `group-${i}`;
                     html += `
                         <div class="group-section">
-                            <div class="group-header" onclick="toggleSection('${safeId}')">
+                            <div class="group-header" onclick="window.toggleSection('${safeId}')">
                                 <h2 class="group-title">${gName} (${groups[gName].length}편)</h2>
                                 <span class="toggle-icon ${isOpen}" id="icon-${safeId}">▼</span>
                             </div>
@@ -481,7 +507,7 @@
             }
         }
 
-        function changeView(view) {
+        window.changeView = function(view) {
             currentView = view;
             document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`tab-${view}`).classList.add('active');
@@ -499,9 +525,9 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
-        function openModal(index = -1) {
+        window.openModal = function(index = -1) {
             document.getElementById('movie-modal').style.display = 'flex';
-            closeSearchOverlay(); 
+            window.closeSearchOverlay(); 
             document.getElementById('search-title-input').value = ''; 
             
             if(index >= 0) {
@@ -529,9 +555,10 @@
             }
         }
 
-        function closeModal() { document.getElementById('movie-modal').style.display = 'none'; }
+        window.closeModal = function() { document.getElementById('movie-modal').style.display = 'none'; }
 
-        function saveMovie() {
+        // 🌟 파이어베이스에 저장 & 수정 연동
+        window.saveMovie = async function() {
             const index = document.getElementById('edit-index').value;
             const newObj = {
                 title: document.getElementById('input-title').value,
@@ -549,14 +576,37 @@
                 return;
             }
 
-            if(index !== '') movies[parseInt(index)] = newObj;
-            else movies.push(newObj);
+            // 버튼 텍스트 변경으로 로딩 표시
+            const saveBtn = document.querySelector('.btn-save');
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = "저장 중...";
+            saveBtn.disabled = true;
 
-            localStorage.setItem('myMoviesStarMaster', JSON.stringify(movies));
-            closeModal(); changeView('all'); 
+            try {
+                if(index !== '') {
+                    // 기존 데이터 수정 (updateDoc)
+                    const movieId = movies[parseInt(index)].id;
+                    await updateDoc(doc(db, "myMoviesGallery", movieId), newObj);
+                    movies[parseInt(index)] = { ...newObj, id: movieId };
+                } else {
+                    // 새로운 데이터 추가 (addDoc)
+                    const docRef = await addDoc(collection(db, "myMoviesGallery"), newObj);
+                    movies.push({ ...newObj, id: docRef.id });
+                }
+
+                window.closeModal(); 
+                window.changeView('all'); 
+            } catch (error) {
+                console.error("저장 에러:", error);
+                alert("기록을 저장하는 중에 문제가 발생했습니다.");
+            } finally {
+                saveBtn.innerText = originalText;
+                saveBtn.disabled = false;
+            }
         }
 
-        renderMovies();
+        // 앱 시작 시 가장 먼저 파이어베이스에서 데이터를 불러옴
+        loadMoviesFromFirebase();
     </script>
 </body>
 </html>
