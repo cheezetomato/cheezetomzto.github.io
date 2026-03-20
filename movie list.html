@@ -327,8 +327,29 @@
 
         // --- 이 아래는 기존 TMDB 검색, 렌더링, 저장 관련 함수들 (동일함) ---
 
-      window.searchTMDB = async function() {
-            const query = document.getElementById('search-title-input').value;
+    // 💡 [비밀 무기 1] TMDB 검색을 담당하는 짧은 도우미 함수
+        async function fetchMoviesFromTMDB(searchQuery) {
+            const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(searchQuery)}&page=1`;
+            const response = await fetch(url);
+            return await response.json();
+        }
+
+        // 💡 [비밀 무기 2] "다크나이트" -> "다크 나이트" 로 쪼개주는 자동 띄어쓰기 기계!
+        function getSpaceVariations(str) {
+            if (str.includes(' ') || str.length < 2 || str.length > 7) return [];
+            const vars = [];
+            // 한국어 영화 제목에서 가장 흔한 띄어쓰기 패턴(2+2, 2+3, 3+2 등)을 생성합니다.
+            if (str.length === 3) { vars.push(str.slice(0,1)+' '+str.slice(1), str.slice(0,2)+' '+str.slice(2)); }
+            else if (str.length === 4) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,1)+' '+str.slice(1), str.slice(0,3)+' '+str.slice(3)); }
+            else if (str.length === 5) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,3)+' '+str.slice(3)); }
+            else if (str.length === 6) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,3)+' '+str.slice(3), str.slice(0,4)+' '+str.slice(4)); }
+            else if (str.length === 7) { vars.push(str.slice(0,3)+' '+str.slice(3), str.slice(0,4)+' '+str.slice(4)); }
+            return vars;
+        }
+
+        // 🌟 메인 검색 함수 (자동 띄어쓰기 보정 + 국가 자동 분류 적용 완결판)
+        window.searchTMDB = async function() {
+            const query = document.getElementById('search-title-input').value.trim();
             if (!query) return;
 
             const overlay = document.getElementById('search-result-overlay');
@@ -337,12 +358,24 @@
             overlay.style.display = 'flex';
             resultsContainer.innerHTML = '<div class="loading-text">영화를 찾고 있습니다... 🔍</div>';
 
-            const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(query)}&page=1`;
-            
             try {
-                const response = await fetch(searchUrl);
-                const data = await response.json();
+                // 1차 시도: 사용자가 입력한 그대로 검색!
+                let data = await fetchMoviesFromTMDB(query);
                 
+                // 2차 시도: 결과가 하나도 없고, 사용자가 띄어쓰기를 안 했다면? -> 마법 발동!
+                if ((!data.results || data.results.length === 0) && !query.includes(' ')) {
+                    const variations = getSpaceVariations(query); // 띄어쓰기 패턴 생성
+                    
+                    for (const v of variations) {
+                        const retryData = await fetchMoviesFromTMDB(v); // 몰래 다시 검색
+                        if (retryData.results && retryData.results.length > 0) {
+                            data = retryData; // 성공한 결과로 싹 바꿔치기!
+                            break; 
+                        }
+                    }
+                }
+
+                // 결과를 화면에 뿌려주는 로직
                 if (data.results && data.results.length > 0) {
                     const top5 = data.results.slice(0, 5);
                     const detailedResults = await Promise.all(top5.map(async movie => {
@@ -370,7 +403,7 @@
                             genreName = movie.genres[0].name;
                         }
 
-                        // 🌍 제작 국가를 확인해서 select 박스 값으로 자동 매핑!
+                        // 🌍 국가 자동 매핑 
                         let regionValue = '기타';
                         if (movie.production_countries && movie.production_countries.length > 0) {
                             const countryCode = movie.production_countries[0].iso_3166_1;
@@ -391,16 +424,15 @@
                                 <span class="tmdb-item-meta">${year} • ${directorName} 감독</span>
                             </div>
                         `;
-                        // 클릭 시 국가 정보(regionValue)도 같이 넘겨주도록 업데이트
-                        item.onclick = () => fillFormData(movie.title, year, directorName, genreName, regionValue);
+                        // 클릭 시 폼 채우기 함수 호출
+                        item.onclick = () => window.fillFormData(movie.title, year, directorName, genreName, regionValue);
                         resultsContainer.appendChild(item);
                     });
                 } else {
-                    // 검색 실패 시 띄어쓰기 팁 안내 추가
                     resultsContainer.innerHTML = `
                         <div class="loading-text" style="line-height: 1.6;">
                             검색 결과가 없습니다 🥲<br>
-                            <span style="font-size: 0.9rem; color: #888;">띄어쓰기를 정확히 입력해 보세요!<br>(예: 다크나이트 👉 다크 나이트)</span>
+                            <span style="font-size: 0.9rem; color: #888;">정확한 영화 제목인지 확인해 주세요!</span>
                         </div>`;
                 }
             } catch (error) {
