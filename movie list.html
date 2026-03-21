@@ -453,7 +453,7 @@
             }
         }
 
-        function fillFormData(title, year, director, genre, region) {
+        window.fillFormData = function(title, year, director, genre, region) {
             document.getElementById('input-title').value = title;
             if (year !== '연도미상') document.getElementById('input-year').value = year;
             if (director !== '감독 미상') document.getElementById('input-director').value = director;
