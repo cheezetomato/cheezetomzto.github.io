@@ -3,82 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cheesetomato의 홈페이지</title>
+    <title>My Web Portal</title>
     <style>
-        /* 기본 스타일 설정 (배경, 글꼴, 정렬) */
+        /* 기본 웹 폰트 및 배경 설정 */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #0d1117; /* 깃허브 테마와 어울리는 어두운 배경 */
-            color: #c9d1d9; /* 연한 회색 글자색 */
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             display: flex;
             flex-direction: column;
-            justify-content: center; /* 세로 중앙 정렬 */
-            align-items: center; /* 가로 중앙 정렬 */
-            height: 100vh; /* 화면 꽉 차게 */
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* 메인 타이틀 */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            color: #576574;
+            font-size: 1.1rem;
             margin: 0;
         }
 
-        /* 큰 제목 스타일 */
-        h1 {
-            margin-bottom: 50px; /* 버튼과 간격 */
-            color: #ffffff; /* 하얀색 제목 */
-            font-size: 2.5rem;
-        }
-
-        /* 버튼 컨테이너 (버튼들을 가로로 나열) */
-        .button-container {
+        /* 메뉴 카드들을 담는 컨테이너 */
+        .menu-container {
             display: flex;
-            gap: 20px; /* 버튼 사이 간격 */
+            gap: 30px;
+            /* 화면이 좁아지면 세로로 배치 */
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
         }
 
-        /* 버튼 공통 기본 스타일 */
-        .btn {
-            display: inline-block;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #ffffff;
-            text-decoration: none; /* 밑줄 없애기 */
-            border-radius: 8px; /* 둥근 모서리 */
-            cursor: pointer;
-            
-            /* 핵심: 부드러운 변화를 위한 transition 효과 */
-            transition: background-color 0.2s, transform 0.1s ease-in-out;
+        /* 개별 메뉴 카드 스타일 */
+        .menu-card {
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.9);
+            width: 280px;
+            height: 320px;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
         }
 
-        /* 각각 버튼의 색상 설정 */
-        .btn-movie {
-            background-color: #238636; /* 🎬 영화 리스트 버튼 색상 (깃허브 초록) */
-        }
-        .btn-movie:hover {
-            background-color: #2ea043; /* 마우스 올렸을 때 살짝 밝게 */
-        }
-
-        .btn-game {
-            background-color: #f7b731; /* 🎮 사과 게임 버튼 색상 (앰버 색상) */
-            color: #21262d; /* 게임 버튼은 글자색을 어둡게 */
-        }
-        .btn-game:hover {
-            background-color: #f9ca3f; /* 마우스 올렸을 때 살짝 밝게 */
+        /* 🎬 영화 리스트 카드 전용 색상 */
+        .card-movie:hover {
+            border-color: #54a0ff;
+            box-shadow: 0 15px 35px rgba(84, 160, 255, 0.3);
+            transform: translateY(-5px);
         }
 
-        /* ⭐ [핵심 기능] 버튼 눌리는 모션 설정 (:active 사용) ⭐ */
-        .btn:active {
-            /* 버튼을 클릭했을 때(눌렸을 때) 아래로 2px 이동시킵니다. */
-            transform: translateY(2px);
-            /* 살짝 어둡게 만들어 피드백을 줍니다. */
-            filter: brightness(0.9);
+        /* 🍎 사과게임 카드 전용 색상 */
+        .card-apple:hover {
+            border-color: #ff6b6b;
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* 쫀득하게 눌리는 모션 (핵심!) */
+        .menu-card:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 카드 내부 아이콘 및 텍스트 */
+        .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+
+        .menu-card:hover .icon {
+            transform: scale(1.1);
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            font-size: 0.95rem;
+            color: #777;
+            text-align: center;
+            padding: 0 20px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Cheezetomato's Portal에 오신 것을 환영합니다!</h1>
+    <div class="header">
+        <h1>Welcome to My Space</h1>
+        <p>원하는 메뉴를 선택해주세요!</p>
+    </div>
 
-    <div class="button-container">
-        <a href="movie list.html" class="btn btn-movie">🎬 나의 영화 리스트</a>
+    <div class="menu-container">
+        <a href="movie.html" class="menu-card card-movie">
+            <div class="icon">🍿</div>
+            <div class="title">영화 컬렉션</div>
+            <div class="desc">내가 본 영화들의 기록과 평점을 확인해보세요.</div>
+        </a>
 
-        <a href="사과게임.html" class="btn btn-game">🎮 나의 사과 게임</a>
+        <a href="apple.html" class="menu-card card-apple">
+            <div class="icon">🍎</div>
+            <div class="title">사과 게임</div>
+            <div class="desc">120초 동안 180개의 사과를 수확하는 기록 경쟁!</div>
+        </a>
     </div>
 
 </body>
