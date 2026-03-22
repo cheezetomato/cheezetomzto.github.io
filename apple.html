@@ -4,191 +4,94 @@
     <meta charset="UTF-8">
     <title>사과 게임 - Pro Version (Real Apple)</title>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;700;800&display=swap');
+    /* 1. 구글 폰트 변경: 좀 더 얇고 트렌디한 Serif/Sans 혼합 */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Noto+Sans+KR:wght@300;400;700&display=swap');
 
-    /* 전체 배경 및 폰트 */
     body { 
-        font-family: 'Pretendard', sans-serif; 
-        background-color: #0f0f0f; 
-        color: #ffffff; 
-        margin: 0; 
-        padding: 20px; 
-        line-height: 1.6;
+        background-color: #f8f9fa; /* 아주 밝은 그레이 (눈이 편안함) */
+        color: #1d1d1f; /* 애플 특유의 짙은 회색 */
+        font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        margin: 0; padding: 40px 20px;
+        -webkit-font-smoothing: antialiased;
     }
 
-    header { 
-        text-align: center; 
-        padding: 60px 0 40px 0; 
-        position: relative; 
-    }
+    header { margin-bottom: 60px; text-align: left; max-width: 1200px; margin: 0 auto 60px auto; }
 
-    /* 제목: 넷플릭스 스타일 그라데이션 */
+    /* 제목: 굵고 깔끔하게, 그라데이션 제거 */
     h1 { 
-        font-size: 3.2rem; 
-        margin: 0; 
-        background: linear-gradient(45deg, #e50914, #ff4d4d);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 800;
-        letter-spacing: -1px;
+        font-size: 2.5rem; 
+        font-weight: 700; 
+        letter-spacing: -1.5px;
+        color: #000;
+        margin-bottom: 8px;
     }
+    .subtitle { color: #86868b; font-size: 1rem; font-weight: 400; }
 
-    p.subtitle { color: #888; font-size: 1.1rem; margin-top: 10px; }
-
-    /* 상단 버튼들 (홈, 추가 버튼 등) */
+    /* 상단 버튼들: 선으로만 이루어진 미니멀 디자인 */
     .btn-top {
-        position: absolute; 
-        top: 20px; 
-        color: white; 
-        border: 1px solid rgba(255,255,255,0.2); 
-        padding: 10px 22px; 
-        border-radius: 8px; 
-        cursor: pointer; 
-        font-weight: bold; 
-        font-size: 0.95rem; 
-        transition: 0.3s;
-        backdrop-filter: blur(5px);
+        border: 1px solid #d2d2d7;
+        background: white;
+        color: #1d1d1f;
+        padding: 8px 16px;
+        border-radius: 980px; /* 완전 둥글게 */
+        font-size: 0.9rem;
+        transition: all 0.2s;
         text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
     }
-    
-    .home-btn { 
-        left: 20px; 
-        background-color: rgba(255, 255, 255, 0.05); 
-    }
-    .home-btn:hover { background-color: #444; }
+    .btn-top:hover { background: #000; color: #fff; border-color: #000; }
 
-    .add-btn { 
-        right: 20px; 
-        background-color: #e50914; 
-        border: none;
-    }
-    .add-btn:hover { 
-        background-color: #ff1f1f; 
-        transform: scale(1.05);
-        box-shadow: 0 0 15px rgba(229, 9, 20, 0.4);
-    }
-
-    /* 필터 영역 */
-    .filter-container { 
-        text-align: center; 
-        margin-bottom: 40px; 
-    }
-    .filter-btn {
-        background: #222; 
-        color: #aaa; 
-        border: 1px solid #333; 
-        padding: 8px 20px; 
-        margin: 0 5px; 
-        border-radius: 20px; 
-        cursor: pointer; 
-        transition: 0.3s;
-        font-weight: 500;
-    }
-    .filter-btn.active, .filter-btn:hover { 
-        background: #e50914; 
-        color: white; 
-        border-color: #e50914; 
-    }
-
-    /* 영화 리스트 그리드 */
+    /* 영화 카드: 그림자를 아주 연하게, 테두리 없앰 */
     #movie-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 30px;
-        padding: 20px;
-        max-width: 1300px;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 40px;
+        max-width: 1200px;
         margin: 0 auto;
     }
 
-    /* 영화 카드 (글래스모피즘 적용) */
     .movie-card {
-        background: rgba(30, 30, 30, 0.6);
-        backdrop-filter: blur(10px);
-        border-radius: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 24px;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
+        background: #ffffff;
+        border-radius: 24px; /* 더 둥글게 */
+        padding: 30px;
+        /* 핵심: 그림자를 겹쳐서 부드럽게 만들기 */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03), 0 1px 8px rgba(0,0,0,0.02);
+        transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.3s;
+        border: none;
     }
 
     .movie-card:hover {
-        transform: translateY(-12px);
-        background: rgba(40, 40, 40, 0.8);
-        border-color: #e50914;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        transform: scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
     }
 
     .movie-card h3 { 
+        font-size: 1.5rem; 
+        font-weight: 700; 
         margin-top: 0; 
-        font-size: 1.4rem; 
-        color: #fff; 
-        margin-bottom: 10px;
+        color: #1d1d1f;
+        letter-spacing: -0.5px;
     }
-    .movie-card p { margin: 6px 0; color: #bbb; font-size: 0.95rem; }
-    .movie-card strong { color: #eee; }
 
-    /* 별점 스타일 */
-    .rating { color: #f1c40f; font-weight: bold; font-size: 1.1rem; }
+    /* 평점: 노란색 대신 은은한 강조색 */
+    .rating { color: #0071e3; font-weight: 600; font-size: 0.9rem; }
 
-    /* 카드 내 버튼 */
-    .card-buttons { 
-        margin-top: 20px; 
-        display: flex; 
-        gap: 10px; 
-    }
-    .btn-edit, .btn-delete {
-        flex: 1;
-        padding: 8px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
-        transition: 0.2s;
-    }
-    .btn-edit { background: #333; color: #eee; }
-    .btn-edit:hover { background: #444; }
-    .btn-delete { background: rgba(229, 9, 20, 0.1); color: #e50914; border: 1px solid rgba(229, 9, 20, 0.2); }
-    .btn-delete:hover { background: #e50914; color: white; }
-
-    /* 모달 디자인 (팝업창) */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0; top: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(8px);
-    }
-    .modal-content {
-        background-color: #1e1e1e;
-        margin: 5% auto;
-        padding: 35px;
-        border: 1px solid #333;
-        width: 90%;
-        max-width: 500px;
-        border-radius: 20px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-    .modal-content h2 { margin-top: 0; color: #e50914; }
-    
-    input, textarea {
-        width: 100%;
+    /* 메모 부분: 연한 박스 처리 */
+    .movie-memo {
+        background: #f5f5f7;
         padding: 12px;
-        margin: 10px 0;
-        background: #2a2a2a;
-        border: 1px solid #333;
-        border-radius: 8px;
-        color: white;
-        box-sizing: border-box;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        color: #515154;
+        margin-top: 15px;
     }
-    input:focus { outline: none; border-color: #e50914; }
 
-    .modal-footer { text-align: right; margin-top: 20px; }
-    .btn-save { background: #e50914; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .btn-close { background: #444; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; margin-right: 10px; }
+    /* 모달창도 깔끔한 화이트로 */
+    .modal-content {
+        background: #fff;
+        border-radius: 30px;
+        border: none;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+    }
 </style>
 </head>
 <body>
