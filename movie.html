@@ -164,7 +164,7 @@
     <header>
         <div class="header-inner">
             <div class="header-left">
-                <a href="index.html" class="logo">FILMS</a>
+                <a class="logo" onclick="window.changeView('home')" style="cursor: pointer;">FILMS</a>
                 <a href="index.html" class="nav-home">HOME</a>
             </div>
             
@@ -172,8 +172,7 @@
                 <div class="user-menu">
                     <div class="user-name" id="nav-user-name">👤 Guest ▾</div>
                     <div class="dropdown-content">
-                        <a href="index.html">Main Home</a>
-                        <a onclick="window.changeView('home')">Gallery Home</a>
+                        <a onclick="window.changeView('home')">Home</a>
                         <a onclick="window.changeView('recent')">Recent</a>
                         <a onclick="window.changeView('all')">All Films</a>
                         <a onclick="window.changeView('rating')">By Rating (평점별)</a>
