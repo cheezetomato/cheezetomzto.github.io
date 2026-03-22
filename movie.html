@@ -285,7 +285,7 @@
         </div>
     </div>
 
-    <script type="module">
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
@@ -308,7 +308,7 @@
         let movies = [];
         let isAdmin = false;
 
-        // 🌟 로그인 상태 감지 및 UI 업데이트
+        // 🌟 로그인 상태 감지
         onAuthStateChanged(auth, (user) => {
             if (user && user.uid === 'LjObLa6943Q1xyyVthX2aFA1zRQ2') {
                 isAdmin = true;
@@ -321,7 +321,7 @@
                 document.getElementById('logout-btn').style.display = 'none';
                 document.getElementById('secret-login-btn').style.display = 'block';
             }
-            renderAllSections(); // 권한에 따라 포스터 수정 버튼 렌더링
+            if (movies.length > 0) renderAllSections();
         });
 
         // 🌟 로그인/로그아웃 함수
@@ -334,7 +334,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 alert("관리자 모드로 전환되었습니다. 🕵️‍♂️");
-                closeLoginModal();
+                window.closeLoginModal();
             } catch (error) {
                 alert("로그인에 실패했습니다. 관리자 정보가 필요합니다.");
             }
@@ -351,21 +351,20 @@
         window.toggleMenu = (open = null) => {
             const overlay = document.getElementById('side-menu-overlay');
             const menu = document.getElementById('side-menu');
-            
             const isOpen = (open === null) ? !menu.classList.contains('open') : open;
 
             if (isOpen) {
                 overlay.style.display = 'flex';
-                setTimeout(() => menu.classList.add('open'), 10); // 슬라이드 효과
+                setTimeout(() => menu.classList.add('open'), 10);
             } else {
                 menu.classList.remove('open');
-                setTimeout(() => overlay.style.display = 'none', 300); // 슬라이드 효과 시간
+                setTimeout(() => overlay.style.display = 'none', 300);
             }
         };
 
         // 🌟 파이어베이스 데이터 로드
         async function loadMoviesFromFirebase() {
-            document.getElementById('main-content').innerHTML = '<div class="section"><div class="loading-text">데이터를 불러오는 중... 🍿</div></div>';
+            document.getElementById('main-content').innerHTML = '<div class="section"><div class="loading-text" style="color:#ff8000; text-align:center;">영화 필름을 현상하는 중입니다... 🎞️</div></div>';
             try {
                 const snapshot = await getDocs(collection(db, "myMoviesGallery"));
                 movies = [];
@@ -375,39 +374,44 @@
                 renderAllSections();
             } catch (error) {
                 console.error("데이터 로딩 실패:", error);
-                document.getElementById('main-content').innerHTML = '<div class="section"><div class="empty-msg">데이터를 불러오지 못했습니다.</div></div>';
+                document.getElementById('main-content').innerHTML = '<div class="section"><div class="empty-msg" style="text-align:center; color:#86868b;">데이터를 불러오지 못했습니다.<br>새로고침(F5)을 시도해 주세요.</div></div>';
             }
         }
 
-        // --- 렌더링 관련 함수들 (동적 생성) ---
-
+        // --- 렌더링 관련 함수들 ---
         function createPosterHTML(movie, originalIndex, isSmall = false) {
             let starsHTML = '';
-            const fullStars = Math.floor(movie.rating);
-            const hasHalf = (movie.rating % 1 !== 0);
+            const ratingVal = parseFloat(movie.rating) || 0;
+            const fullStars = Math.floor(ratingVal);
+            const hasHalf = (ratingVal % 1 !== 0);
 
             for (let i = 0; i < fullStars; i++) starsHTML += '★';
             if (hasHalf) starsHTML += '☆';
 
-            const editBtnHTML = isAdmin ? `<button class="edit-btn" onclick="openModal(${originalIndex})">✏️</button>` : '';
+            const editBtnHTML = isAdmin ? `<button class="edit-btn" onclick="window.openModal(${originalIndex})">✏️</button>` : '';
+            
+            // 🔥 기존 데이터에 포스터가 없을 경우를 대비한 기본 이미지 처리
+            const posterSrc = movie.poster_path 
+                ? `https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}` 
+                : 'https://via.placeholder.com/300x450/2c2c2e/6d7e8e?text=No+Poster';
 
             return `
                 <div class="movie-card ${isSmall ? 'small-card' : ''}">
                     ${editBtnHTML}
                     <div class="poster-wrapper">
-                        <img src="https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}" alt="포스터" class="tmdb-poster" loading="lazy">
+                        <img src="${posterSrc}" alt="포스터" class="tmdb-poster" loading="lazy">
                     </div>
                     ${!isSmall ? `
                         <div class="card-info">
                             <div class="tag-container">
-                                <span class="tag date">${movie.watchDate}</span>
-                                <span class="tag region">${movie.region}</span>
-                                <span class="tag genre">${movie.genre}</span>
+                                <span class="tag date">${movie.watchDate || '날짜미상'}</span>
+                                <span class="tag region">${movie.region || '기타'}</span>
+                                <span class="tag genre">${movie.genre || '장르미상'}</span>
                             </div>
-                            <div class="movie-title">${movie.title}</div>
-                            <div class="movie-meta">${movie.year} • ${movie.director} 감독</div>
-                            <div class="movie-rating">${starsHTML} <span class="score">(${parseFloat(movie.rating).toFixed(1)})</span></div>
-                            <div class="movie-memo">${movie.memo}</div>
+                            <div class="movie-title">${movie.title || '제목 없음'}</div>
+                            <div class="movie-meta">${movie.year || '-'} • ${movie.director || '-'} 감독</div>
+                            <div class="movie-rating">${starsHTML} <span class="score">(${ratingVal.toFixed(1)})</span></div>
+                            <div class="movie-memo">${movie.memo || ''}</div>
                         </div>
                     ` : ''}
                 </div>
@@ -421,8 +425,7 @@
                         <h2 class="section-title">${title} ${countText ? `<span class="section-desc">(${countText})</span>` : ''}</h2>
                         ${desc ? `<p class="section-desc">${desc}</p>` : ''}
                     </div>
-                    <div class="${gridClass}" id="grid-${id}">
-                        </div>
+                    <div class="${gridClass}" id="grid-${id}"></div>
                 </section>
             `;
         }
@@ -433,143 +436,105 @@
             document.getElementById('stats-total').innerText = movies.length;
 
             let displayMovies = movies.map((m, index) => ({...m, originalIndex: index}));
-            displayMovies.sort((a, b) => new Date(b.watchDate) - new Date(a.watchDate)); // 최근 시청순 정렬
+            // 날짜 정보가 없는 경우 예외 처리하여 정렬
+            displayMovies.sort((a, b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0));
 
-            // 1. 환영 섹션 (최고의 영화들 - 5.0 평점)
+            // 1. 환영 섹션 (최고의 영화들)
             const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 10);
             container.innerHTML += createSectionHTML('welcome', '환영합니다 🎬', '전설적인 해외 영화 플랫폼 레터박스(Letterboxd)를 오마주하여 만든, 나만의 인생 영화 아카이빙 공간입니다.');
             const welcomeGrid = document.getElementById('grid-welcome');
-            welcomeGrid.classList.add('movie-grid');
             if (topMovies.length > 0) {
                 topMovies.forEach(m => welcomeGrid.innerHTML += createPosterHTML(m, m.originalIndex));
             } else {
-                welcomeGrid.innerHTML = '<div class="empty-msg">아직 5.0 평점의 완벽한 영화가 없거나 데이터를 불러오지 못했습니다.</div>';
+                welcomeGrid.innerHTML = '<div class="empty-msg" style="color:#86868b; grid-column: 1 / -1;">아직 5.0 평점의 완벽한 영화가 없습니다.</div>';
             }
 
-            // 2. 최근 시청 영화 (최근 봤던 몇 개 영화)
+            // 2. 최근 시청 영화
             const recentMovies = displayMovies.slice(0, 6);
-            container.innerHTML += createSectionHTML('recent', '최근 시청했던 영화들 포스터', '가장 최근에 기록한 따끈따끈한 인생 영화 목록입니다. 영화관에서, 혹은 OTT로 즐긴 영화들을 기록해 보세요!');
+            container.innerHTML += createSectionHTML('recent', '최근 시청했던 영화들', '가장 최근에 기록한 따끈따끈한 인생 영화 목록입니다.');
             const recentGrid = document.getElementById('grid-recent');
             if (recentMovies.length > 0) {
                 recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
-            } else {
-                recentGrid.innerHTML = '<div class="empty-msg">아직 기록된 최근 영화가 없습니다. 관리자 모드에서 영화를 추가해 보세요!</div>';
             }
 
-            // 3. 전체 시청 영화 (여태 내가 봤던 films들 전부)
-            container.innerHTML += createSectionHTML('all', '여태 내가 봤던 Films들', `현재까지 총 ${displayMovies.length}편의 전설적인 영화들을 시청하셨습니다. 레터박스처럼 작은 포스터로 쭉 나열하여, 한눈에 인생 영화 목록을 확인할 수 있습니다!`, 'small-poster-grid', `${displayMovies.length}편`);
+            // 3. 전체 시청 영화
+            container.innerHTML += createSectionHTML('all', '여태 내가 봤던 Films들', `현재까지 총 ${displayMovies.length}편의 전설적인 영화들을 시청하셨습니다.`, 'small-poster-grid', `${displayMovies.length}편`);
             const allGrid = document.getElementById('grid-all');
             if (displayMovies.length > 0) {
                 displayMovies.forEach(m => allGrid.innerHTML += createPosterHTML(m, m.originalIndex, true));
-            } else {
-                allGrid.innerHTML = '<div class="empty-msg">아직 기록된 영화가 없습니다.</div>';
             }
 
-            // 4. 추천 영화 (메모에 #추천 포함된 영화)
-            const recommendedMovies = displayMovies.filter(m => m.memo.includes('#추천')).slice(0, 10);
-            container.innerHTML += createSectionHTML('recommended', '내가 추천하는 영화 🌟', '내가 사랑하고, 친구에게도 꼭 추천하고 싶은 인생 영화 목록입니다. #추천 을 포함하면 추천 영화 목록에 표시됩니다.');
+            // 4. 추천 영화 (🔥 빈 문자열 방어 코드 추가)
+            const recommendedMovies = displayMovies.filter(m => (m.memo || '').includes('#추천')).slice(0, 10);
+            container.innerHTML += createSectionHTML('recommended', '내가 추천하는 영화 🌟', '내가 사랑하고, 친구에게도 꼭 추천하고 싶은 인생 영화 목록입니다. 메모에 #추천 을 포함해 보세요.');
             const recommendedGrid = document.getElementById('grid-recommended');
             if (recommendedMovies.length > 0) {
                 recommendedMovies.forEach(m => recommendedGrid.innerHTML += createPosterHTML(m, m.originalIndex));
             } else {
-                recommendedGrid.innerHTML = '<div class="empty-msg">아직 추천으로 표시한 영화가 없습니다.</div>';
+                recommendedGrid.innerHTML = '<div class="empty-msg" style="color:#86868b; grid-column: 1 / -1;">아직 추천으로 표시한 영화가 없습니다.</div>';
             }
 
-            // 5. 국가별/장르별 구분 (기존 기능 통합, 스크롤 이동용 앵커 추가)
-            container.innerHTML += '<div id="rating" style="padding: 1px;"></div>'; // 앵커 포인트
-            container.innerHTML += createSectionHTML('region', '국가별 보기 🌍', '어떤 국가의 영화들을 주로 시청하셨는지 확인해 보세요!');
-            const regionGrid = document.getElementById('grid-region');
-            regionGrid.style.display = 'block'; // 그룹별 렌더링을 위해 블록으로 변경
+            // 5. 국가별 / 장르별 그룹핑
+            container.innerHTML += '<div id="region" style="padding: 1px;"></div>';
+            container.innerHTML += createSectionHTML('region-container', '국가별 보기 🌍', '어떤 국가의 영화들을 주로 시청하셨는지 확인해 보세요!');
+            const regionContainer = document.getElementById('grid-region-container');
+            regionContainer.style.display = 'block';
 
-            container.innerHTML += '<div id="genre" style="padding: 1px;"></div>'; // 앵커 포인트
-            container.innerHTML += createSectionHTML('genre', '장르별 보기 🎭', '어떤 장르의 영화를 사랑하시나요? 장르별로 인생 영화 목록을 확인해 보세요!');
-            const genreGrid = document.getElementById('grid-genre');
-            genreGrid.style.display = 'block';
+            container.innerHTML += '<div id="genre" style="padding: 1px;"></div>';
+            container.innerHTML += createSectionHTML('genre-container', '장르별 보기 🎭', '어떤 장르의 영화를 사랑하시나요? 장르별로 확인해 보세요!');
+            const genreContainer = document.getElementById('grid-genre-container');
+            genreContainer.style.display = 'block';
 
-            // 그룹화 및 렌더링
             const regionGroups = {};
             const genreGroups = {};
+            
             displayMovies.forEach(m => {
-                const r = m.region;
+                const r = m.region || '기타';
                 if(!regionGroups[r]) regionGroups[r] = [];
                 regionGroups[r].push(m);
 
-                const g = m.genre.includes('/') ? m.genre.split('/')[0] : m.genre;
+                // 🔥 빈 문자열 방어 코드 추가
+                const g = (m.genre || '').includes('/') ? m.genre.split('/')[0] : (m.genre || '장르미상');
                 if(!genreGroups[g]) genreGroups[g] = [];
                 genreGroups[g].push(m);
             });
 
-            const renderGroup = (container, groups) => {
-                const keys = Object.keys(groups);
-                keys.sort();
+            const renderGroup = (targetContainer, groups) => {
+                const keys = Object.keys(groups).sort();
                 keys.forEach(k => {
-                    let html = `<div class="section" id="${container.id}-${k}" style="border-bottom:none;">`;
-                    html += createSectionHTML(`grid-${container.id}-${k}`, k, `${k} ${groups[k].length}편`, 'movie-grid');
-                    html += '</div>';
-                    container.innerHTML += html;
-                    const grid = document.getElementById(`grid-grid-${container.id}-${k}`);
-                    groups[k].sort((a,b) => new Date(b.watchDate) - new Date(a.watchDate)).forEach(m => grid.innerHTML += createPosterHTML(m, m.originalIndex));
+                    let html = `<div class="section" id="${targetContainer.id}-${k}" style="padding: 20px 0; border-bottom:none;">`;
+                    html += `
+                        <div class="section-header" style="margin-bottom: 15px;">
+                            <h3 style="font-size: 1.2rem; margin:0; color:#fff;">${k} <span style="font-weight:normal; color:#86868b; font-size:0.9rem;">(${groups[k].length}편)</span></h3>
+                        </div>
+                        <div class="movie-grid" id="grid-inner-${targetContainer.id}-${k}"></div>
+                    </div>`;
+                    targetContainer.innerHTML += html;
+                    const grid = document.getElementById(`grid-inner-${targetContainer.id}-${k}`);
+                    groups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => grid.innerHTML += createPosterHTML(m, m.originalIndex));
                 });
             }
 
-            renderGroup(regionGrid, regionGroups);
-            renderGroup(genreGrid, genreGroups);
+            renderGroup(regionContainer, regionGroups);
+            renderGroup(genreContainer, genreGroups);
         }
 
-        // --- TMDB 검색 관련 함수들 (기존 유지) ---
-
-        async function fetchMoviesFromTMDB(searchQuery) {
-            const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(searchQuery)}&page=1`;
-            const response = await fetch(url);
-            return await response.json();
-        }
-
+        // --- TMDB 검색 ---
         window.searchTMDB = async function() {
             const query = document.getElementById('search-title-input').value.trim();
             if (!query) return;
 
             const overlay = document.getElementById('search-result-overlay');
             const resultsContainer = document.getElementById('tmdb-results-list');
-            
             overlay.style.display = 'flex';
-            resultsContainer.innerHTML = '<div class="loading-text">영화 데이터를 끌어모으고 있습니다... 🚀</div>';
+            resultsContainer.innerHTML = '<div class="loading-text" style="color:white;">영화 데이터를 끌어모으고 있습니다... 🚀</div>';
 
             try {
-                let allMovies = [];
-                let searchQueries = [query];
+                const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(query)}&page=1`;
+                const response = await fetch(url);
+                const data = await response.json();
                 
-                function getSpaceVariations(str) {
-                    if (str.includes(' ') || str.length < 2 || str.length > 8) return [];
-                    const vars = [];
-                    if (str.length === 3) { vars.push(str.slice(0,1)+' '+str.slice(1), str.slice(0,2)+' '+str.slice(2)); }
-                    else if (str.length === 4) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,1)+' '+str.slice(1), str.slice(0,3)+' '+str.slice(3)); }
-                    else if (str.length === 5) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,3)+' '+str.slice(3)); }
-                    else if (str.length === 6) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,3)+' '+str.slice(3), str.slice(0,4)+' '+str.slice(4)); }
-                    else if (str.length === 7) { vars.push(str.slice(0,3)+' '+str.slice(3), str.slice(0,4)+' '+str.slice(4)); }
-                    else if (str.length === 8) { vars.push(str.slice(0,4)+' '+str.slice(4)); }
-                    return vars;
-                }
-                
-                if (!query.includes(' ')) {
-                    searchQueries = searchQueries.concat(getSpaceVariations(query));
-                }
-
-                const fetchPromises = searchQueries.map(q => fetchMoviesFromTMDB(q));
-                const responses = await Promise.all(fetchPromises);
-
-                responses.forEach(res => {
-                    if (res.results) allMovies.push(...res.results);
-                });
-
-                const uniqueMovies = [];
-                const seenIds = new Set();
-                for (const movie of allMovies) {
-                    if (!seenIds.has(movie.id)) {
-                        seenIds.add(movie.id);
-                        uniqueMovies.push(movie);
-                    }
-                }
-
+                let uniqueMovies = data.results || [];
                 uniqueMovies.sort((a, b) => b.popularity - a.popularity);
 
                 if (uniqueMovies.length > 0) {
@@ -594,16 +559,12 @@
                             if (director) directorName = director.name;
                         }
 
-                        let genreName = '';
-                        if (movie.genres && movie.genres.length > 0) {
-                            genreName = movie.genres[0].name;
-                        }
-
+                        let genreName = movie.genres && movie.genres.length > 0 ? movie.genres[0].name : '';
+                        
                         let regionValue = '기타';
                         if (movie.production_countries && movie.production_countries.length > 0) {
                             const countryCode = movie.production_countries[0].iso_3166_1;
                             const western = ['US', 'GB', 'FR', 'DE', 'IT', 'ES', 'CA', 'AU', 'NZ', 'IE', 'SE', 'DK', 'NO', 'FI', 'NL', 'BE', 'CH', 'AT'];
-                            
                             if (countryCode === 'KR') regionValue = '한국';
                             else if (countryCode === 'JP') regionValue = '일본';
                             else if (countryCode === 'HK' || countryCode === 'CN' || countryCode === 'TW') regionValue = '홍콩';
@@ -623,10 +584,10 @@
                         resultsContainer.appendChild(item);
                     });
                 } else {
-                    resultsContainer.innerHTML = `<div class="loading-text">검색 결과가 없습니다 🥲 정확한 제목인지 확인해 주세요.</div>`;
+                    resultsContainer.innerHTML = `<div class="loading-text" style="color:#aaa;">검색 결과가 없습니다 🥲</div>`;
                 }
             } catch (error) {
-                resultsContainer.innerHTML = '<div class="loading-text">데이터를 불러오는데 실패했습니다.</div>';
+                resultsContainer.innerHTML = '<div class="loading-text" style="color:#e50914;">데이터를 불러오는데 실패했습니다.</div>';
             }
         }
 
@@ -636,10 +597,7 @@
             if (director !== '감독 미상') document.getElementById('input-director').value = director;
             if (genre !== '') document.getElementById('input-genre').value = genre;
             if (region) document.getElementById('input-region').value = region; 
-            
-            // 포스터 경로 저장용 (새로운 데이터 필드 필요, 기존 데이터는 TMDB 검색 시 자동 매핑 안 됨)
-            // 사용자 요구에는 없지만, 레터박스 스타일 포스터 구현을 위해 poster_path를 데이터에 추가
-            document.getElementById('edit-index').setAttribute('data-poster-path', posterPath);
+            if (posterPath) document.getElementById('edit-index').setAttribute('data-poster-path', posterPath);
             
             document.getElementById('search-title-input').value = '';
             window.closeSearchOverlay();
@@ -647,8 +605,7 @@
 
         window.closeSearchOverlay = function() { document.getElementById('search-result-overlay').style.display = 'none'; }
 
-        // --- 모달 관련 함수들 (기존 유지하되 포스터 경로 저장용 추가) ---
-
+        // --- 모달 제어 및 저장 ---
         function getTodayString() {
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -661,19 +618,19 @@
             document.getElementById('movie-modal').style.display = 'flex';
             window.closeSearchOverlay(); 
             document.getElementById('search-title-input').value = ''; 
-            document.getElementById('edit-index').removeAttribute('data-poster-path'); // 포스터 경로 초기화
+            document.getElementById('edit-index').removeAttribute('data-poster-path');
             
             if(index >= 0) {
                 document.getElementById('modal-title').innerText = '영화 정보 수정 ✏️';
                 document.getElementById('edit-index').value = index;
-                document.getElementById('input-title').value = movies[index].title;
-                document.getElementById('input-region').value = movies[index].region;
-                document.getElementById('input-genre').value = movies[index].genre;
-                document.getElementById('input-director').value = movies[index].director;
-                document.getElementById('input-year').value = movies[index].year;
-                document.getElementById('input-rating').value = movies[index].rating;
-                document.getElementById('input-watchDate').value = movies[index].watchDate;
-                document.getElementById('input-memo').value = movies[index].memo;
+                document.getElementById('input-title').value = movies[index].title || '';
+                document.getElementById('input-region').value = movies[index].region || '한국';
+                document.getElementById('input-genre').value = movies[index].genre || '';
+                document.getElementById('input-director').value = movies[index].director || '';
+                document.getElementById('input-year').value = movies[index].year || '';
+                document.getElementById('input-rating').value = movies[index].rating || '';
+                document.getElementById('input-watchDate').value = movies[index].watchDate || getTodayString();
+                document.getElementById('input-memo').value = movies[index].memo || '';
                 
                 if (movies[index].poster_path) {
                     document.getElementById('edit-index').setAttribute('data-poster-path', movies[index].poster_path);
@@ -705,7 +662,7 @@
                 rating: parseFloat(document.getElementById('input-rating').value),
                 watchDate: document.getElementById('input-watchDate').value,
                 memo: document.getElementById('input-memo').value,
-                poster_path: document.getElementById('edit-index').getAttribute('data-poster-path') // 포스터 경로 저장
+                poster_path: document.getElementById('edit-index').getAttribute('data-poster-path') || null
             };
 
             if(!newObj.title || !newObj.genre || !newObj.director || isNaN(newObj.year) || isNaN(newObj.rating) || !newObj.watchDate) {
@@ -727,9 +684,9 @@
                     const docRef = await addDoc(collection(db, "myMoviesGallery"), newObj);
                     movies.push({ ...newObj, id: docRef.id });
                 }
-                closeModal(); 
-                renderAllSections(); // 전체 목록으로 돌아가서 렌더링
-                window.location.hash = '#all'; // 전체 목록으로 스크롤 이동
+                window.closeModal(); 
+                renderAllSections(); 
+                window.location.hash = '#all'; 
             } catch (error) {
                 console.error("저장 에러:", error);
                 alert("권한이 없거나 저장 중 문제가 발생했습니다.");
@@ -739,7 +696,7 @@
             }
         }
 
-        // 초기 로딩
+        // 초기 로딩 실행
         loadMoviesFromFirebase();
     </script>
 </body>
