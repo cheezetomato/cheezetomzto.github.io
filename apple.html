@@ -4,65 +4,128 @@
     <meta charset="UTF-8">
     <title>사과 게임 - Pro Version (Real Apple)</title>
     <style>
-        body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #fff5f5; font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; overflow: hidden; transition: background-color 0.3s; }
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        /* ---------------------------------------------------- */
+        /* [1. 테마 변수 설정] (index.html 참고하여 구성) */
+        /* ---------------------------------------------------- */
+        :root {
+            /* ☀️ 라이트 모드 (사과 게임 전용 파스텔톤 유지) */
+            --bg-body: #fff5f5;
+            --bg-overlay: #fff5f5;
+            --text-main: #333;
+            --text-desc: #888;
+            --canvas-bg: #fff;
+            --canvas-border: #ffccd2;
+            --pane-bg: #fff;
+            --pane-border: #ffccd2;
+            --record-border: #eee;
+
+            /* 스위치 라이트 모드 */
+            --switch-track: #ccc;
+            --switch-knob: #fff;
+            --switch-icon: #777;
+        }
+
+        body.dark-mode {
+            /* 🌙 다크 모드 (index.html과 동일한 짙은 회색 톤 적용) */
+            --bg-body: #121212; 
+            --bg-overlay: #232323;
+            --text-main: #f0f0f0;
+            --text-desc: #b0b0b0;
+            --canvas-bg: #2c2c2c;
+            --canvas-border: #444;
+            --pane-bg: #2c2c2c;
+            --pane-border: #444;
+            --record-border: #444;
+
+            /* 스위치 다크 모드 */
+            --switch-track: #000;
+            --switch-knob: #666;
+            --switch-icon: #fff;
+        }
+
+        /* ---------------------------------------------------- */
+        /* [2. 기본 및 게임 요소 CSS] */
+        /* ---------------------------------------------------- */
+        body { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            min-height: 100vh; margin: 0; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; overflow: hidden; 
+            background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.4s, color 0.4s; 
+        }
         #game-container { position: relative; width: 920px; } 
 
-        .overlay { position: absolute; top: -10px; left: -10px; width: calc(100% + 20px); height: calc(100% + 120px); background: #fff5f5; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; border-radius: 20px; transition: background-color 0.3s; }
+        .overlay { 
+            position: absolute; top: -10px; left: -10px; width: calc(100% + 20px); height: calc(100% + 120px); 
+            background: var(--bg-overlay); display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 20; border-radius: 20px; transition: background-color 0.4s; 
+        }
         .hidden { display: none !important; }
 
         .btn { width: 220px; padding: 15px; margin: 10px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 50px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #e64b4b; }
         .btn-start { background: #ff6b6b; }
         .btn-history { background: #ff9f43; box-shadow: 0 4px 0 #e67e22; }
         .btn-info { background: #54a0ff; box-shadow: 0 4px 0 #2e86de; }
+        .btn:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
         
-        input[type="text"] { padding: 12px; width: 250px; font-size: 16px; border: 2px solid #ffccd2; border-radius: 10px; text-align: center; outline: none; margin-bottom: 25px; transition: 0.3s; }
+        input[type="text"] { padding: 12px; width: 250px; font-size: 16px; border: 2px solid var(--pane-border); border-radius: 10px; text-align: center; outline: none; margin-bottom: 25px; background: var(--pane-bg); color: var(--text-main); transition: 0.4s; }
 
         #history-layout { display: flex; width: 850px; gap: 20px; margin-bottom: 20px; }
-        .history-pane { flex: 1; background: white; padding: 15px; border-radius: 15px; border: 2px solid #ffccd2; height: 350px; overflow-y: auto; transition: 0.3s; }
-        .history-pane h3 { margin-top: 0; color: #444; border-bottom: 2px solid #eee; padding-bottom: 10px; transition: 0.3s; }
-        .record-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f9f9f9; font-size: 13px; transition: 0.3s; }
+        .history-pane { flex: 1; background: var(--pane-bg); padding: 15px; border-radius: 15px; border: 2px solid var(--pane-border); height: 350px; overflow-y: auto; transition: 0.4s; }
+        .history-pane h3 { margin-top: 0; color: var(--text-main); border-bottom: 2px solid var(--record-border); padding-bottom: 10px; transition: 0.4s; }
+        .record-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--record-border); font-size: 13px; color: var(--text-main); transition: 0.4s; }
+
+        #hall-of-fame-content { background: var(--pane-bg); padding:20px; border-radius:15px; border:3px solid #a55eea; margin:20px 0; width:400px; text-align:center; transition: 0.4s; }
 
         #result-screen h2 { font-size: 40px; color: #ff4757; margin: 10px; }
         .result-apple { font-size: 80px; animation: bounce 1s infinite; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 
-        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 10px; transition: 0.3s; }
-        canvas { background-color: #fff; border: 8px solid #ffccd2; border-radius: 20px; cursor: crosshair; transition: 0.3s; }
-        #timer-wrapper { width: 100%; height: 25px; background: #eee; border-radius: 15px; margin-top: 15px; overflow: hidden; border: 2px solid #ddd; transition: 0.3s; }
+        .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 10px; }
+        .game-header .player-info { font-size: 18px; color: var(--text-desc); transition: 0.4s; }
+        
+        canvas { background-color: var(--canvas-bg); border: 8px solid var(--canvas-border); border-radius: 20px; cursor: crosshair; transition: 0.4s; }
+        #timer-wrapper { width: 100%; height: 25px; background: #eee; border-radius: 15px; margin-top: 15px; overflow: hidden; border: 2px solid #ddd; }
+        body.dark-mode #timer-wrapper { background: #333; border-color: #555; }
         #timer-bar { width: 100%; height: 100%; background: #4cd137; }
         #countdown { font-size: 120px; color: #ff6b6b; font-weight: bold; }
 
-        /* 상단 버튼들 (홈, 다크모드) */
-        .top-btn {
-            position: absolute; top: 20px; background-color: #444; color: white; 
-            padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 1rem; transition: 0.3s; z-index: 1000; border: none; cursor: pointer;
+        /* ---------------------------------------------------- */
+        /* [3. 상단 네비게이션 (홈 버튼 & 다크모드 스위치)] */
+        /* ---------------------------------------------------- */
+        .top-nav {
+            position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 30px; box-sizing: border-box; z-index: 1000;
         }
-        .top-btn:hover { background-color: #666; }
-        .home-btn { left: 20px; }
-        .theme-btn { right: 20px; }
 
-        /* 🌙 다크 모드 스타일 🌙 */
-        body.dark-mode { background-color: #121212; color: #e0e0e0; }
-        body.dark-mode .overlay { background-color: #1e1e1e; }
-        body.dark-mode canvas { background-color: #2c2c2c; border-color: #444; }
-        body.dark-mode input[type="text"] { background-color: #333; color: white; border-color: #555; }
-        body.dark-mode .history-pane { background-color: #2c2c2c; border-color: #444; }
-        body.dark-mode .history-pane h3 { color: #e0e0e0; border-bottom-color: #444; }
-        body.dark-mode .record-row { border-bottom-color: #333; color: #ccc; }
-        body.dark-mode .game-header div:first-child { color: #bbb !important; }
-        body.dark-mode #timer-wrapper { background-color: #333; border-color: #555; }
-        body.dark-mode #hall-of-fame-content { background-color: #2c2c2c !important; border-color: #a55eea !important; }
+        .home-btn {
+            background-color: var(--switch-track); color: var(--switch-knob); padding: 8px 16px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.4s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 5px;
+        }
+        .home-btn:hover { opacity: 0.8; }
+
+        .theme-switch { display: inline-block; height: 30px; position: relative; width: 60px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: var(--switch-track); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 30px; border: 2px solid rgba(255,255,255,0.1); }
+        .slider:before { background-color: var(--switch-knob); bottom: 2px; content: ""; height: 26px; left: 2px; position: absolute; transition: .4s; width: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .slider::after { content: '🌙'; position: absolute; left: 6px; bottom: 5px; transition: .4s; color: var(--switch-icon); font-size: 14px; opacity: 0.5; }
+        
+        input:checked + .slider:before { transform: translateX(30px); }
+        input:checked + .slider::after { transform: translateX(30px); opacity: 1; }
     </style>
 </head>
 <body>
 
-<a href="index.html" class="top-btn home-btn">🏠 홈으로</a>
-<button class="top-btn theme-btn" onclick="toggleTheme()" id="theme-toggle-btn">🌙 다크 모드</button>
+<div class="top-nav">
+    <a href="index.html" class="home-btn">🏠 홈으로</a>
+    <label class="theme-switch" for="checkbox">
+        <input type="checkbox" id="checkbox" />
+        <div class="slider round"></div>
+    </label>
+</div>
 
 <div id="game-container">
     <div id="main-menu" class="overlay">
         <h1 style="color: #ff6b6b; font-size: 48px; margin-bottom: 10px;">🍎 사과 게임</h1>
-        <p style="color: #888; margin-bottom: 30px;">180개의 사과를 모두 찾아보세요!</p>
+        <p style="color: var(--text-desc); margin-bottom: 30px;">180개의 사과를 모두 찾아보세요!</p>
         
         <input type="text" id="nickname" placeholder="닉네임 입력 (최대 15자)" maxlength="15">
 
@@ -89,7 +152,7 @@
     <div id="hall-screen" class="overlay hidden">
         <h1 style="color: #a55eea; font-size: 40px;">🏅 명예의 전당</h1>
         <p style="font-size: 20px;">축하합니다! 모든 사과를 수확했습니다.</p>
-        <div id="hall-of-fame-content" style="background:white; padding:20px; border-radius:15px; border:3px solid #a55eea; margin:20px 0; width:400px; text-align:center;"></div>
+        <div id="hall-of-fame-content"></div>
         <button class="btn btn-start" onclick="location.reload()">메인으로</button>
     </div>
 
@@ -105,12 +168,35 @@
     <div id="countdown-screen" class="overlay hidden"><div id="countdown">3</div></div>
 
     <div class="game-header">
-        <div style="font-size: 18px; color: #555;">플레이어: <span id="display-name">-</span></div>
+        <div class="player-info">플레이어: <span id="display-name" style="font-weight:bold;">-</span></div>
         <div style="font-size: 24px; font-weight: bold; color: #ff4757;">Score: <span id="score">0</span> / 180</div>
     </div>
     <canvas id="gameCanvas" width="900" height="500"></canvas>
     <div id="timer-wrapper"><div id="timer-bar"></div></div>
 </div>
+
+<script>
+    const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+
+    function switchTheme(e) {
+        if (e.target.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark'); 
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }
+    toggleSwitch.addEventListener('change', switchTheme, false);
+
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme) {
+        if (currentTheme === 'dark') {
+            toggleSwitch.checked = true;
+            document.body.classList.add('dark-mode');
+        }
+    }
+</script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
@@ -136,20 +222,6 @@
     let apples = [], score = 0, timeLeft = 120, totalTime = 120;
     let isDragging = false, startX, startY, curX, curY;
     let gameActive = false, currentUser = "";
-
-    // 🌙 다크 모드 로직 🌙
-    window.toggleTheme = function() {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        document.getElementById('theme-toggle-btn').innerText = isDark ? '☀️ 라이트 모드' : '🌙 다크 모드';
-        localStorage.setItem('appleGameTheme', isDark ? 'dark' : 'light');
-    }
-
-    // 페이지 로드 시 저장된 테마 불러오기
-    if(localStorage.getItem('appleGameTheme') === 'dark') {
-        document.body.classList.add('dark-mode');
-        document.getElementById('theme-toggle-btn').innerText = '☀️ 라이트 모드';
-    }
 
     window.showMain = function() {
         document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
@@ -178,15 +250,15 @@
             document.getElementById('top-rank-list').innerHTML = top10.map((r, i) => `
                 <div class="record-row">
                     <span><b>${i+1}위</b> ${r.name}</span>
-                    <span style="color:#ff6b6b;">${r.score}점</span>
+                    <span style="color:#ff6b6b; font-weight:bold;">${r.score}점</span>
                 </div>
             `).join('') || "아직 기록이 없습니다.";
 
             const recent10 = [...records].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
             document.getElementById('recent-log-list').innerHTML = recent10.map(r => `
                 <div class="record-row">
-                    <span>${r.name} <small>(${r.date})</small></span>
-                    <span style="color:#ff9f43;">${r.score}점</span>
+                    <span>${r.name} <small style="color:var(--text-desc)">(${r.date})</small></span>
+                    <span style="color:#ff9f43; font-weight:bold;">${r.score}점</span>
                 </div>
             `).join('') || "아직 기록이 없습니다.";
         } catch (error) {
@@ -357,8 +429,8 @@
         if(isClear) {
             document.getElementById('hall-of-fame-content').innerHTML = `
                 <h3 style="color:#a55eea;">${currentUser}</h3>
-                <p>클리어 타임 기록: <b>${(totalTime - timeLeft).toFixed(1)}초</b></p>
-                <p>남은 시간: <span style="color:red;">${timeLeft.toFixed(1)}초</span></p>
+                <p style="color:var(--text-main);">클리어 타임 기록: <b>${(totalTime - timeLeft).toFixed(1)}초</b></p>
+                <p style="color:var(--text-main);">남은 시간: <span style="color:red;">${timeLeft.toFixed(1)}초</span></p>
             `;
             document.getElementById('hall-screen').classList.remove('hidden');
         } else {
