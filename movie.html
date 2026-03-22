@@ -172,8 +172,11 @@
                 <div class="user-menu">
                     <div class="user-name" id="nav-user-name">👤 Guest ▾</div>
                     <div class="dropdown-content">
-                        <a href="index.html">Main Home</a> <a onclick="window.changeView('home')">Gallery Home</a> <a onclick="window.changeView('recent')">Recent</a>
+                        <a href="index.html">Main Home</a>
+                        <a onclick="window.changeView('home')">Gallery Home</a>
+                        <a onclick="window.changeView('recent')">Recent</a>
                         <a onclick="window.changeView('all')">All Films</a>
+                        <a onclick="window.changeView('rating')">By Rating (평점별)</a>
                         <a onclick="window.changeView('recommended')">Recommended</a>
                         <a onclick="window.changeView('region')">By Region</a>
                         <a onclick="window.changeView('genre')">By Genre</a>
@@ -289,7 +292,7 @@
         
         let movies = [];
         let isAdmin = false;
-        let currentView = 'home'; // 🌟 현재 보고 있는 페이지 상태 변수
+        let currentView = 'home'; // 현재 보고 있는 페이지 상태 변수
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.uid === 'LjObLa6943Q1xyyVthX2aFA1zRQ2') {
@@ -384,7 +387,7 @@
             window.scrollTo(0, 0); // 페이지 이동 시 맨 위로 끌어올려줌
         };
 
-        // 🌟 현재 상태(currentView)에 맞는 탭만 그려주는 렌더링 함수
+        // 🌟 현재 상태에 맞는 화면 그리기
         function renderView() {
             const container = document.getElementById('main-content');
             container.innerHTML = '';
@@ -393,20 +396,19 @@
             let displayMovies = movies.map((m, index) => ({...m, originalIndex: index}));
             displayMovies.sort((a, b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0));
 
-            // 어떤 메뉴를 클릭했는지 확인해서 그것만 그려줍니다!
             if (currentView === 'home') {
                 const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 10);
                 container.innerHTML += createSectionHTML('welcome', 'PERFECT 5.0', '최고의 평점을 준 완벽한 영화들입니다.');
                 const welcomeGrid = document.getElementById('grid-welcome');
                 if (topMovies.length > 0) topMovies.forEach(m => welcomeGrid.innerHTML += createPosterHTML(m, m.originalIndex));
 
-                const recentMovies = displayMovies.slice(0, 14); // 홈에서는 최근작 14개만 보여줌
+                const recentMovies = displayMovies.slice(0, 14);
                 container.innerHTML += createSectionHTML('recent-home', 'RECENTLY WATCHED', '최근에 시청한 영화입니다.');
                 const recentGrid = document.getElementById('grid-recent-home');
                 if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
             } 
             else if (currentView === 'recent') {
-                const recentMovies = displayMovies.slice(0, 50); // 최근 탭에서는 50개 듬뿍 보여줌
+                const recentMovies = displayMovies.slice(0, 50);
                 container.innerHTML += createSectionHTML('recent-page', 'RECENTLY WATCHED', '최근 시청한 영화 목록 전체입니다.');
                 const recentGrid = document.getElementById('grid-recent-page');
                 if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
@@ -422,6 +424,23 @@
                 const recGrid = document.getElementById('grid-rec-page');
                 if (recommendedMovies.length > 0) recommendedMovies.forEach(m => recGrid.innerHTML += createPosterHTML(m, m.originalIndex));
                 else recGrid.innerHTML = '<div style="color:#9ab;">추천 영화가 없습니다. 메모에 #추천 을 적어보세요.</div>';
+            }
+            // 🔥 평점별 정렬 기능 부활!
+            else if (currentView === 'rating') {
+                container.innerHTML += createSectionHTML('rating-page', 'BY RATING', '영화의 별점별로 모아보는 아카이브');
+                const ratingGroups = {};
+                displayMovies.forEach(m => {
+                    const r = parseFloat(m.rating || 0).toFixed(1);
+                    if(!ratingGroups[r]) ratingGroups[r] = [];
+                    ratingGroups[r].push(m);
+                });
+                const targetContainer = document.getElementById('grid-rating-page');
+                
+                // 점수 높은 순(내림차순)으로 정렬!
+                Object.keys(ratingGroups).sort((a,b) => parseFloat(b) - parseFloat(a)).forEach(k => {
+                    targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 20px; border-bottom: 1px solid #2c3440; padding-bottom: 5px;"><span style="color: #00e054; font-size: 1rem; font-weight: bold;">★ ${k} (${ratingGroups[k].length}편)</span></div>`;
+                    ratingGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
+                });
             }
             else if (currentView === 'region') {
                 container.innerHTML += createSectionHTML('region-page', 'BY REGION', '국가별 영화 아카이브');
