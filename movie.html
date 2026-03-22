@@ -294,7 +294,7 @@
         </div>
     </div>
 
-    <script type="module">
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
@@ -379,7 +379,7 @@
             }
         }
 
-        // --- 렌더링 함수들 (텍스트 숨기고 포스터만!) ---
+        // --- 렌더링 함수들 ---
         function createPosterHTML(movie, originalIndex) {
             const ratingVal = parseFloat(movie.rating) || 0;
             const editBtnHTML = isAdmin ? `<button class="edit-btn" onclick="window.openModal(${originalIndex})">✏️</button>` : '';
@@ -387,7 +387,6 @@
                 ? `https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}` 
                 : 'https://via.placeholder.com/300x450/2c3440/9aabbb?text=No+Poster';
 
-            // 마우스 호버 시에만 나타나는 오버레이 텍스트
             return `
                 <div class="movie-card">
                     ${editBtnHTML}
@@ -423,30 +422,25 @@
             let displayMovies = movies.map((m, index) => ({...m, originalIndex: index}));
             displayMovies.sort((a, b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0));
 
-            // 1. 환영 섹션 (평점 5.0)
             const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 10);
             container.innerHTML += createSectionHTML('welcome', 'PERFECT 5.0', '최고의 평점을 준 완벽한 영화들입니다.');
             const welcomeGrid = document.getElementById('grid-welcome');
             if (topMovies.length > 0) topMovies.forEach(m => welcomeGrid.innerHTML += createPosterHTML(m, m.originalIndex));
 
-            // 2. 최근 시청
             const recentMovies = displayMovies.slice(0, 8);
             container.innerHTML += createSectionHTML('recent', 'RECENTLY WATCHED', '가장 최근에 시청하고 기록한 영화 목록입니다.');
             const recentGrid = document.getElementById('grid-recent');
             if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
 
-            // 3. 전체 목록
             container.innerHTML += createSectionHTML('all', 'ALL FILMS', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
             const allGrid = document.getElementById('grid-all');
             if (displayMovies.length > 0) displayMovies.forEach(m => allGrid.innerHTML += createPosterHTML(m, m.originalIndex));
 
-            // 4. 추천 영화
             const recommendedMovies = displayMovies.filter(m => (m.memo || '').includes('#추천')).slice(0, 10);
             container.innerHTML += createSectionHTML('recommended', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.');
             const recommendedGrid = document.getElementById('grid-recommended');
             if (recommendedMovies.length > 0) recommendedMovies.forEach(m => recommendedGrid.innerHTML += createPosterHTML(m, m.originalIndex));
 
-            // 5. 그룹핑 (국가/장르)
             container.innerHTML += '<div id="region" style="padding: 1px;"></div>';
             container.innerHTML += createSectionHTML('region-container', 'BY REGION', '국가별 영화 아카이브');
             
@@ -481,7 +475,20 @@
             renderGroup('genre-container', genreGroups);
         }
 
-        // --- 마법의 포스터 자동 복구 함수 ---
+        // 💡 부활한 띄어쓰기 기계!
+        function getSpaceVariations(str) {
+            if (str.includes(' ') || str.length < 2 || str.length > 8) return [];
+            const vars = [];
+            if (str.length === 3) { vars.push(str.slice(0,1)+' '+str.slice(1), str.slice(0,2)+' '+str.slice(2)); }
+            else if (str.length === 4) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,1)+' '+str.slice(1), str.slice(0,3)+' '+str.slice(3)); }
+            else if (str.length === 5) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,3)+' '+str.slice(3)); }
+            else if (str.length === 6) { vars.push(str.slice(0,2)+' '+str.slice(2), str.slice(0,3)+' '+str.slice(3), str.slice(0,4)+' '+str.slice(4)); }
+            else if (str.length === 7) { vars.push(str.slice(0,3)+' '+str.slice(3), str.slice(0,4)+' '+str.slice(4)); }
+            else if (str.length === 8) { vars.push(str.slice(0,4)+' '+str.slice(4)); }
+            return vars;
+        }
+
+        // --- 마법의 포스터 자동 복구 함수 (띄어쓰기 무시 장착 완료!) ---
         window.autoFixPosters = async function() {
             if (!confirm("포스터가 없는 영화들을 TMDB에서 자동 검색하여 채워 넣습니다. 진행하시겠습니까?")) return;
             const btn = document.getElementById('auto-update-btn');
@@ -492,12 +499,26 @@
                 const movie = movies[i];
                 if (!movie.poster_path) {
                     try {
-                        const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(movie.title)}&page=1`;
-                        const res = await fetch(url);
-                        const data = await res.json();
+                        let searchQueries = [movie.title];
+                        if (!movie.title.includes(' ')) {
+                            searchQueries = searchQueries.concat(getSpaceVariations(movie.title));
+                        }
                         
-                        if (data.results && data.results.length > 0 && data.results[0].poster_path) {
-                            const newPoster = data.results[0].poster_path;
+                        // 띄어쓰기 변형된 모든 검색어로 동시 검색!
+                        const fetchPromises = searchQueries.map(q => 
+                            fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(q)}&page=1`).then(res => res.json())
+                        );
+                        const responses = await Promise.all(fetchPromises);
+                        
+                        let allResults = [];
+                        responses.forEach(data => {
+                            if (data.results) allResults.push(...data.results);
+                        });
+                        
+                        allResults.sort((a, b) => b.popularity - a.popularity);
+                        
+                        if (allResults.length > 0 && allResults[0].poster_path) {
+                            const newPoster = allResults[0].poster_path;
                             await updateDoc(doc(db, "myMoviesGallery", movie.id), { poster_path: newPoster });
                             movie.poster_path = newPoster; 
                             updatedCount++;
@@ -506,11 +527,11 @@
                 }
             }
             alert(`완료! ${updatedCount}편의 포스터를 복구했습니다.`);
-            btn.style.display = 'none'; 
+            btn.innerText = "✨ 포스터 일괄 복구"; btn.style.display = 'none'; 
             renderAllSections(); 
         };
 
-        // --- 검색 및 모달 제어 ---
+        // --- 검색 및 모달 제어 (띄어쓰기 무시 장착 완료!) ---
         window.searchTMDB = async function() {
             const query = document.getElementById('search-title-input').value.trim();
             if (!query) return;
@@ -520,10 +541,31 @@
             resultsContainer.innerHTML = '<div style="color:#9ab;">Searching... 🚀</div>';
 
             try {
-                const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(query)}&page=1`;
-                const res = await fetch(url); const data = await res.json();
+                let searchQueries = [query];
+                if (!query.includes(' ')) {
+                    searchQueries = searchQueries.concat(getSpaceVariations(query));
+                }
                 
-                let uniqueMovies = data.results || [];
+                const fetchPromises = searchQueries.map(q => 
+                    fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(q)}&page=1`).then(res => res.json())
+                );
+                const responses = await Promise.all(fetchPromises);
+                
+                let allMovies = [];
+                responses.forEach(data => {
+                    if (data.results) allMovies.push(...data.results);
+                });
+                
+                // 중복 제거
+                const uniqueMovies = [];
+                const seenIds = new Set();
+                for (const movie of allMovies) {
+                    if (!seenIds.has(movie.id)) {
+                        seenIds.add(movie.id);
+                        uniqueMovies.push(movie);
+                    }
+                }
+                
                 uniqueMovies.sort((a, b) => b.popularity - a.popularity);
 
                 if (uniqueMovies.length > 0) {
