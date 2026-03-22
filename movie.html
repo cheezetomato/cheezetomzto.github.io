@@ -47,7 +47,11 @@
             align-items: center;
         }
 
-        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -1px; }
+       .logo { font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -1px; }
+        
+        /* 👇 여기에 홈 버튼 스타일 추가! 👇 */
+        .nav-home { font-size: 0.9rem; font-weight: 700; color: #9ab; margin-left: 20px; transition: color 0.2s; letter-spacing: 0.5px; }
+        .nav-home:hover { color: #fff; }
 
         .header-right { display: flex; align-items: center; gap: 10px; }
         
@@ -166,6 +170,7 @@
         <div class="header-inner">
             <div class="header-left">
                 <a href="#" class="logo">FILMS</a>
+                <a href="#" class="nav-home">HOME</a>
             </div>
             
             <div class="header-right">
