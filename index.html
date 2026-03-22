@@ -3,24 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Web Portal</title>
+    <title>My Web Portal - Pro</title>
     <style>
-        /* 기본 웹 폰트 및 배경 설정 */
+        /* 기본 웹 폰트 로드 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        
+
+        /* ---------------------------------------------------- */
+        /* [1. 테마 변수 설정] - 여기서 색상을 한 번에 관리합니다. */
+        /* ---------------------------------------------------- */
+        :root {
+            /* ☀️ 라이트 모드 (기본) 색상 */
+            --bg-body-start: #f5f7fa;
+            --bg-body-end: #c3cfe2;
+            --text-header: #2c3e50;
+            --text-desc: #576574;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-border-default: transparent;
+            --card-text-title: #333;
+            --card-text-desc: #777;
+            --card-shadow: rgba(0, 0, 0, 0.08);
+
+            /* 🌙 토글 스위치 자체 색상 (라이트 모드일 때) */
+            --switch-track: #ccc; /* 스위치 배경 */
+            --switch-knob: #fff;  /* 움직이는 동그라미 */
+            --switch-icon: #777;  /* 아이콘 색상 */
+        }
+
+        body.dark-mode {
+            /* 🌙 다크 모드 색상 */
+            --bg-body-start: #1a1a2e; /* 아주 어두운 남색 */
+            --bg-body-end: #16213e;   /* 좀 더 어두운 남색 */
+            --text-header: #e0e0e0;
+            --text-desc: #a0a0a0;
+            --card-bg: rgba(30, 30, 50, 0.9); /* 카드를 더 어둡게 */
+            --card-border-default: #3a3a5a;    /* 어두운 테두리 */
+            --card-text-title: #e0e0e0;
+            --card-text-desc: #a0a0a0;
+            --card-shadow: rgba(0, 0, 0, 0.3); /* 더 어두운 그림자 */
+
+            /* 🌙 토글 스위치 자체 색상 (다크 모드일 때) - 사진 느낌 적용 */
+            --switch-track: #000; /* 사진처럼 완전 검은색 */
+            --switch-knob: #888;  /* 살짝 어두운 회색 동그라미 */
+            --switch-icon: #fff;  /* 밝게 빛나는 달 아이콘 */
+        }
+
+        /* ---------------------------------------------------- */
+        /* [2. 기본 CSS 설정] */
+        /* ---------------------------------------------------- */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            /* 테마 변수 사용 */
+            background: linear-gradient(135deg, var(--bg-body-start) 0%, var(--bg-body-end) 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            /* 색상 변경 시 부드럽게 전환 */
+            transition: background 0.5s, color 0.5s;
         }
 
-        /* 메인 타이틀 */
+        /* ---------------------------------------------------- */
+        /* [3. 다크모드 토글 스위치 디자인 - 사진 느낌 적용] */
+        /* ---------------------------------------------------- */
+        .theme-switch-wrapper {
+            position: fixed; /* 왼쪽 상단에 고정 */
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            z-index: 1000; /* 다른 요소보다 위에 표시 */
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 30px; /* 스위치 높이 */
+            position: relative;
+            width: 60px;  /* 스위치 너비 */
+        }
+
+        /* 실제 체크박스는 숨김 */
+        .theme-switch input {
+            display: none;
+        }
+
+        /* 스위치의 트랙(배경) 디자인 */
+        .slider {
+            background-color: var(--switch-track); /* 테마 변수 사용 */
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s; /* 배경색 전환 속도 */
+            border-radius: 30px; /* 완전 둥글게 */
+            border: 2px solid rgba(255,255,255,0.1); /* 미세한 테두리 */
+        }
+
+        /* 스위치의 움직이는 동그라미(Knob) 디자인 */
+        .slider:before {
+            background-color: var(--switch-knob); /* 테마 변수 사용 */
+            bottom: 2px;
+            content: "";
+            height: 26px; /* 높이 */
+            left: 2px;
+            position: absolute;
+            transition: .4s; /* 움직임 속도 */
+            width: 26px;  /* 너비 */
+            border-radius: 50%; /* 완전 동그랗게 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px; /* 아이콘 크기 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* 동그라미 내부의 달(🌙) 아이콘 설정 */
+        .slider::after {
+            content: '🌙'; /* 아이콘을 '달'로 고정 */
+            position: absolute;
+            left: 6px;
+            bottom: 5px;
+            transition: .4s; /* 아이콘 이동 속도 */
+            color: var(--switch-icon); /* 테마 변수 사용 */
+            font-size: 14px;
+            opacity: 0.5; /* 평소에는 흐릿하게 */
+        }
+
+        /* [체크되었을 때 (다크 모드일 때)] 스위치 동그라미가 오른쪽으로 이동 */
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        /* [체크되었을 때] 달 아이콘이 동그라미를 따라 함께 이동 및 밝아짐 */
+        input:checked + .slider::after {
+            transform: translateX(30px);
+            opacity: 1; /* 다크모드일 때 선명하게 */
+        }
+
+        /* ---------------------------------------------------- */
+        /* [4. 메인 콘텐츠 디자인] */
+        /* ---------------------------------------------------- */
         .header {
             text-align: center;
             margin-bottom: 50px;
@@ -28,31 +154,30 @@
 
         .header h1 {
             font-size: 2.5rem;
-            color: #2c3e50;
+            color: var(--text-header); /* 테마 변수 사용 */
             margin: 0 0 10px 0;
             letter-spacing: -1px;
+            transition: color 0.5s;
         }
 
         .header p {
-            color: #576574;
+            color: var(--text-desc); /* 테마 변수 사용 */
             font-size: 1.1rem;
             margin: 0;
+            transition: color 0.5s;
         }
 
-        /* 메뉴 카드들을 담는 컨테이너 */
         .menu-container {
             display: flex;
             gap: 30px;
-            /* 화면이 좁아지면 세로로 배치 */
             flex-wrap: wrap;
             justify-content: center;
             padding: 20px;
         }
 
-        /* 개별 메뉴 카드 스타일 */
         .menu-card {
             text-decoration: none;
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--card-bg); /* 테마 변수 사용 */
             width: 280px;
             height: 320px;
             border-radius: 24px;
@@ -60,34 +185,31 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 30px var(--card-shadow); /* 테마 변수 사용 */
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
-            border: 2px solid transparent;
+            border: 2px solid var(--card-border-default); /* 테마 변수 사용 */
         }
 
-        /* 🎬 영화 리스트 카드 전용 색상 */
+        /* 호버 효과 (라이트 모드) */
         .card-movie:hover {
             border-color: #54a0ff;
             box-shadow: 0 15px 35px rgba(84, 160, 255, 0.3);
             transform: translateY(-5px);
         }
-
-        /* 🍎 사과게임 카드 전용 색상 */
         .card-apple:hover {
             border-color: #ff6b6b;
             box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
             transform: translateY(-5px);
         }
 
-        /* 쫀득하게 눌리는 모션 (핵심!) */
+        /* 쫀득하게 눌리는 모션 (active 효과 유지!) */
         .menu-card:active {
             transform: scale(0.95);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        /* 카드 내부 아이콘 및 텍스트 */
         .icon {
             font-size: 80px;
             margin-bottom: 20px;
@@ -101,19 +223,28 @@
         .title {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #333;
+            color: var(--card-text-title); /* 테마 변수 사용 */
             margin-bottom: 10px;
+            transition: color 0.5s;
         }
 
         .desc {
             font-size: 0.95rem;
-            color: #777;
+            color: var(--card-text-desc); /* 테마 변수 사용 */
             text-align: center;
             padding: 0 20px;
+            transition: color 0.5s;
         }
     </style>
 </head>
 <body>
+
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+    </div>
 
     <div class="header">
         <h1>Welcome to My Space</h1>
@@ -133,6 +264,36 @@
             <div class="desc">120초 동안 180개의 사과를 수확하는 기록 경쟁!</div>
         </a>
     </div>
+
+    <script>
+        // 토글 스위치 요소를 가져옵니다.
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+
+        // 스위치 상태가 바뀔 때마다 실행되는 함수
+        function switchTheme(e) {
+            if (e.target.checked) {
+                // 체크되면(다크모드 온) body에 'dark-mode' 클래스 추가
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark'); // 테마 설정을 브라우저에 저장 (나중에 다시 접속해도 유지)
+            } else {
+                // 체크 해제되면(다크모드 오프) body에서 'dark-mode' 클래스 제거
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light'); // 테마 설정을 브라우저에 저장
+            }
+        }
+
+        // 스위치에 클릭(change) 이벤트 리스너 추가
+        toggleSwitch.addEventListener('change', switchTheme, false);
+
+        // [핵심!] 페이지 로드 시 이전에 저장된 테마 설정을 불러와 적용합니다.
+        const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+        if (currentTheme) {
+            if (currentTheme === 'dark') {
+                toggleSwitch.checked = true; // 스위치를 켜진 상태로 설정
+                document.body.classList.add('dark-mode'); // 다크모드 클래스 적용
+            }
+        }
+        </script>
 
 </body>
 </html>
