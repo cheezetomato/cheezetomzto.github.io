@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>내 영화 갤러리 | 레터박스 스타일 🎬</title>
     <style>
-        /* 1. Letterboxd 스타일 폰트 및 부드러운 스크롤 */
+        /* 1. Letterboxd 스타일 폰트 및 컬러 */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Noto+Sans+KR:wght@300;400;700&display=swap');
-
-        html { scroll-behavior: smooth; } /* 부드러운 스크롤 이동! */
 
         body { 
             font-family: 'Inter', 'Noto Sans KR', sans-serif; 
@@ -25,7 +23,7 @@
         a { text-decoration: none; color: inherit; transition: color 0.2s; }
         a:hover { color: #00e054; } 
 
-        /* 2. 상단 바 (중앙 정렬 및 드롭다운 메뉴 적용) */
+        /* 2. 상단 바 */
         header { 
             background-color: #0d0f11; 
             padding: 10px 20px; 
@@ -38,24 +36,22 @@
             border-bottom: 1px solid #2c3440;
         }
 
-        /* 메뉴들을 중앙쪽으로 모아주는 컨테이너 */
         .header-inner {
-            max-width: 1000px; /* 본문과 동일한 너비 */
+            max-width: 1000px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-       .logo { font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -1px; }
-        
-        /* 👇 여기에 홈 버튼 스타일 추가! 👇 */
-        .nav-home { font-size: 0.9rem; font-weight: 700; color: #9ab; margin-left: 20px; transition: color 0.2s; letter-spacing: 0.5px; }
+        .header-left { display: flex; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -1px; }
+        .nav-home { font-size: 0.9rem; font-weight: 700; color: #9ab; margin-left: 20px; transition: color 0.2s; letter-spacing: 0.5px; cursor: pointer; }
         .nav-home:hover { color: #fff; }
 
         .header-right { display: flex; align-items: center; gap: 10px; }
         
-        /* 닉네임 드롭다운 메뉴 스타일 */
+        /* 닉네임 드롭다운 메뉴 */
         .user-menu { position: relative; display: inline-block; }
         .user-name { color: #9ab; cursor: pointer; font-weight: 600; font-size: 0.9rem; padding: 10px; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
         .user-name:hover { color: #fff; }
@@ -65,7 +61,7 @@
             border-radius: 4px; border: 1px solid #445566; overflow: hidden;
         }
         .user-menu:hover .dropdown-content { display: block; }
-        .dropdown-content a { color: #9ab; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; border-bottom: 1px solid #445566; transition: 0.2s; }
+        .dropdown-content a { color: #9ab; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; border-bottom: 1px solid #445566; transition: 0.2s; cursor: pointer; }
         .dropdown-content a:last-child { border-bottom: none; }
         .dropdown-content a:hover { background-color: #445566; color: #fff; }
 
@@ -80,15 +76,14 @@
         .secret-login-btn:hover { color: #fff; }
 
         /* 3. 메인 콘텐츠 구조 */
-        main { padding-top: 60px; flex-grow: 1; }
+        main { padding-top: 80px; padding-bottom: 40px; flex-grow: 1; }
 
-        .section { padding: 30px 20px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; border-bottom: 1px solid #2c3440; }
-        .section:last-of-type { border-bottom: none; }
+        .section { padding: 20px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         .section-title { font-size: 1.2rem; font-weight: 600; color: #fff; letter-spacing: -0.5px; margin: 0 0 5px 0; text-transform: uppercase; border-bottom: 1px solid #445566; padding-bottom: 5px; display: inline-block;}
         .section-desc { color: #9ab; font-size: 0.9rem; margin-top: 8px; font-weight: 400; line-height: 1.4; }
 
         /* 4. 포스터 그리드 */
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-top: 15px; }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; margin-top: 20px; }
         .movie-card {
             background-color: transparent; border-radius: 4px; overflow: hidden; 
             position: relative; transition: all 0.2s ease; aspect-ratio: 2/3;
@@ -114,7 +109,7 @@
         }
         .movie-card:hover .edit-btn { display: flex; }
 
-        /* 5. 모달 UI 공통 (추가, 로그인, 상세) */
+        /* 5. 모달 UI 공통 */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 2000;
@@ -148,7 +143,7 @@
         .tmdb-item-title-small { font-weight: 600; color: white; font-size: 1rem; }
         .tmdb-item-meta-small { font-size: 0.8rem; color: #9ab; margin-top: 4px; }
 
-        /* 클릭 시 나타나는 영화 상세 정보 팝업 디자인 */
+        /* 영화 상세 정보 팝업 디자인 */
         .detail-flex { display: flex; gap: 20px; }
         .detail-poster-img { width: 160px; border-radius: 6px; object-fit: cover; aspect-ratio: 2/3; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
         .detail-info { flex-grow: 1; }
@@ -169,20 +164,20 @@
     <header>
         <div class="header-inner">
             <div class="header-left">
-                <a href="#" class="logo">FILMS</a>
-                <a href="#" class="nav-home">HOME</a>
+                <a href="#" class="logo" onclick="window.changeView('home')">FILMS</a>
+                <a class="nav-home" onclick="window.changeView('home')">HOME</a>
             </div>
             
             <div class="header-right">
                 <div class="user-menu">
                     <div class="user-name" id="nav-user-name">👤 Guest ▾</div>
                     <div class="dropdown-content">
-                        <a href="#welcome">Home</a>
-                        <a href="#recent">Recent</a>
-                        <a href="#all">All Films</a>
-                        <a href="#recommended">Recommended</a>
-                        <a href="#region-container">By Region</a>
-                        <a href="#genre-container">By Genre</a>
+                        <a onclick="window.changeView('home')">Home</a>
+                        <a onclick="window.changeView('recent')">Recent</a>
+                        <a onclick="window.changeView('all')">All Films</a>
+                        <a onclick="window.changeView('recommended')">Recommended</a>
+                        <a onclick="window.changeView('region')">By Region</a>
+                        <a onclick="window.changeView('genre')">By Genre</a>
                     </div>
                 </div>
 
@@ -213,19 +208,15 @@
                     <h2 id="detail-title" style="margin-bottom: 5px;">Title</h2>
                     <div class="detail-meta" id="detail-meta">2023 • Director</div>
                     <div style="color: #00e054; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;" id="detail-rating">★★★★★ (5.0)</div>
-                    
                     <div class="detail-tags">
                         <span class="d-tag" style="background:#0071e3; color:white;" id="detail-region">Region</span>
                         <span class="d-tag" style="background:#445566; color:#ffd700;" id="detail-genre">Genre</span>
                         <span class="d-tag" style="background:#2c3440; color:#9ab;" id="detail-date">Date</span>
                     </div>
-
                     <div class="detail-memo-box" id="detail-memo">Review goes here...</div>
                 </div>
             </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="window.closeDetailModal()">닫기</button>
-            </div>
+            <div class="modal-actions"><button class="btn-cancel" onclick="window.closeDetailModal()">닫기</button></div>
         </div>
     </div>
 
@@ -246,13 +237,11 @@
         <div class="modal-content">
             <h2 id="modal-title">Log a Film</h2>
             <input type="hidden" id="edit-index">
-            
-            <label>🔎 영화 자동 검색 (Name of Film)</label>
+            <label>🔎 영화 자동 검색</label>
             <div class="tmdb-search-box">
                 <input type="text" id="search-title-input" placeholder="영화 제목을 검색하세요" onkeypress="if(event.key === 'Enter') { window.searchTMDB(); event.preventDefault(); }">
                 <button type="button" class="tmdb-search-btn" onclick="window.searchTMDB()">Search</button>
             </div>
-
             <div class="search-result-overlay" id="search-result-overlay">
                 <div class="search-result-content">
                     <button type="button" class="close-search-btn" onclick="window.closeSearchOverlay()">&times;</button>
@@ -260,48 +249,19 @@
                     <div id="tmdb-results-list"></div>
                 </div>
             </div>
-            
-            <label>선택된 영화 (Title)</label>
+            <label>선택된 영화</label>
             <input type="text" id="input-title" required>
-
             <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label>국가 (Region)</label>
-                    <select id="input-region" required>
-                        <option value="한국">한국</option>
-                        <option value="서양">서양 (미국/유럽 등)</option>
-                        <option value="일본">일본</option>
-                        <option value="홍콩">홍콩</option>
-                        <option value="기타">기타</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label>장르 (Genre)</label>
-                    <input type="text" id="input-genre" placeholder="ex: 스릴러" required>
-                </div>
+                <div style="flex: 1;"><label>국가</label><select id="input-region" required><option value="한국">한국</option><option value="서양">서양</option><option value="일본">일본</option><option value="홍콩">홍콩</option><option value="기타">기타</option></select></div>
+                <div style="flex: 1;"><label>장르</label><input type="text" id="input-genre" placeholder="ex: 스릴러" required></div>
             </div>
-
             <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label>감독 (Director)</label>
-                    <input type="text" id="input-director" required>
-                </div>
-                <div style="flex: 1;">
-                    <label>연도 (Year)</label>
-                    <input type="number" id="input-year" required>
-                </div>
-                <div style="flex: 1;">
-                    <label>평점 (Rating)</label>
-                    <input type="number" id="input-rating" step="0.5" min="0" max="5" required>
-                </div>
+                <div style="flex: 1;"><label>감독</label><input type="text" id="input-director" required></div>
+                <div style="flex: 1;"><label>연도</label><input type="number" id="input-year" required></div>
+                <div style="flex: 1;"><label>평점</label><input type="number" id="input-rating" step="0.5" min="0" max="5" required></div>
             </div>
-
-            <label>시청 날짜 (Date Watched)</label>
-            <input type="date" id="input-watchDate" required>
-
-            <label>리뷰 (Review / Memo)</label>
-            <textarea id="input-memo" rows="4" placeholder="기억에 남는 감상을 적어주세요. #추천 을 포함하면 추천 목록에 표시됩니다." required></textarea>
-            
+            <label>시청 날짜</label><input type="date" id="input-watchDate" required>
+            <label>리뷰 (Memo)</label><textarea id="input-memo" rows="4" placeholder="#추천 을 포함하면 추천 목록에 표시됩니다." required></textarea>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
                 <button class="btn-save" onclick="window.saveMovie()">Save</button>
@@ -330,8 +290,8 @@
         
         let movies = [];
         let isAdmin = false;
+        let currentView = 'home'; // 🌟 현재 보고 있는 페이지 상태 변수
 
-        // 🌟 로그인 상태 감지 및 닉네임 변경
         onAuthStateChanged(auth, (user) => {
             if (user && user.uid === 'LjObLa6943Q1xyyVthX2aFA1zRQ2') {
                 isAdmin = true;
@@ -339,16 +299,16 @@
                 document.getElementById('logout-btn').style.display = 'block';
                 document.getElementById('auto-update-btn').style.display = 'block';
                 document.getElementById('secret-login-btn').style.display = 'none';
-                document.getElementById('nav-user-name').innerHTML = '👤 cheezetomato ▾'; // 로그인 시 닉네임
+                document.getElementById('nav-user-name').innerHTML = '👤 cheezetomato ▾';
             } else {
                 isAdmin = false;
                 document.getElementById('add-movie-btn').style.display = 'none';
                 document.getElementById('logout-btn').style.display = 'none';
                 document.getElementById('auto-update-btn').style.display = 'none';
                 document.getElementById('secret-login-btn').style.display = 'block';
-                document.getElementById('nav-user-name').innerHTML = '👤 Guest ▾'; // 비로그인 시
+                document.getElementById('nav-user-name').innerHTML = '👤 Guest ▾';
             }
-            if (movies.length > 0) renderAllSections();
+            if (movies.length > 0) renderView();
         });
 
         window.openLoginModal = () => document.getElementById('login-modal').style.display = 'flex';
@@ -367,48 +327,38 @@
                 const snapshot = await getDocs(collection(db, "myMoviesGallery"));
                 movies = [];
                 snapshot.forEach(doc => { movies.push({ ...doc.data(), id: doc.id }); });
-                renderAllSections();
+                renderView(); // 로딩 완료 후 화면 그리기
             } catch (error) {
                 document.getElementById('main-content').innerHTML = '<div class="section"><div style="text-align:center; color:#e50914;">데이터를 불러오지 못했습니다.</div></div>';
             }
         }
 
-        // --- 상세 정보 모달 열기/닫기 ---
+        // --- 상세 정보 모달 ---
         window.openDetailModal = function(index) {
             const movie = movies[index];
             const posterSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}` : 'https://via.placeholder.com/300x450/2c3440/9aabbb?text=No+Poster';
-            
             document.getElementById('detail-img').src = posterSrc;
             document.getElementById('detail-title').innerText = movie.title || '제목 없음';
             document.getElementById('detail-meta').innerText = `${movie.year || '-'} • ${movie.director || '-'} 감독`;
-            
             const ratingVal = parseFloat(movie.rating) || 0;
             document.getElementById('detail-rating').innerText = `★ ${ratingVal.toFixed(1)} (${ratingVal.toFixed(1)})`;
-            
             document.getElementById('detail-region').innerText = movie.region || '기타';
             document.getElementById('detail-genre').innerText = movie.genre || '장르미상';
             document.getElementById('detail-date').innerText = movie.watchDate ? `👀 ${movie.watchDate}` : '날짜미상';
-            
             document.getElementById('detail-memo').innerText = movie.memo || '기록된 한줄평이 없습니다.';
-
             document.getElementById('detail-modal').style.display = 'flex';
         }
         window.closeDetailModal = function() { document.getElementById('detail-modal').style.display = 'none'; }
 
-        // --- 렌더링 함수들 ---
+        // --- 포스터 HTML 생성기 ---
         function createPosterHTML(movie, originalIndex) {
             const ratingVal = parseFloat(movie.rating) || 0;
-            // 💡 수정 버튼 누를 때 팝업창(상세 정보)이 뜨지 않도록 event.stopPropagation() 추가
             const editBtnHTML = isAdmin ? `<button class="edit-btn" onclick="event.stopPropagation(); window.openModal(${originalIndex})">✏️</button>` : '';
             const posterSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}` : 'https://via.placeholder.com/300x450/2c3440/9aabbb?text=No+Poster';
-
-            // 💡 카드 전체를 누르면 상세정보 창이 열리도록 onclick 추가
             return `
                 <div class="movie-card" onclick="window.openDetailModal(${originalIndex})">
                     ${editBtnHTML}
-                    <div class="poster-wrapper">
-                        <img src="${posterSrc}" alt="${movie.title || '영화 포스터'}" class="tmdb-poster" loading="lazy">
-                    </div>
+                    <div class="poster-wrapper"><img src="${posterSrc}" alt="${movie.title}" class="tmdb-poster" loading="lazy"></div>
                     <div class="poster-overlay">
                         <div class="overlay-title">${movie.title || '제목 없음'}</div>
                         <div class="overlay-rating">★ ${ratingVal.toFixed(1)}</div>
@@ -421,16 +371,22 @@
         function createSectionHTML(id, title, desc) {
             return `
                 <section class="section" id="${id}">
-                    <div class="section-header">
-                        <h2 class="section-title">${title}</h2>
-                        ${desc ? `<p class="section-desc">${desc}</p>` : ''}
-                    </div>
+                    <div class="section-title">${title}</div>
+                    ${desc ? `<p class="section-desc">${desc}</p>` : ''}
                     <div class="movie-grid" id="grid-${id}"></div>
                 </section>
             `;
         }
 
-        function renderAllSections() {
+        // 🌟 마법의 페이지 이동 함수!
+        window.changeView = function(viewName) {
+            currentView = viewName;
+            renderView();
+            window.scrollTo(0, 0); // 페이지 이동 시 맨 위로 끌어올려줌
+        };
+
+        // 🌟 현재 상태(currentView)에 맞는 탭만 그려주는 렌더링 함수
+        function renderView() {
             const container = document.getElementById('main-content');
             container.innerHTML = '';
             document.getElementById('stats-total').innerText = movies.length;
@@ -438,60 +394,67 @@
             let displayMovies = movies.map((m, index) => ({...m, originalIndex: index}));
             displayMovies.sort((a, b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0));
 
-            const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 10);
-            container.innerHTML += createSectionHTML('welcome', 'PERFECT 5.0', '최고의 평점을 준 완벽한 영화들입니다.');
-            const welcomeGrid = document.getElementById('grid-welcome');
-            if (topMovies.length > 0) topMovies.forEach(m => welcomeGrid.innerHTML += createPosterHTML(m, m.originalIndex));
+            // 어떤 메뉴를 클릭했는지 확인해서 그것만 그려줍니다!
+            if (currentView === 'home') {
+                const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 10);
+                container.innerHTML += createSectionHTML('welcome', 'PERFECT 5.0', '최고의 평점을 준 완벽한 영화들입니다.');
+                const welcomeGrid = document.getElementById('grid-welcome');
+                if (topMovies.length > 0) topMovies.forEach(m => welcomeGrid.innerHTML += createPosterHTML(m, m.originalIndex));
 
-            const recentMovies = displayMovies.slice(0, 8);
-            container.innerHTML += createSectionHTML('recent', 'RECENTLY WATCHED', '가장 최근에 시청하고 기록한 영화 목록입니다.');
-            const recentGrid = document.getElementById('grid-recent');
-            if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
-
-            container.innerHTML += createSectionHTML('all', 'ALL FILMS', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
-            const allGrid = document.getElementById('grid-all');
-            if (displayMovies.length > 0) displayMovies.forEach(m => allGrid.innerHTML += createPosterHTML(m, m.originalIndex));
-
-            const recommendedMovies = displayMovies.filter(m => (m.memo || '').includes('#추천')).slice(0, 10);
-            container.innerHTML += createSectionHTML('recommended', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.');
-            const recommendedGrid = document.getElementById('grid-recommended');
-            if (recommendedMovies.length > 0) recommendedMovies.forEach(m => recommendedGrid.innerHTML += createPosterHTML(m, m.originalIndex));
-
-            container.innerHTML += '<div id="region-container" style="padding: 1px;"></div>';
-            container.innerHTML += createSectionHTML('region-inner', 'BY REGION', '국가별 영화 아카이브');
-            
-            container.innerHTML += '<div id="genre-container" style="padding: 1px;"></div>';
-            container.innerHTML += createSectionHTML('genre-inner', 'BY GENRE', '장르별 영화 아카이브');
-
-            const regionGroups = {}; const genreGroups = {};
-            displayMovies.forEach(m => {
-                const r = m.region || '기타';
-                if(!regionGroups[r]) regionGroups[r] = [];
-                regionGroups[r].push(m);
-
-                const g = (m.genre || '').includes('/') ? m.genre.split('/')[0] : (m.genre || '기타');
-                if(!genreGroups[g]) genreGroups[g] = [];
-                genreGroups[g].push(m);
-            });
-
-            const renderGroup = (targetId, groups) => {
-                const targetContainer = document.getElementById(`grid-${targetId}`);
-                const keys = Object.keys(groups).sort();
-                keys.forEach(k => {
-                    let html = `
-                    <div style="grid-column: 1 / -1; margin-top: 20px; border-bottom: 1px solid #2c3440; padding-bottom: 5px;">
-                        <span style="color: #9ab; font-size: 0.9rem; font-weight: bold;">${k} (${groups[k].length})</span>
-                    </div>`;
-                    targetContainer.innerHTML += html;
-                    groups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
+                const recentMovies = displayMovies.slice(0, 14); // 홈에서는 최근작 14개만 보여줌
+                container.innerHTML += createSectionHTML('recent-home', 'RECENTLY WATCHED', '최근에 시청한 영화입니다.');
+                const recentGrid = document.getElementById('grid-recent-home');
+                if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
+            } 
+            else if (currentView === 'recent') {
+                const recentMovies = displayMovies.slice(0, 50); // 최근 탭에서는 50개 듬뿍 보여줌
+                container.innerHTML += createSectionHTML('recent-page', 'RECENTLY WATCHED', '최근 시청한 영화 목록 전체입니다.');
+                const recentGrid = document.getElementById('grid-recent-page');
+                if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
+            }
+            else if (currentView === 'all') {
+                container.innerHTML += createSectionHTML('all-page', 'ALL FILMS', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
+                const allGrid = document.getElementById('grid-all-page');
+                if (displayMovies.length > 0) displayMovies.forEach(m => allGrid.innerHTML += createPosterHTML(m, m.originalIndex));
+            }
+            else if (currentView === 'recommended') {
+                const recommendedMovies = displayMovies.filter(m => (m.memo || '').includes('#추천'));
+                container.innerHTML += createSectionHTML('rec-page', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.');
+                const recGrid = document.getElementById('grid-rec-page');
+                if (recommendedMovies.length > 0) recommendedMovies.forEach(m => recGrid.innerHTML += createPosterHTML(m, m.originalIndex));
+                else recGrid.innerHTML = '<div style="color:#9ab;">추천 영화가 없습니다. 메모에 #추천 을 적어보세요.</div>';
+            }
+            else if (currentView === 'region') {
+                container.innerHTML += createSectionHTML('region-page', 'BY REGION', '국가별 영화 아카이브');
+                const regionGroups = {};
+                displayMovies.forEach(m => {
+                    const r = m.region || '기타';
+                    if(!regionGroups[r]) regionGroups[r] = [];
+                    regionGroups[r].push(m);
+                });
+                const targetContainer = document.getElementById('grid-region-page');
+                Object.keys(regionGroups).sort().forEach(k => {
+                    targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 20px; border-bottom: 1px solid #2c3440; padding-bottom: 5px;"><span style="color: #9ab; font-size: 0.9rem; font-weight: bold;">${k} (${regionGroups[k].length})</span></div>`;
+                    regionGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
                 });
             }
-
-            renderGroup('region-inner', regionGroups);
-            renderGroup('genre-inner', genreGroups);
+            else if (currentView === 'genre') {
+                container.innerHTML += createSectionHTML('genre-page', 'BY GENRE', '장르별 영화 아카이브');
+                const genreGroups = {};
+                displayMovies.forEach(m => {
+                    const g = (m.genre || '').includes('/') ? m.genre.split('/')[0] : (m.genre || '기타');
+                    if(!genreGroups[g]) genreGroups[g] = [];
+                    genreGroups[g].push(m);
+                });
+                const targetContainer = document.getElementById('grid-genre-page');
+                Object.keys(genreGroups).sort().forEach(k => {
+                    targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 20px; border-bottom: 1px solid #2c3440; padding-bottom: 5px;"><span style="color: #9ab; font-size: 0.9rem; font-weight: bold;">${k} (${genreGroups[k].length})</span></div>`;
+                    genreGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
+                });
+            }
         }
 
-        // --- 띄어쓰기 변형 및 TMDB ---
+        // --- 띄어쓰기 변형 기계 ---
         function getSpaceVariations(str) {
             if (str.includes(' ') || str.length < 2 || str.length > 8) return [];
             const vars = [];
@@ -504,6 +467,7 @@
             return vars;
         }
 
+        // --- TMDB 복구 및 검색 ---
         window.autoFixPosters = async function() {
             if (!confirm("포스터 복구를 진행합니다.")) return;
             const btn = document.getElementById('auto-update-btn'); btn.innerText = "⏳ 업데이트 중..."; btn.disabled = true;
@@ -527,7 +491,7 @@
                     } catch (e) {}
                 }
             }
-            alert(`완료! ${updatedCount}편 복구.`); btn.innerText = "✨ Fix Posters"; btn.style.display = 'none'; renderAllSections(); 
+            alert(`완료! ${updatedCount}편 복구.`); btn.innerText = "✨ Fix Posters"; btn.style.display = 'none'; renderView(); 
         };
 
         window.searchTMDB = async function() {
@@ -621,7 +585,7 @@
                 } else {
                     const docRef = await addDoc(collection(db, "myMoviesGallery"), newObj); movies.push({ ...newObj, id: docRef.id });
                 }
-                window.closeModal(); renderAllSections(); 
+                window.closeModal(); renderView(); 
             } catch (error) { alert("저장 에러 발생"); } finally { btn.innerText = "Save"; btn.disabled = false; }
         }
 
