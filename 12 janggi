@@ -9,9 +9,10 @@
         :root {
             --bg-body: #f5f7fa;
             --text-main: #333;
-            --board-bg: #e6c280; /* 전통적인 나무판 색상 */
+            --board-bg: #e6c280; 
             --board-line: #5c4033;
-            --cell-highlight: rgba(255, 255, 255, 0.4);
+            --cell-hover: rgba(255, 255, 255, 0.4);
+            --cell-highlight: rgba(46, 213, 115, 0.5);
             --hand-bg: #fff;
             --hand-border: #ccc;
             --switch-track: #ccc;
@@ -22,9 +23,10 @@
         body.dark-mode {
             --bg-body: #121212;
             --text-main: #f0f0f0;
-            --board-bg: #8c6e4a; /* 어두운 나무색 */
+            --board-bg: #8c6e4a; 
             --board-line: #2a1c14;
-            --cell-highlight: rgba(0, 0, 0, 0.3);
+            --cell-hover: rgba(0, 0, 0, 0.3);
+            --cell-highlight: rgba(46, 213, 115, 0.4);
             --hand-bg: #2c2c2c;
             --hand-border: #444;
             --switch-track: #000;
@@ -40,44 +42,54 @@
         }
 
         h1 { margin-bottom: 5px; font-size: 36px; color: #ff6b6b; }
-        p { margin-top: 0; color: #888; margin-bottom: 20px; }
+        #turn-indicator { font-size: 20px; margin-bottom: 30px; font-weight: bold; transition: 0.3s; }
 
-        /* 플레이어 대기석 (잡은 말 보관함) */
-        .player-area {
-            display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; margin: 15px 0;
+        /* 🌟 전체 레이아웃 (왼쪽 대기석 - 보드 - 오른쪽 대기석) */
+        .game-layout { display: flex; align-items: flex-start; gap: 40px; justify-content: center; width: 100%; max-width: 900px; }
+        
+        /* 🌟 현황판 (대기석) 스타일 */
+        .side-panel { 
+            width: 130px; background: var(--hand-bg); border: 3px dashed var(--hand-border); border-radius: 15px; 
+            padding: 15px 10px; min-height: 380px; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: 0.4s;
         }
-        .hand-box {
-            display: flex; gap: 10px; min-height: 70px; width: 100%; background: var(--hand-bg); 
-            border: 2px dashed var(--hand-border); border-radius: 10px; padding: 10px; align-items: center; justify-content: flex-start; transition: 0.4s;
-        }
-        .player-name { font-weight: bold; margin-bottom: 5px; font-size: 18px; align-self: flex-start;}
+        .panel-title { font-weight: 800; font-size: 18px; margin-bottom: 10px; text-align: center; }
         .p2-name { color: #54a0ff; }
-        .p1-name { color: #ff6b6b; }
+        .p1-name { color: #ff4757; }
 
-        /* 3x4 보드판 */
+        /* 장기판 영역 */
         #game-board {
             display: grid; grid-template-columns: repeat(3, 90px); grid-template-rows: repeat(4, 90px); 
             gap: 2px; background-color: var(--board-line); border: 4px solid var(--board-line); border-radius: 5px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.4s;
         }
 
-        .cell {
-            background-color: var(--board-bg); display: flex; align-items: center; justify-content: center; 
-            position: relative; cursor: pointer; transition: 0.2s;
-        }
-        .cell:hover { background-color: var(--cell-highlight); }
+        .cell { background-color: var(--board-bg); display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; transition: 0.2s; }
+        .cell:hover { background-color: var(--cell-hover); }
+        .cell.highlight { background-color: var(--cell-highlight); }
+        .cell.highlight::after { content: ''; position: absolute; width: 20px; height: 20px; background: rgba(46, 213, 115, 0.8); border-radius: 50%; }
 
         /* 장기알 디자인 */
         .piece {
             width: 70px; height: 70px; background-color: #fff; border: 3px solid #333; 
             border-radius: 12px; display: flex; align-items: center; justify-content: center; 
-            font-size: 32px; font-weight: 900; box-shadow: 2px 4px 0 rgba(0,0,0,0.2); cursor: pointer; transition: 0.2s;
+            font-size: 32px; font-weight: 900; box-shadow: 2px 4px 0 rgba(0,0,0,0.2); cursor: grab; transition: 0.1s; position: relative; z-index: 10;
         }
-        .piece:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
-        .piece.p1 { color: #ff4757; border-color: #ff4757; } /* 빨간색 진영 */
-        .piece.p2 { color: #2ed573; border-color: #2ed573; } /* 초록색 진영 */
-        .piece.p2-rotate { transform: rotate(180deg); } /* 2p는 반대로 보이게 */
+        .piece:active { cursor: grabbing; }
+        .piece.selected { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.3); border-color: #fbc531; border-width: 4px;}
+        .piece.p1 { color: #ff4757; border-color: #ff4757; } 
+        .piece.p2 { color: #54a0ff; border-color: #54a0ff; } 
+        .piece.p2-rotate { transform: rotate(180deg); } 
+        .piece.selected.p2-rotate { transform: rotate(180deg) translateY(5px); }
 
-        /* 상단 네비게이션 (홈, 다크모드) */
+        /* 🌟 장군/멍군 이펙트 오버레이 */
+        #effect-overlay {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            font-size: 120px; font-weight: 900; color: #ff4757; text-shadow: 0 0 30px #fff, 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 2000; pointer-events: none; opacity: 0; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+        }
+        #effect-overlay.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        #effect-overlay.meonggun { color: #54a0ff; }
+
+        /* 네비게이션 버튼 */
         .theme-switch-wrapper { position: fixed; top: 20px; left: 20px; display: flex; align-items: center; z-index: 1000; }
         .theme-switch { display: inline-block; height: 30px; position: relative; width: 60px; }
         .theme-switch input { display: none; }
@@ -86,76 +98,234 @@
         .slider::after { content: '🌙'; position: absolute; left: 6px; bottom: 5px; transition: .4s; color: var(--switch-icon); font-size: 14px; opacity: 0.5; }
         input:checked + .slider:before { transform: translateX(30px); }
         input:checked + .slider::after { transform: translateX(30px); opacity: 1; }
-
-        .home-btn {
-            position: fixed; top: 20px; right: 20px; background-color: transparent; color: var(--text-main);
-            border: 2px solid var(--text-main); padding: 6px 20px; border-radius: 25px; text-decoration: none;
-            font-weight: 600; font-size: 14px; transition: 0.3s; z-index: 1000;
-        }
+        .home-btn { position: fixed; top: 20px; right: 20px; background-color: transparent; color: var(--text-main); border: 2px solid var(--text-main); padding: 6px 20px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 14px; transition: 0.3s; z-index: 1000; }
         .home-btn:hover { background-color: var(--text-main); color: var(--bg-body); }
     </style>
 </head>
 <body>
 
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider round"></div>
-        </label>
-    </div>
+    <div class="theme-switch-wrapper"><label class="theme-switch" for="checkbox"><input type="checkbox" id="checkbox" /><div class="slider round"></div></label></div>
     <a href="index.html" class="home-btn">Home</a>
 
     <h1>십이장기</h1>
-    <p>상대의 장(將)을 잡으면 승리합니다!</p>
+    <div id="turn-indicator" style="color: #ff4757;">🔴 Player 1의 턴 (아래쪽)</div>
 
-    <div class="player-area">
-        <div class="player-name p2-name">Player 2 (대기석)</div>
-        <div class="hand-box" id="p2-hand"></div>
-    </div>
+    <div id="effect-overlay">장군!</div>
 
-    <div id="game-board">
+    <div class="game-layout">
+        <div class="side-panel" id="hand-p2" ondragover="allowDrop(event)">
+            <div class="panel-title p2-name">P2 대기석</div>
+            <div id="p2-pieces"></div>
         </div>
 
-    <div class="player-area">
-        <div class="player-name p1-name">Player 1 (대기석)</div>
-        <div class="hand-box" id="p1-hand"></div>
+        <div id="game-board"></div>
+
+        <div class="side-panel" id="hand-p1" ondragover="allowDrop(event)">
+            <div class="panel-title p1-name">P1 대기석</div>
+            <div id="p1-pieces"></div>
+        </div>
     </div>
 
     <script>
-        // 🌙 다크모드 로직
+        // --- 🌙 다크모드 ---
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         function switchTheme(e) {
             if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('theme', 'dark'); }
             else { document.body.classList.remove('dark-mode'); localStorage.setItem('theme', 'light'); }
         }
         toggleSwitch.addEventListener('change', switchTheme);
-        if (localStorage.getItem('theme') === 'dark') {
-            toggleSwitch.checked = true; document.body.classList.add('dark-mode');
+        if (localStorage.getItem('theme') === 'dark') { toggleSwitch.checked = true; document.body.classList.add('dark-mode'); }
+
+        // --- 🎲 게임 로직 ---
+        let board = Array(12).fill(null);
+        let hands = { p1: [], p2: [] }; // 양쪽 대기석(포획한 말) 배열
+        let currentTurn = 'p1'; 
+        let selectedIndex = -1; 
+        let validMoves = [];    
+
+        // 초기 배치
+        board[0] = { type: '相', owner: 'p2' }; board[1] = { type: '將', owner: 'p2' }; board[2] = { type: '⾞', owner: 'p2' }; board[4] = { type: '卒', owner: 'p2' };
+        board[7] = { type: '卒', owner: 'p1' }; board[9] = { type: '⾞', owner: 'p1' }; board[10] = { type: '將', owner: 'p1' }; board[11] = { type: '相', owner: 'p1' };
+
+        const boardEl = document.getElementById('game-board');
+        const turnIndicator = document.getElementById('turn-indicator');
+        const effectOverlay = document.getElementById('effect-overlay');
+
+        function render() {
+            // 보드판 렌더링
+            boardEl.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (validMoves.includes(i)) cell.classList.add('highlight');
+
+                // 빈 칸에 드래그 드롭 허용
+                cell.ondragover = allowDrop;
+                cell.ondrop = (e) => dropToBoard(e, i);
+
+                if (board[i]) {
+                    const piece = document.createElement('div');
+                    let classes = `piece ${board[i].owner}`;
+                    if (board[i].owner === 'p2') classes += ' p2-rotate';
+                    if (i === selectedIndex) classes += ' selected';
+                    
+                    piece.className = classes;
+                    piece.innerText = board[i].type;
+                    
+                    // 기존 말 드래그 불가 처리 (클릭으로만 이동)
+                    piece.draggable = false;
+                    cell.appendChild(piece);
+                }
+                cell.addEventListener('click', () => handleCellClick(i));
+                boardEl.appendChild(cell);
+            }
+
+            // 대기석 렌더링
+            renderHand('p1', document.getElementById('p1-pieces'));
+            renderHand('p2', document.getElementById('p2-pieces'));
+
+            // 턴 표시
+            if(currentTurn === 'p1') { turnIndicator.innerHTML = "🔴 Player 1의 턴 (오른쪽 현황판)"; turnIndicator.style.color = "#ff4757"; } 
+            else { turnIndicator.innerHTML = "🔵 Player 2의 턴 (왼쪽 현황판)"; turnIndicator.style.color = "#54a0ff"; }
         }
 
-        // 🎲 보드판 렌더링 (12칸 생성)
-        const board = document.getElementById('game-board');
-        for (let i = 0; i < 12; i++) {
-            const cell = document.createElement('div');
-            cell.classList.add('cell');
-            cell.dataset.index = i; // 0번부터 11번까지 인덱스 부여
-            board.appendChild(cell);
+        function renderHand(player, container) {
+            container.innerHTML = '';
+            hands[player].forEach((type, index) => {
+                const piece = document.createElement('div');
+                piece.className = `piece ${player}`;
+                if (player === 'p2') piece.classList.add('p2-rotate');
+                piece.innerText = type;
+                piece.draggable = true; // 🌟 대기석의 말은 드래그 가능!
+                piece.ondragstart = (e) => {
+                    if(currentTurn !== player) { e.preventDefault(); return; } // 내 턴에만 드래그
+                    e.dataTransfer.setData('type', type);
+                    e.dataTransfer.setData('sourceHand', player);
+                    e.dataTransfer.setData('handIndex', index);
+                };
+                container.appendChild(piece);
+            });
         }
 
-        // ♟️ 초기 말 배치 UI 테스트용 (기능 없이 모양만)
-        const cells = document.querySelectorAll('.cell');
-        
-        // Player 2 (초록색, 위쪽)
-        cells[0].innerHTML = `<div class="piece p2 p2-rotate">相</div>`;
-        cells[1].innerHTML = `<div class="piece p2 p2-rotate">將</div>`;
-        cells[2].innerHTML = `<div class="piece p2 p2-rotate">⾞</div>`;
-        cells[4].innerHTML = `<div class="piece p2 p2-rotate">卒</div>`;
+        // --- 🌟 드래그 앤 드롭 로직 ---
+        function allowDrop(e) { e.preventDefault(); }
+        function dropToBoard(e, targetIndex) {
+            e.preventDefault();
+            const sourceHand = e.dataTransfer.getData('sourceHand');
+            const type = e.dataTransfer.getData('type');
+            const handIndex = e.dataTransfer.getData('handIndex');
 
-        // Player 1 (빨간색, 아래쪽)
-        cells[7].innerHTML = `<div class="piece p1">卒</div>`;
-        cells[9].innerHTML = `<div class="piece p1">⾞</div>`;
-        cells[10].innerHTML = `<div class="piece p1">將</div>`;
-        cells[11].innerHTML = `<div class="piece p1">相</div>`;
+            if (sourceHand !== currentTurn) return; // 내 턴이 아니면 불가
+            if (board[targetIndex] !== null) return; // 빈 칸에만 배치 가능
+
+            // 대기석에서 제거 후 보드에 추가
+            hands[sourceHand].splice(handIndex, 1);
+            board[targetIndex] = { type: type, owner: currentTurn };
+            
+            finishTurn();
+        }
+
+        // --- 말 이동 규칙 ---
+        function getValidMoves(index, piece) {
+            let moves = [];
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+
+            const addMove = (rOffset, cOffset) => {
+                const newRow = row + rOffset; const newCol = col + cOffset;
+                if (newRow >= 0 && newRow < 4 && newCol >= 0 && newCol < 3) {
+                    const tIndex = newRow * 3 + newCol;
+                    if (!board[tIndex] || board[tIndex].owner !== piece.owner) moves.push(tIndex);
+                }
+            };
+
+            if (piece.type === '將') {
+                addMove(-1, -1); addMove(-1, 0); addMove(-1, 1); addMove(0, -1); addMove(0, 1); addMove(1, -1); addMove(1, 0); addMove(1, 1);
+            } else if (piece.type === '相') {
+                addMove(-1, -1); addMove(-1, 1); addMove(1, -1); addMove(1, 1);
+            } else if (piece.type === '⾞') {
+                addMove(-1, 0); addMove(1, 0); addMove(0, -1); addMove(0, 1);
+            } else if (piece.type === '卒') {
+                if (piece.owner === 'p1') addMove(-1, 0); else addMove(1, 0);
+            } else if (piece.type === '侯') { // 🌟 후(侯) 로직 (뒤로 대각선 빼고 다 됨)
+                addMove(-1, 0); addMove(1, 0); addMove(0, -1); addMove(0, 1);
+                if (piece.owner === 'p1') { addMove(-1, -1); addMove(-1, 1); } 
+                else { addMove(1, -1); addMove(1, 1); }
+            }
+            return moves;
+        }
+
+        function handleCellClick(index) {
+            const clickedPiece = board[index];
+
+            if (selectedIndex !== -1 && validMoves.includes(index)) {
+                // 🌟 포획 로직: 적 말이 있으면 잡아서 내 대기석으로
+                if (board[index]) {
+                    if(board[index].type === '將') { alert(`${currentTurn === 'p1' ? 'Player 1' : 'Player 2'} 승리! (장군을 잡았습니다)`); location.reload(); return; }
+                    let capturedType = board[index].type;
+                    if(capturedType === '侯') capturedType = '卒'; // 후는 잡히면 졸로 강등
+                    hands[currentTurn].push(capturedType);
+                }
+
+                // 이동 및 🌟 승급 로직 (끝 줄 도착 시 졸 -> 후)
+                let movingPiece = board[selectedIndex];
+                const targetRow = Math.floor(index / 3);
+                if (movingPiece.type === '卒' && ((movingPiece.owner === 'p1' && targetRow === 0) || (movingPiece.owner === 'p2' && targetRow === 3))) {
+                    movingPiece.type = '侯';
+                }
+
+                board[index] = movingPiece;
+                board[selectedIndex] = null;
+                finishTurn();
+                return;
+            }
+
+            if (clickedPiece && clickedPiece.owner === currentTurn) {
+                if (selectedIndex === index) { selectedIndex = -1; validMoves = []; } 
+                else { selectedIndex = index; validMoves = getValidMoves(index, clickedPiece); }
+                render();
+                return;
+            }
+
+            selectedIndex = -1; validMoves = [];
+            render();
+        }
+
+        // 🌟 턴 종료 및 장군 체크 로직
+        function finishTurn() {
+            selectedIndex = -1; validMoves = [];
+            
+            // 장군 체크
+            if(isJanggun(currentTurn)) {
+                showEffect("장군!", currentTurn === 'p1' ? '#ff4757' : '#54a0ff');
+            }
+
+            // 턴 변경
+            currentTurn = currentTurn === 'p1' ? 'p2' : 'p1';
+            render();
+        }
+
+        function isJanggun(attacker) {
+            const defender = attacker === 'p1' ? 'p2' : 'p1';
+            const kingIndex = board.findIndex(p => p && p.type === '將' && p.owner === defender);
+            if(kingIndex === -1) return false;
+
+            for(let i=0; i<12; i++) {
+                if(board[i] && board[i].owner === attacker) {
+                    if(getValidMoves(i, board[i]).includes(kingIndex)) return true;
+                }
+            }
+            return false;
+        }
+
+        function showEffect(text, color) {
+            effectOverlay.innerText = text;
+            effectOverlay.style.color = color;
+            effectOverlay.classList.add('show');
+            setTimeout(() => { effectOverlay.classList.remove('show'); }, 1500);
+        }
+
+        render();
     </script>
 </body>
 </html>
