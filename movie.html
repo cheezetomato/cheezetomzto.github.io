@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내 영화 갤러리 | 레터박스 스타일 🎬</title>
+    <title>내 영화 갤러리 | 🎬</title>
     <style>
-        /* 1. Letterboxd 스타일 폰트 및 컬러 (고급화 적용) */
+        /* 1. 폰트 및 컬러 (넷플릭스 스타일 다크 & 레드 포인트) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
         body { 
             font-family: 'Inter', 'Noto Sans KR', sans-serif; 
-            background-color: #101215; /* 조금 더 깊은 다크 배경 */
+            background-color: #101215; 
             color: #d8e0e8; 
             margin: 0; 
             padding: 0; 
@@ -21,7 +21,7 @@
         }
 
         a { text-decoration: none; color: inherit; transition: color 0.2s; }
-        a:hover { color: #f5c518; } /* 포인트 컬러: 골드 */
+        a:hover { color: #ffffff; } /* 링크 호버 시 깔끔한 화이트 */
 
         /* 2. 상단 바 */
         header { 
@@ -52,14 +52,14 @@
 
         .header-right { display: flex; align-items: center; gap: 12px; }
         
-        /* 닉네임 및 로그인 버튼 (왼쪽 이동) */
-        .user-menu { position: relative; display: inline-block; }
+        /* 유저 메뉴 호버 끊김 방지 수정 */
+        .user-menu { position: relative; display: inline-block; padding-bottom: 15px; margin-bottom: -15px; } /* 마우스가 내려가는 길목(다리) 역할 */
         .user-name { color: #9ab; cursor: pointer; font-weight: 600; font-size: 0.9rem; padding: 5px; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
         .user-name:hover { color: #fff; }
         .dropdown-content { 
             display: none; position: absolute; left: 0; top: 100%; background-color: #1a1e24; 
             min-width: 180px; box-shadow: 0 8px 16px rgba(0,0,0,0.8); z-index: 1002; 
-            border-radius: 6px; border: 1px solid #2c3440; overflow: hidden; margin-top: 10px;
+            border-radius: 6px; border: 1px solid #2c3440; overflow: hidden; margin-top: 0; /* 마진 없애서 딱 붙임 */
         }
         .user-menu:hover .dropdown-content { display: block; }
         .dropdown-content a { color: #9ab; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; border-bottom: 1px solid #2c3440; transition: 0.2s; cursor: pointer; }
@@ -69,36 +69,26 @@
         .admin-btn, .logout-btn, .secret-login-btn { 
             font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none; 
         }
-        .admin-btn { background-color: #f5c518; color: #101215; display: none; }
-        .admin-btn:hover { background-color: #e4b011; }
+        .admin-btn { background-color: #ffffff; color: #101215; display: none; }
+        .admin-btn:hover { background-color: #e2e8f0; }
         .logout-btn { background-color: #2c3440; color: #9ab; display: none; }
         .logout-btn:hover { background-color: #3b4654; color: #fff; }
         .secret-login-btn { background-color: rgba(255,255,255,0.05); color: #9ab; border: 1px solid rgba(255,255,255,0.1); }
         .secret-login-btn:hover { background-color: rgba(255,255,255,0.1); color: #fff; }
 
-        /* 클릭 액션 이펙트 (버튼 볼록 효과) */
         .admin-btn:active, .logout-btn:active, .secret-login-btn:active, .btn-save:active, .btn-cancel:active, .tmdb-search-btn:active {
             transform: scale(0.95);
         }
 
-        /* 내 영화 검색 바 */
         .local-search-input {
-            background-color: #1a1e24;
-            border: 1px solid #2c3440;
-            color: #fff;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            width: 180px;
-            transition: all 0.2s;
-            outline: none;
+            background-color: #1a1e24; border: 1px solid #2c3440; color: #fff; padding: 8px 14px;
+            border-radius: 20px; font-size: 0.85rem; width: 180px; transition: all 0.2s; outline: none;
         }
-        .local-search-input:focus { border-color: #f5c518; width: 220px; box-shadow: 0 0 8px rgba(245, 197, 24, 0.2); }
+        .local-search-input:focus { border-color: #e50914; width: 220px; box-shadow: 0 0 8px rgba(229, 9, 20, 0.2); }
         .local-search-input::placeholder { color: #5c6a7a; }
 
         /* 3. 메인 콘텐츠 구조 */
         main { padding-top: 80px; padding-bottom: 40px; flex-grow: 1; }
-
         .section { padding: 20px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         .section-title { font-size: 1.2rem; font-weight: 600; color: #fff; letter-spacing: -0.5px; margin: 0 0 5px 0; border-bottom: 1px solid #2c3440; padding-bottom: 8px; display: inline-block;}
         .section-desc { color: #788a9e; font-size: 0.9rem; margin-top: 10px; font-weight: 400; line-height: 1.4; }
@@ -110,8 +100,8 @@
             position: relative; transition: all 0.2s ease; aspect-ratio: 2/3;
             border: 2px solid transparent; box-sizing: border-box; cursor: pointer;
         }
-        /* 포스터 호버 색상 골드로 변경 */
-        .movie-card:hover { border-color: #f5c518; transform: scale(1.04); z-index: 2; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
+        /* 포스터 호버 색상: 깔끔하고 고급스러운 화이트 테두리 */
+        .movie-card:hover { border-color: #ffffff; transform: scale(1.04); z-index: 2; box-shadow: 0 10px 25px rgba(0,0,0,0.7); }
         .poster-wrapper { width: 100%; height: 100%; }
         .tmdb-poster { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
 
@@ -122,7 +112,8 @@
         }
         .movie-card:hover .poster-overlay { opacity: 1; }
         .overlay-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        .overlay-rating { color: #f5c518; font-size: 0.85rem; font-weight: bold; }
+        /* 별점 포인트 색상: 넷플릭스 레드 */
+        .overlay-rating { color: #e50914; font-size: 0.85rem; font-weight: bold; }
         .overlay-memo { font-size: 0.75rem; color: #a5b4c4; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
 
         .edit-btn {
@@ -130,10 +121,10 @@
             border-radius: 50%; color: #fff; cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; z-index: 10; border: 1px solid #445566;
             transition: background 0.2s;
         }
-        .edit-btn:hover { background: #f5c518; color: #000; border-color: #f5c518; }
+        .edit-btn:hover { background: #ffffff; color: #000; border-color: #ffffff; }
         .movie-card:hover .edit-btn { display: flex; }
 
-        /* 5. 모달 UI 공통 (고급화, 입력창 색상 고정) */
+        /* 5. 모달 UI 공통 */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 12, 15, 0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 2000;
@@ -151,7 +142,6 @@
             width: 100%; box-sizing: border-box; background-color: #101215; color: white;
             border: 1px solid #2c3440; padding: 12px; border-radius: 6px; margin-top: 6px; font-family: inherit; transition: border-color 0.2s;
         }
-        /* 입력창 자동완성 및 포커스 색상 고정 */
         .modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus { outline: none; border-color: #5c6a7a; }
         input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active{
             -webkit-box-shadow: 0 0 0 30px #101215 inset !important;
@@ -159,43 +149,25 @@
             transition: background-color 5000s ease-in-out 0s;
         }
 
-        .btn-save { background-color: #f5c518; color: #101215; border-radius: 6px; padding: 10px 24px; font-weight: 700; cursor: pointer; border: none; transition: transform 0.1s, background 0.2s; }
-        .btn-save:hover { background-color: #e4b011; }
+        /* 저장 버튼 컬러: 넷플릭스 레드 */
+        .btn-save { background-color: #e50914; color: #ffffff; border-radius: 6px; padding: 10px 24px; font-weight: 700; cursor: pointer; border: none; transition: transform 0.1s, background 0.2s; }
+        .btn-save:hover { background-color: #b80710; }
         .btn-cancel { background-color: #2c3440; color: white; border-radius: 6px; padding: 10px 24px; font-weight: 600; cursor: pointer; border: none; transition: transform 0.1s, background 0.2s; }
         .btn-cancel:hover { background-color: #3b4654; }
         .modal-actions { display: flex; gap: 12px; margin-top: 25px; justify-content: flex-end; }
 
-        /* 영화 상세 정보 팝업 디자인 (완전 개편) */
+        /* 영화 상세 정보 팝업 디자인 */
         .detail-flex { display: flex; gap: 30px; }
         .detail-poster-img { width: 180px; border-radius: 8px; object-fit: cover; aspect-ratio: 2/3; box-shadow: 0 8px 20px rgba(0,0,0,0.6); }
         .detail-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         #detail-title { font-size: 1.8rem; margin-bottom: 8px; line-height: 1.2; }
         .detail-meta { font-size: 0.9rem; color: #788a9e; margin-bottom: 15px; font-weight: 500; }
-        #detail-rating { color: #f5c518; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        #detail-rating { color: #e50914; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
         
-        /* 거슬렸던 태그 디자인 -> 통일된 모던 알약(Pill) 형태로 변경 */
         .detail-tags { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-        .d-tag { 
-            padding: 5px 12px; 
-            border-radius: 20px; 
-            font-size: 0.8rem; 
-            font-weight: 500; 
-            background-color: #232a31; /* 차분한 배경 */
-            color: #a5b4c4; /* 부드러운 텍스트 */
-            border: 1px solid #333d4a; 
-        }
+        .d-tag { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; background-color: #232a31; color: #a5b4c4; border: 1px solid #333d4a; }
         
-        /* 세부창 리뷰 박스 디자인 변경 */
-        .detail-memo-box { 
-            background: #101215; 
-            padding: 18px; 
-            border-radius: 8px; 
-            border-left: 3px solid #f5c518; /* 골드 포인트 */
-            line-height: 1.6; 
-            font-size: 0.95rem; 
-            color: #cdd6e0; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
+        .detail-memo-box { background: #101215; padding: 18px; border-radius: 8px; border-left: 3px solid #e50914; line-height: 1.6; font-size: 0.95rem; color: #cdd6e0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
         
         @media (max-width: 600px) { .detail-flex { flex-direction: column; align-items: center; text-align: center; } .detail-tags { justify-content: center; } }
 
@@ -208,7 +180,7 @@
         .close-search-btn { font-size: 1.8rem; background: none; border: none; color: #788a9e; cursor: pointer; position: absolute; top: 15px; right: 15px; transition: color 0.2s; }
         .close-search-btn:hover { color: #fff; }
         .tmdb-item { display: flex; gap: 15px; background-color: #101215; padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid #2c3440; transition: 0.2s; margin-bottom: 12px;}
-        .tmdb-item:hover { border-color: #f5c518; background-color: #15181c; }
+        .tmdb-item:hover { border-color: #ffffff; background-color: #15181c; }
         .tmdb-poster-small { width: 50px; aspect-ratio: 2/3; object-fit: cover; border-radius: 4px; }
         .tmdb-info-small { display: flex; flex-direction: column; justify-content: center; }
         .tmdb-item-title-small { font-weight: 600; color: white; font-size: 1rem; margin-bottom: 4px; }
@@ -225,7 +197,7 @@
         <div class="header-inner">
             <div class="header-left">
                 <a class="logo" onclick="window.changeView('home')">FILMS</a>
-                <a class="nav-home" onclick="window.changeView('home')">HOME</a>
+                <a class="nav-home" href="index.html">HOME</a>
                 
                 <div class="user-menu">
                     <div class="user-name" id="nav-user-name">👤 Guest ▾</div>
@@ -256,7 +228,7 @@
 
     <footer>
         <p>전설적인 영화 플랫폼 레터박스(Letterboxd)를 오마주하여 만든, 나만의 인생 영화 아카이빙 갤러리입니다.</p>
-        <p>총 <span id="stats-total" style="color:#f5c518; font-weight:bold;">0</span>편의 명작이 함께하고 있습니다.</p>
+        <p>총 <span id="stats-total" style="color:#e50914; font-weight:bold;">0</span>편의 명작이 함께하고 있습니다.</p>
         <div class="footer-links">
             <a href="https://letterboxd.com/" target="_blank">Letterboxd</a>
             <a href="https://www.themoviedb.org/" target="_blank">TMDB</a>
@@ -354,7 +326,7 @@
         let movies = [];
         let isAdmin = false;
         let currentView = 'home';
-        let searchQueryGlobal = ''; // 로컬 검색어 저장 변수
+        let searchQueryGlobal = ''; 
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.uid === 'LjObLa6943Q1xyyVthX2aFA1zRQ2') {
@@ -375,7 +347,6 @@
             if (movies.length > 0) renderView();
         });
 
-        // 로컬 내 영화 검색 (띄어쓰기 무시 기능 포함)
         window.executeLocalSearch = function() {
             const inputVal = document.getElementById('local-search-input').value;
             if(!inputVal.trim()) {
@@ -509,8 +480,7 @@
                 const targetContainer = document.getElementById('grid-rating-page');
                 
                 Object.keys(ratingGroups).sort((a,b) => parseFloat(b) - parseFloat(a)).forEach(k => {
-                    /* 골드 색상(#f5c518)으로 텍스트 변경 */
-                    targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 30px; border-bottom: 1px solid #2c3440; padding-bottom: 8px;"><span style="color: #f5c518; font-size: 1.1rem; font-weight: 700;">★ ${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${ratingGroups[k].length}편)</span></span></div>`;
+                    targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 30px; border-bottom: 1px solid #2c3440; padding-bottom: 8px;"><span style="color: #e50914; font-size: 1.1rem; font-weight: 700;">★ ${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${ratingGroups[k].length}편)</span></span></div>`;
                     ratingGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
                 });
             }
@@ -543,7 +513,6 @@
                 });
             }
             else if (currentView === 'local-search') {
-                // 띄어쓰기 완전 무시를 위해 정규식 사용 (\s+ 제거)
                 const safeQuery = searchQueryGlobal.replace(/\s+/g, '').toLowerCase();
                 const matchedMovies = displayMovies.filter(m => (m.title || '').replace(/\s+/g, '').toLowerCase().includes(safeQuery));
                 
