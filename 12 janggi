@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>십이장기 - Pro</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        :root {
+            --bg-body: #f5f7fa;
+            --text-main: #333;
+            --board-bg: #e6c280; /* 전통적인 나무판 색상 */
+            --board-line: #5c4033;
+            --cell-highlight: rgba(255, 255, 255, 0.4);
+            --hand-bg: #fff;
+            --hand-border: #ccc;
+            --switch-track: #ccc;
+            --switch-knob: #fff;
+            --switch-icon: #777;
+        }
+
+        body.dark-mode {
+            --bg-body: #121212;
+            --text-main: #f0f0f0;
+            --board-bg: #8c6e4a; /* 어두운 나무색 */
+            --board-line: #2a1c14;
+            --cell-highlight: rgba(0, 0, 0, 0.3);
+            --hand-bg: #2c2c2c;
+            --hand-border: #444;
+            --switch-track: #000;
+            --switch-knob: #666;
+            --switch-icon: #fff;
+        }
+
+        body { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            min-height: 100vh; margin: 0; font-family: 'Pretendard', sans-serif; 
+            background-color: var(--bg-body); color: var(--text-main); transition: 0.4s; 
+            user-select: none;
+        }
+
+        h1 { margin-bottom: 5px; font-size: 36px; color: #ff6b6b; }
+        p { margin-top: 0; color: #888; margin-bottom: 20px; }
+
+        /* 플레이어 대기석 (잡은 말 보관함) */
+        .player-area {
+            display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; margin: 15px 0;
+        }
+        .hand-box {
+            display: flex; gap: 10px; min-height: 70px; width: 100%; background: var(--hand-bg); 
+            border: 2px dashed var(--hand-border); border-radius: 10px; padding: 10px; align-items: center; justify-content: flex-start; transition: 0.4s;
+        }
+        .player-name { font-weight: bold; margin-bottom: 5px; font-size: 18px; align-self: flex-start;}
+        .p2-name { color: #54a0ff; }
+        .p1-name { color: #ff6b6b; }
+
+        /* 3x4 보드판 */
+        #game-board {
+            display: grid; grid-template-columns: repeat(3, 90px); grid-template-rows: repeat(4, 90px); 
+            gap: 2px; background-color: var(--board-line); border: 4px solid var(--board-line); border-radius: 5px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.4s;
+        }
+
+        .cell {
+            background-color: var(--board-bg); display: flex; align-items: center; justify-content: center; 
+            position: relative; cursor: pointer; transition: 0.2s;
+        }
+        .cell:hover { background-color: var(--cell-highlight); }
+
+        /* 장기알 디자인 */
+        .piece {
+            width: 70px; height: 70px; background-color: #fff; border: 3px solid #333; 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center; 
+            font-size: 32px; font-weight: 900; box-shadow: 2px 4px 0 rgba(0,0,0,0.2); cursor: pointer; transition: 0.2s;
+        }
+        .piece:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+        .piece.p1 { color: #ff4757; border-color: #ff4757; } /* 빨간색 진영 */
+        .piece.p2 { color: #2ed573; border-color: #2ed573; } /* 초록색 진영 */
+        .piece.p2-rotate { transform: rotate(180deg); } /* 2p는 반대로 보이게 */
+
+        /* 상단 네비게이션 (홈, 다크모드) */
+        .theme-switch-wrapper { position: fixed; top: 20px; left: 20px; display: flex; align-items: center; z-index: 1000; }
+        .theme-switch { display: inline-block; height: 30px; position: relative; width: 60px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: var(--switch-track); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 30px; }
+        .slider:before { background-color: var(--switch-knob); bottom: 2px; content: ""; height: 26px; left: 2px; position: absolute; transition: .4s; width: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .slider::after { content: '🌙'; position: absolute; left: 6px; bottom: 5px; transition: .4s; color: var(--switch-icon); font-size: 14px; opacity: 0.5; }
+        input:checked + .slider:before { transform: translateX(30px); }
+        input:checked + .slider::after { transform: translateX(30px); opacity: 1; }
+
+        .home-btn {
+            position: fixed; top: 20px; right: 20px; background-color: transparent; color: var(--text-main);
+            border: 2px solid var(--text-main); padding: 6px 20px; border-radius: 25px; text-decoration: none;
+            font-weight: 600; font-size: 14px; transition: 0.3s; z-index: 1000;
+        }
+        .home-btn:hover { background-color: var(--text-main); color: var(--bg-body); }
+    </style>
+</head>
+<body>
+
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+    </div>
+    <a href="index.html" class="home-btn">Home</a>
+
+    <h1>십이장기</h1>
+    <p>상대의 장(將)을 잡으면 승리합니다!</p>
+
+    <div class="player-area">
+        <div class="player-name p2-name">Player 2 (대기석)</div>
+        <div class="hand-box" id="p2-hand"></div>
+    </div>
+
+    <div id="game-board">
+        </div>
+
+    <div class="player-area">
+        <div class="player-name p1-name">Player 1 (대기석)</div>
+        <div class="hand-box" id="p1-hand"></div>
+    </div>
+
+    <script>
+        // 🌙 다크모드 로직
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        function switchTheme(e) {
+            if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('theme', 'dark'); }
+            else { document.body.classList.remove('dark-mode'); localStorage.setItem('theme', 'light'); }
+        }
+        toggleSwitch.addEventListener('change', switchTheme);
+        if (localStorage.getItem('theme') === 'dark') {
+            toggleSwitch.checked = true; document.body.classList.add('dark-mode');
+        }
+
+        // 🎲 보드판 렌더링 (12칸 생성)
+        const board = document.getElementById('game-board');
+        for (let i = 0; i < 12; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.dataset.index = i; // 0번부터 11번까지 인덱스 부여
+            board.appendChild(cell);
+        }
+
+        // ♟️ 초기 말 배치 UI 테스트용 (기능 없이 모양만)
+        const cells = document.querySelectorAll('.cell');
+        
+        // Player 2 (초록색, 위쪽)
+        cells[0].innerHTML = `<div class="piece p2 p2-rotate">相</div>`;
+        cells[1].innerHTML = `<div class="piece p2 p2-rotate">將</div>`;
+        cells[2].innerHTML = `<div class="piece p2 p2-rotate">⾞</div>`;
+        cells[4].innerHTML = `<div class="piece p2 p2-rotate">卒</div>`;
+
+        // Player 1 (빨간색, 아래쪽)
+        cells[7].innerHTML = `<div class="piece p1">卒</div>`;
+        cells[9].innerHTML = `<div class="piece p1">⾞</div>`;
+        cells[10].innerHTML = `<div class="piece p1">將</div>`;
+        cells[11].innerHTML = `<div class="piece p1">相</div>`;
+    </script>
+</body>
+</html>
