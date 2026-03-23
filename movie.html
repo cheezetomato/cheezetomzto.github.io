@@ -23,157 +23,158 @@
         a { text-decoration: none; color: inherit; transition: color 0.2s; }
         a:hover { color: #ffffff; }
 
-        /* 2. 상단 바 */
+        /* 2. 상단 바 (스크롤 반응형 투명 헤더 적용) */
         header { 
-            background-color: rgba(13, 15, 17, 0.95); 
-            backdrop-filter: blur(10px);
-            padding: 12px 20px; 
+            background: linear-gradient(to bottom, rgba(16, 18, 21, 0.9) 0%, rgba(16, 18, 21, 0) 100%);
+            padding: 15px 20px; 
             position: fixed; 
             top: 0; 
             left: 0; 
             width: 100%; 
             z-index: 1000; 
             box-sizing: border-box; 
+            transition: all 0.3s ease;
+        }
+        
+        /* 스크롤을 내렸을 때 적용될 헤더 디자인 */
+        header.scrolled {
+            background: rgba(13, 15, 17, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
             border-bottom: 1px solid #232a31;
         }
 
-        .header-inner {
-            max-width: 1000px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        .header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
         .header-left { display: flex; align-items: center; gap: 20px; }
-        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -1px; cursor: pointer; }
-        .nav-home { font-size: 0.9rem; font-weight: 700; color: #9ab; transition: color 0.2s; letter-spacing: 0.5px; cursor: pointer; }
+        .logo { font-size: 1.6rem; font-weight: 700; color: #fff; letter-spacing: -1px; cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .nav-home { font-size: 0.9rem; font-weight: 700; color: #9ab; transition: color 0.2s; letter-spacing: 0.5px; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
         .nav-home:hover { color: #fff; }
 
         .header-right { display: flex; align-items: center; gap: 12px; }
         
         .user-menu { position: relative; display: inline-block; padding-bottom: 15px; margin-bottom: -15px; }
-        .user-name { color: #9ab; cursor: pointer; font-weight: 600; font-size: 0.9rem; padding: 5px; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
+        .user-name { color: #9ab; cursor: pointer; font-weight: 600; font-size: 0.9rem; padding: 5px; display: flex; align-items: center; gap: 5px; transition: color 0.2s; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
         .user-name:hover { color: #fff; }
-        .dropdown-content { 
-            display: none; position: absolute; left: 0; top: 100%; background-color: #1a1e24; 
-            min-width: 180px; box-shadow: 0 8px 16px rgba(0,0,0,0.8); z-index: 1002; 
-            border-radius: 6px; border: 1px solid #2c3440; overflow: hidden; margin-top: 0; 
-        }
+        .dropdown-content { display: none; position: absolute; left: 0; top: 100%; background-color: #1a1e24; min-width: 180px; box-shadow: 0 8px 16px rgba(0,0,0,0.8); z-index: 1002; border-radius: 6px; border: 1px solid #2c3440; overflow: hidden; margin-top: 0; }
         .user-menu:hover .dropdown-content { display: block; }
-        .dropdown-content a { color: #9ab; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; border-bottom: 1px solid #2c3440; transition: 0.2s; cursor: pointer; }
+        .dropdown-content a { color: #9ab; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.85rem; border-bottom: 1px solid #2c3440; transition: 0.2s; cursor: pointer; text-shadow: none; }
         .dropdown-content a:last-child { border-bottom: none; }
         .dropdown-content a:hover { background-color: #232a31; color: #fff; }
 
-        .admin-btn, .logout-btn, .secret-login-btn { 
-            font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none; 
-        }
+        .admin-btn, .logout-btn, .secret-login-btn { font-size: 0.85rem; font-weight: 600; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none; }
         .admin-btn { background-color: #ffffff; color: #101215; display: none; }
         .admin-btn:hover { background-color: #e2e8f0; }
-        .logout-btn { background-color: #2c3440; color: #9ab; display: none; }
-        .logout-btn:hover { background-color: #3b4654; color: #fff; }
-        .secret-login-btn { background-color: rgba(255,255,255,0.05); color: #9ab; border: 1px solid rgba(255,255,255,0.1); }
-        .secret-login-btn:hover { background-color: rgba(255,255,255,0.1); color: #fff; }
+        .logout-btn { background-color: rgba(255,255,255,0.1); color: #fff; display: none; backdrop-filter: blur(5px); }
+        .logout-btn:hover { background-color: #e50914; color: #fff; }
+        .secret-login-btn { background-color: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
+        .secret-login-btn:hover { background-color: rgba(255,255,255,0.2); color: #fff; }
 
-        .admin-btn:active, .logout-btn:active, .secret-login-btn:active, .btn-save:active, .btn-cancel:active, .tmdb-search-btn:active {
-            transform: scale(0.95);
+        .admin-btn:active, .logout-btn:active, .secret-login-btn:active, .btn-save:active, .btn-cancel:active, .tmdb-search-btn:active { transform: scale(0.95); }
+
+        .local-search-input { background-color: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; width: 180px; transition: all 0.2s; outline: none; backdrop-filter: blur(5px); }
+        .local-search-input:focus { border-color: #e50914; background-color: rgba(0,0,0,0.8); width: 220px; box-shadow: 0 0 8px rgba(229, 9, 20, 0.4); }
+        .local-search-input::placeholder { color: rgba(255,255,255,0.5); }
+
+        /* 3. 대형 히어로 배너 (새로 추가됨!) */
+        .hero-banner { 
+            position: relative; 
+            width: 100%; 
+            height: 75vh; /* 화면의 75%를 차지 */
+            min-height: 500px;
+            display: flex; 
+            align-items: flex-end; 
+            margin-top: -80px; /* 헤더 위로 겹치게 끌어올림 */
+            padding-bottom: 60px; 
+            overflow: hidden; 
         }
-
-        .local-search-input {
-            background-color: #1a1e24; border: 1px solid #2c3440; color: #fff; padding: 8px 14px;
-            border-radius: 20px; font-size: 0.85rem; width: 180px; transition: all 0.2s; outline: none;
+        .hero-bg { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background-size: cover; background-position: center 20%; 
+            filter: blur(12px) brightness(0.4); /* 블러 처리 및 어둡게 */
+            transform: scale(1.1); /* 블러 테두리 감추기용 확장 */
+            z-index: 1; 
         }
-        .local-search-input:focus { border-color: #e50914; width: 220px; box-shadow: 0 0 8px rgba(229, 9, 20, 0.2); }
-        .local-search-input::placeholder { color: #5c6a7a; }
+        .hero-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(to top, #101215 0%, rgba(16,18,21,0.5) 40%, rgba(16,18,21,0) 100%); 
+            z-index: 2; 
+        }
+        .hero-content { 
+            position: relative; z-index: 3; max-width: 1100px; margin: 0 auto; width: 100%; 
+            padding: 0 20px; display: flex; gap: 40px; align-items: flex-end;
+        }
+        .hero-poster-img { 
+            width: 240px; border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); 
+            display: none; border: 1px solid rgba(255,255,255,0.1);
+        }
+        @media (min-width: 768px) { .hero-poster-img { display: block; } }
+        .hero-info { flex-grow: 1; }
+        .hero-badge { display: inline-block; background: #e50914; color: #fff; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 4px; margin-bottom: 12px; letter-spacing: 1px; }
+        .hero-title { font-size: 3.2rem; font-weight: 700; color: #fff; margin: 0 0 10px 0; line-height: 1.1; text-shadow: 0 4px 8px rgba(0,0,0,0.8); }
+        .hero-meta { font-size: 1.1rem; color: #d8e0e8; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; gap: 15px; align-items: center; }
+        .hero-rating { color: #d4af37; font-weight: bold; font-size: 1.2rem; }
+        .hero-desc { max-width: 600px; color: #a5b4c4; line-height: 1.6; font-size: 1.05rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.5); margin-bottom: 25px;}
+        .hero-btn { background: #fff; color: #000; padding: 12px 30px; border-radius: 6px; font-weight: bold; font-size: 1rem; border: none; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px;}
+        .hero-btn:hover { background: #e2e8f0; transform: scale(1.05); }
 
-        /* 3. 메인 콘텐츠 구조 */
+        /* 4. 부드러운 페이지 전환 애니메이션 */
+        @keyframes fadeInRise {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .view-section { animation: fadeInRise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        /* 5. 메인 콘텐츠 구조 */
         main { padding-top: 80px; padding-bottom: 40px; flex-grow: 1; }
-        .section { padding: 20px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-        .section-title { font-size: 1.2rem; font-weight: 600; color: #fff; letter-spacing: -0.5px; margin: 0 0 5px 0; border-bottom: 1px solid #2c3440; padding-bottom: 8px; display: inline-block;}
-        .section-desc { color: #788a9e; font-size: 0.9rem; margin-top: 10px; font-weight: 400; line-height: 1.4; }
+        .section { padding: 20px; max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .section-title { font-size: 1.3rem; font-weight: 600; color: #fff; letter-spacing: -0.5px; margin: 0 0 5px 0; border-bottom: 1px solid #232a31; padding-bottom: 10px; display: inline-block;}
+        .section-desc { color: #788a9e; font-size: 0.95rem; margin-top: 10px; font-weight: 400; line-height: 1.4; }
 
-        /* 4. 포스터 그리드 */
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; margin-top: 20px; }
-        .movie-card {
-            background-color: transparent; border-radius: 6px; overflow: hidden; 
-            position: relative; transition: all 0.2s ease; aspect-ratio: 2/3;
-            border: 2px solid transparent; box-sizing: border-box; cursor: pointer;
-        }
-        /* [수정] 포스터 호버 색상: 다크 레드 */
-        .movie-card:hover { border-color: #e50914; transform: scale(1.04); z-index: 2; box-shadow: 0 10px 25px rgba(229, 9, 20, 0.25); }
+        /* 6. 포스터 그리드 */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px; margin-top: 20px; }
+        .movie-card { background-color: transparent; border-radius: 6px; overflow: hidden; position: relative; transition: all 0.3s ease; aspect-ratio: 2/3; border: 2px solid transparent; box-sizing: border-box; cursor: pointer; }
+        .movie-card:hover { border-color: #e50914; transform: scale(1.05) translateY(-5px); z-index: 2; box-shadow: 0 15px 30px rgba(0,0,0,0.8); }
         .poster-wrapper { width: 100%; height: 100%; }
         .tmdb-poster { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
 
-        .poster-overlay {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(16, 18, 21, 0.95) 0%, rgba(16, 18, 21, 0.6) 50%, rgba(16, 18, 21, 0) 100%);
-            color: white; padding: 15px 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; text-align: center;
-            opacity: 0; transition: opacity 0.2s ease;
-        }
+        .poster-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(16, 18, 21, 0.95) 0%, rgba(16, 18, 21, 0.6) 40%, rgba(16, 18, 21, 0) 100%); color: white; padding: 15px 12px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; text-align: center; opacity: 0; transition: opacity 0.3s ease; }
         .movie-card:hover .poster-overlay { opacity: 1; }
-        .overlay-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-        
-        /* [수정] 별점 색상: 채도 낮은 차분한 골드 (Muted Gold) */
+        .overlay-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.9); }
         .overlay-rating { color: #d4af37; font-size: 0.85rem; font-weight: bold; }
         .overlay-memo { font-size: 0.75rem; color: #a5b4c4; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
 
-        .edit-btn {
-            position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); width: 28px; height: 28px;
-            border-radius: 50%; color: #fff; cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; z-index: 10; border: 1px solid #445566;
-            transition: background 0.2s;
-        }
-        .edit-btn:hover { background: #e50914; color: #fff; border-color: #e50914; }
+        .edit-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); width: 30px; height: 30px; border-radius: 50%; color: #fff; cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; z-index: 10; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s; }
+        .edit-btn:hover { background: #e50914; border-color: #e50914; transform: scale(1.1); }
         .movie-card:hover .edit-btn { display: flex; }
 
-        /* 5. 모달 UI 공통 */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 12, 15, 0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 2000;
-        }
-        .modal-content {
-            background-color: #1a1e24; padding: 35px; border-radius: 12px; width: 90%;
-            max-width: 450px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); max-height: 90vh; overflow-y: auto;
-            border: 1px solid #2c3440;
-        }
+        /* 7. 모달 UI (기존과 동일) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 12, 15, 0.9); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background-color: #1a1e24; padding: 35px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; border: 1px solid #232a31; }
         .modal-content.large { max-width: 650px; }
         .modal-content h2 { margin-top: 0; color: #fff; font-weight: 700; font-size: 1.5rem; margin-bottom: 25px; }
         .modal-content label { color: #788a9e; font-size: 0.85rem; margin-top: 15px; display: block; font-weight: 500; }
-        
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width: 100%; box-sizing: border-box; background-color: #101215; color: white;
-            border: 1px solid #2c3440; padding: 12px; border-radius: 6px; margin-top: 6px; font-family: inherit; transition: border-color 0.2s;
-        }
+        .modal-content input, .modal-content select, .modal-content textarea { width: 100%; box-sizing: border-box; background-color: #101215; color: white; border: 1px solid #2c3440; padding: 12px; border-radius: 6px; margin-top: 6px; font-family: inherit; transition: border-color 0.2s; }
         .modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus { outline: none; border-color: #5c6a7a; }
-        input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active{
-            -webkit-box-shadow: 0 0 0 30px #101215 inset !important;
-            -webkit-text-fill-color: white !important;
-            transition: background-color 5000s ease-in-out 0s;
-        }
-
-        .btn-save { background-color: #e50914; color: #ffffff; border-radius: 6px; padding: 10px 24px; font-weight: 700; cursor: pointer; border: none; transition: transform 0.1s, background 0.2s; }
+        input:-webkit-autofill { -webkit-box-shadow: 0 0 0 30px #101215 inset !important; -webkit-text-fill-color: white !important; }
+        .btn-save { background-color: #e50914; color: #ffffff; border-radius: 6px; padding: 10px 24px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; }
         .btn-save:hover { background-color: #b80710; }
-        .btn-cancel { background-color: #2c3440; color: white; border-radius: 6px; padding: 10px 24px; font-weight: 600; cursor: pointer; border: none; transition: transform 0.1s, background 0.2s; }
+        .btn-cancel { background-color: #2c3440; color: white; border-radius: 6px; padding: 10px 24px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
         .btn-cancel:hover { background-color: #3b4654; }
         .modal-actions { display: flex; gap: 12px; margin-top: 25px; justify-content: flex-end; }
 
-        /* 영화 상세 정보 팝업 디자인 */
+        /* 영화 상세 정보 팝업 */
         .detail-flex { display: flex; gap: 30px; }
         .detail-poster-img { width: 180px; border-radius: 8px; object-fit: cover; aspect-ratio: 2/3; box-shadow: 0 8px 20px rgba(0,0,0,0.6); }
         .detail-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         #detail-title { font-size: 1.8rem; margin-bottom: 8px; line-height: 1.2; }
-        .detail-meta { font-size: 0.9rem; color: #788a9e; margin-bottom: 15px; font-weight: 500; }
-        
-        /* [수정] 상세창 별점 색상: 뮤트 골드 */
+        .detail-meta { font-size: 0.95rem; color: #788a9e; margin-bottom: 15px; font-weight: 500; }
         #detail-rating { color: #d4af37; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-        
         .detail-tags { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .d-tag { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; background-color: #232a31; color: #a5b4c4; border: 1px solid #333d4a; }
-        
-        /* 리뷰 박스 왼쪽 테두리는 다크 레드로 포인트 유지 */
         .detail-memo-box { background: #101215; padding: 18px; border-radius: 8px; border-left: 3px solid #e50914; line-height: 1.6; font-size: 0.95rem; color: #cdd6e0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
-        
         @media (max-width: 600px) { .detail-flex { flex-direction: column; align-items: center; text-align: center; } .detail-tags { justify-content: center; } }
 
-        /* TMDB 검색 결과용 */
+        /* TMDB 검색 UI (기존 동일) */
         .tmdb-search-box { display: flex; gap: 8px; margin-top: 6px; }
         .tmdb-search-btn { background-color: #2c3440; color: white; padding: 12px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
         .tmdb-search-btn:hover { background-color: #3b4654; }
@@ -182,23 +183,20 @@
         .close-search-btn { font-size: 1.8rem; background: none; border: none; color: #788a9e; cursor: pointer; position: absolute; top: 15px; right: 15px; transition: color 0.2s; }
         .close-search-btn:hover { color: #fff; }
         .tmdb-item { display: flex; gap: 15px; background-color: #101215; padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid #2c3440; transition: 0.2s; margin-bottom: 12px;}
-        
-        /* 검색창 호버 효과 다크레드로 통일 */
         .tmdb-item:hover { border-color: #e50914; background-color: #15181c; }
-        
         .tmdb-poster-small { width: 50px; aspect-ratio: 2/3; object-fit: cover; border-radius: 4px; }
         .tmdb-info-small { display: flex; flex-direction: column; justify-content: center; }
         .tmdb-item-title-small { font-weight: 600; color: white; font-size: 1rem; margin-bottom: 4px; }
         .tmdb-item-meta-small { font-size: 0.8rem; color: #788a9e; }
 
-        /* 6. 푸터 */
+        /* 푸터 */
         footer { background-color: #0a0c0e; color: #5c6a7a; padding: 40px 20px; text-align: center; font-size: 0.85rem; border-top: 1px solid #1a1e24; margin-top: auto; }
         .footer-links { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
     </style>
 </head>
 <body>
 
-    <header>
+    <header id="main-header">
         <div class="header-inner">
             <div class="header-left">
                 <a class="logo" onclick="window.changeView('home')">FILMS</a>
@@ -210,7 +208,7 @@
                         <a onclick="window.changeView('home')">Home</a>
                         <a onclick="window.changeView('recent')">Recent</a>
                         <a onclick="window.changeView('all')">All Films</a>
-                        <a onclick="window.changeView('rating')">By Rating (평점별)</a>
+                        <a onclick="window.changeView('rating')">By Rating</a>
                         <a onclick="window.changeView('recommended')">Recommended</a>
                         <a onclick="window.changeView('region')">By Region</a>
                         <a onclick="window.changeView('genre')">By Genre</a>
@@ -221,7 +219,6 @@
             
             <div class="header-right">
                 <input type="text" class="local-search-input" id="local-search-input" placeholder="내 영화 검색 (Enter)" onkeypress="if(event.key === 'Enter') window.executeLocalSearch()">
-                
                 <button class="admin-btn" id="auto-update-btn" onclick="window.autoFixPosters()" style="background-color: #3b82f6; color: white;">✨ Fix Posters</button>
                 <button class="admin-btn" id="add-movie-btn" onclick="window.openModal()">+ LOG FILM</button>
                 <button class="logout-btn" id="logout-btn" onclick="window.doLogout()">LOGOUT</button>
@@ -333,6 +330,16 @@
         let currentView = 'home';
         let searchQueryGlobal = ''; 
 
+        // 스크롤 시 헤더 디자인 변경 이벤트 추가
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > 60) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (user && user.uid === 'LjObLa6943Q1xyyVthX2aFA1zRQ2') {
                 isAdmin = true;
@@ -354,12 +361,8 @@
 
         window.executeLocalSearch = function() {
             const inputVal = document.getElementById('local-search-input').value;
-            if(!inputVal.trim()) {
-                window.changeView('home');
-                return;
-            }
-            searchQueryGlobal = inputVal;
-            window.changeView('local-search');
+            if(!inputVal.trim()) { window.changeView('home'); return; }
+            searchQueryGlobal = inputVal; window.changeView('local-search');
         };
 
         window.openLoginModal = () => document.getElementById('login-modal').style.display = 'flex';
@@ -374,7 +377,7 @@
         window.doLogout = async () => { if(confirm("로그아웃 하시겠습니까?")) await signOut(auth); };
 
         async function loadMoviesFromFirebase() {
-            document.getElementById('main-content').innerHTML = '<div class="section"><div style="color:#788a9e; text-align:center;">Loading films... 🎞️</div></div>';
+            document.getElementById('main-content').innerHTML = '<div class="section"><div style="color:#788a9e; text-align:center; margin-top:100px;">Loading films... 🎞️</div></div>';
             try {
                 const snapshot = await getDocs(collection(db, "myMoviesGallery"));
                 movies = [];
@@ -412,15 +415,15 @@
                     <div class="poster-overlay">
                         <div class="overlay-title">${movie.title || '제목 없음'}</div>
                         <div class="overlay-rating">★ ${ratingVal.toFixed(1)}</div>
-                        ${movie.memo ? `<div class="overlay-memo">"${movie.memo}"</div>` : ''}
                     </div>
                 </div>
             `;
         }
 
+        // view-section 클래스를 추가하여 페이드인 애니메이션 적용
         function createSectionHTML(id, title, desc) {
             return `
-                <section class="section" id="${id}">
+                <section class="section view-section" id="${id}">
                     <div class="section-title">${title}</div>
                     ${desc ? `<p class="section-desc">${desc}</p>` : ''}
                     <div class="movie-grid" id="grid-${id}"></div>
@@ -428,13 +431,48 @@
             `;
         }
 
+        // 히어로 배너 생성 함수 추가
+        function createHeroHTML(movie) {
+            if (!movie) return '';
+            // 배경 이미지를 오리지널 해상도 또는 w1280 해상도로 호출
+            const bgSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w1280${movie.poster_path}` : 'https://via.placeholder.com/1280x720/1a1e24/788a9e?text=No+Image';
+            const posterSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}` : 'https://via.placeholder.com/300x450/1a1e24/788a9e?text=No+Poster';
+            const ratingVal = parseFloat(movie.rating) || 0;
+            
+            return `
+                <div class="hero-banner view-section">
+                    <div class="hero-bg" style="background-image: url('${bgSrc}');"></div>
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <img src="${posterSrc}" class="hero-poster-img" alt="Poster">
+                        <div class="hero-info">
+                            <div class="hero-badge">BEST MOVIE</div>
+                            <h1 class="hero-title">${movie.title}</h1>
+                            <div class="hero-meta">
+                                <span class="hero-rating">★ ${ratingVal.toFixed(1)}</span>
+                                <span>${movie.year || '-'}</span>
+                                <span>${movie.director || '-'} 감독</span>
+                                <span>${movie.genre || '-'}</span>
+                            </div>
+                            ${movie.memo ? `<div class="hero-desc">"${movie.memo}"</div>` : ''}
+                            <button class="hero-btn" onclick="window.openDetailModal(${movie.originalIndex})">
+                                🎬 상세 정보 보기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         window.changeView = function(viewName) {
             currentView = viewName;
-            if(viewName !== 'local-search') {
-                document.getElementById('local-search-input').value = '';
-            }
-            renderView();
-            window.scrollTo(0, 0);
+            if(viewName !== 'local-search') document.getElementById('local-search-input').value = '';
+            
+            // 페이지 상단으로 부드럽게 스크롤
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // 살짝 딜레이를 주어 스크롤이 올라가면서 화면이 바뀌도록 자연스럽게 연출
+            setTimeout(() => { renderView(); }, 150);
         };
 
         function renderView() {
@@ -445,7 +483,15 @@
             let displayMovies = movies.map((m, index) => ({...m, originalIndex: index}));
             displayMovies.sort((a, b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0));
 
+            // 메인 화면 패딩 리셋 (히어로 배너가 있는 홈 화면은 패딩을 없애서 헤더 아래로 들어가게 함)
             if (currentView === 'home') {
+                container.style.paddingTop = '0';
+                
+                // 히어로 배너 렌더링 (평점 5점짜리 중 가장 최근에 본 영화 1개 선택)
+                const perfectMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0);
+                const heroMovie = perfectMovies.length > 0 ? perfectMovies[0] : (displayMovies.length > 0 ? displayMovies[0] : null);
+                if(heroMovie) container.innerHTML += createHeroHTML(heroMovie);
+
                 const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 10);
                 container.innerHTML += createSectionHTML('welcome', 'PERFECT 5.0', '최고의 평점을 준 완벽한 영화들입니다.');
                 const welcomeGrid = document.getElementById('grid-welcome');
@@ -456,79 +502,79 @@
                 const recentGrid = document.getElementById('grid-recent-home');
                 if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
             } 
-            else if (currentView === 'recent') {
-                const recentMovies = displayMovies.slice(0, 50);
-                container.innerHTML += createSectionHTML('recent-page', 'RECENTLY WATCHED', '최근 시청한 영화 목록 전체입니다.');
-                const recentGrid = document.getElementById('grid-recent-page');
-                if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
-            }
-            else if (currentView === 'all') {
-                container.innerHTML += createSectionHTML('all-page', 'ALL FILMS', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
-                const allGrid = document.getElementById('grid-all-page');
-                if (displayMovies.length > 0) displayMovies.forEach(m => allGrid.innerHTML += createPosterHTML(m, m.originalIndex));
-            }
-            else if (currentView === 'recommended') {
-                const recommendedMovies = displayMovies.filter(m => (m.memo || '').includes('#추천'));
-                container.innerHTML += createSectionHTML('rec-page', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.');
-                const recGrid = document.getElementById('grid-rec-page');
-                if (recommendedMovies.length > 0) recommendedMovies.forEach(m => recGrid.innerHTML += createPosterHTML(m, m.originalIndex));
-                else recGrid.innerHTML = '<div style="color:#788a9e;">추천 영화가 없습니다. 메모에 #추천 을 적어보세요.</div>';
-            }
-            else if (currentView === 'rating') {
-                container.innerHTML += createSectionHTML('rating-page', 'BY RATING', '영화의 별점별로 모아보는 아카이브');
-                const ratingGroups = {};
-                displayMovies.forEach(m => {
-                    const r = parseFloat(m.rating || 0).toFixed(1);
-                    if(!ratingGroups[r]) ratingGroups[r] = [];
-                    ratingGroups[r].push(m);
-                });
-                const targetContainer = document.getElementById('grid-rating-page');
-                
-                Object.keys(ratingGroups).sort((a,b) => parseFloat(b) - parseFloat(a)).forEach(k => {
-                    /* [수정] 평점별 페이지 별점 색상도 뮤트 골드로 통일 */
-                    targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 30px; border-bottom: 1px solid #2c3440; padding-bottom: 8px;"><span style="color: #d4af37; font-size: 1.1rem; font-weight: 700;">★ ${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${ratingGroups[k].length}편)</span></span></div>`;
-                    ratingGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
-                });
-            }
-            else if (currentView === 'region') {
-                container.innerHTML += createSectionHTML('region-page', 'BY REGION', '국가별 영화 아카이브');
-                const regionGroups = {};
-                displayMovies.forEach(m => {
-                    const r = m.region || '기타';
-                    if(!regionGroups[r]) regionGroups[r] = [];
-                    regionGroups[r].push(m);
-                });
-                const targetContainer = document.getElementById('grid-region-page');
-                Object.keys(regionGroups).sort().forEach(k => {
-                    targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 30px; border-bottom: 1px solid #2c3440; padding-bottom: 8px;"><span style="color: #fff; font-size: 1.1rem; font-weight: 700;">${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${regionGroups[k].length}편)</span></span></div>`;
-                    regionGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
-                });
-            }
-            else if (currentView === 'genre') {
-                container.innerHTML += createSectionHTML('genre-page', 'BY GENRE', '장르별 영화 아카이브');
-                const genreGroups = {};
-                displayMovies.forEach(m => {
-                    const g = (m.genre || '').includes('/') ? m.genre.split('/')[0] : (m.genre || '기타');
-                    if(!genreGroups[g]) genreGroups[g] = [];
-                    genreGroups[g].push(m);
-                });
-                const targetContainer = document.getElementById('grid-genre-page');
-                Object.keys(genreGroups).sort().forEach(k => {
-                    targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 30px; border-bottom: 1px solid #2c3440; padding-bottom: 8px;"><span style="color: #fff; font-size: 1.1rem; font-weight: 700;">${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${genreGroups[k].length}편)</span></span></div>`;
-                    genreGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
-                });
-            }
-            else if (currentView === 'local-search') {
-                const safeQuery = searchQueryGlobal.replace(/\s+/g, '').toLowerCase();
-                const matchedMovies = displayMovies.filter(m => (m.title || '').replace(/\s+/g, '').toLowerCase().includes(safeQuery));
-                
-                container.innerHTML += createSectionHTML('local-search-page', 'SEARCH RESULTS', `'${searchQueryGlobal}' 검색 결과입니다. (총 ${matchedMovies.length}편)`);
-                const targetContainer = document.getElementById('grid-local-search-page');
-                
-                if(matchedMovies.length > 0) {
-                    matchedMovies.forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
-                } else {
-                    targetContainer.innerHTML = `<div style="color: #788a9e; grid-column: 1 / -1; padding: 40px 0; text-align: center;">앗, 아직 기록되지 않은 영화이거나 검색어가 잘못되었어요. 😢</div>`;
+            else {
+                // 홈이 아닌 다른 화면은 상단 여백 복구
+                container.style.paddingTop = '80px';
+
+                if (currentView === 'recent') {
+                    const recentMovies = displayMovies.slice(0, 50);
+                    container.innerHTML += createSectionHTML('recent-page', 'RECENTLY WATCHED', '최근 시청한 영화 목록 전체입니다.');
+                    const recentGrid = document.getElementById('grid-recent-page');
+                    if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
+                }
+                else if (currentView === 'all') {
+                    container.innerHTML += createSectionHTML('all-page', 'ALL FILMS', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
+                    const allGrid = document.getElementById('grid-all-page');
+                    if (displayMovies.length > 0) displayMovies.forEach(m => allGrid.innerHTML += createPosterHTML(m, m.originalIndex));
+                }
+                else if (currentView === 'recommended') {
+                    const recommendedMovies = displayMovies.filter(m => (m.memo || '').includes('#추천'));
+                    container.innerHTML += createSectionHTML('rec-page', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.');
+                    const recGrid = document.getElementById('grid-rec-page');
+                    if (recommendedMovies.length > 0) recommendedMovies.forEach(m => recGrid.innerHTML += createPosterHTML(m, m.originalIndex));
+                    else recGrid.innerHTML = '<div style="color:#788a9e;">추천 영화가 없습니다. 메모에 #추천 을 적어보세요.</div>';
+                }
+                else if (currentView === 'rating') {
+                    container.innerHTML += createSectionHTML('rating-page', 'BY RATING', '영화의 별점별로 모아보는 아카이브');
+                    const ratingGroups = {};
+                    displayMovies.forEach(m => {
+                        const r = parseFloat(m.rating || 0).toFixed(1);
+                        if(!ratingGroups[r]) ratingGroups[r] = [];
+                        ratingGroups[r].push(m);
+                    });
+                    const targetContainer = document.getElementById('grid-rating-page');
+                    Object.keys(ratingGroups).sort((a,b) => parseFloat(b) - parseFloat(a)).forEach(k => {
+                        targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 30px; border-bottom: 1px solid #2c3440; padding-bottom: 8px;"><span style="color: #d4af37; font-size: 1.1rem; font-weight: 700;">★ ${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${ratingGroups[k].length}편)</span></span></div>`;
+                        ratingGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
+                    });
+                }
+                else if (currentView === 'region') {
+                    container.innerHTML += createSectionHTML('region-page', 'BY REGION', '국가별 영화 아카이브');
+                    const regionGroups = {};
+                    displayMovies.forEach(m => {
+                        const r = m.region || '기타';
+                        if(!regionGroups[r]) regionGroups[r] = [];
+                        regionGroups[r].push(m);
+                    });
+                    const targetContainer = document.getElementById('grid-region-page');
+                    Object.keys(regionGroups).sort().forEach(k => {
+                        targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 30px; border-bottom: 1px solid #2c3440; padding-bottom: 8px;"><span style="color: #fff; font-size: 1.1rem; font-weight: 700;">${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${regionGroups[k].length}편)</span></span></div>`;
+                        regionGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
+                    });
+                }
+                else if (currentView === 'genre') {
+                    container.innerHTML += createSectionHTML('genre-page', 'BY GENRE', '장르별 영화 아카이브');
+                    const genreGroups = {};
+                    displayMovies.forEach(m => {
+                        const g = (m.genre || '').includes('/') ? m.genre.split('/')[0] : (m.genre || '기타');
+                        if(!genreGroups[g]) genreGroups[g] = [];
+                        genreGroups[g].push(m);
+                    });
+                    const targetContainer = document.getElementById('grid-genre-page');
+                    Object.keys(genreGroups).sort().forEach(k => {
+                        targetContainer.innerHTML += `<div style="grid-column: 1 / -1; margin-top: 30px; border-bottom: 1px solid #2c3440; padding-bottom: 8px;"><span style="color: #fff; font-size: 1.1rem; font-weight: 700;">${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${genreGroups[k].length}편)</span></span></div>`;
+                        genreGroups[k].sort((a,b) => new Date(b.watchDate || 0) - new Date(a.watchDate || 0)).forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
+                    });
+                }
+                else if (currentView === 'local-search') {
+                    const safeQuery = searchQueryGlobal.replace(/\s+/g, '').toLowerCase();
+                    const matchedMovies = displayMovies.filter(m => (m.title || '').replace(/\s+/g, '').toLowerCase().includes(safeQuery));
+                    
+                    container.innerHTML += createSectionHTML('local-search-page', 'SEARCH RESULTS', `'${searchQueryGlobal}' 검색 결과입니다. (총 ${matchedMovies.length}편)`);
+                    const targetContainer = document.getElementById('grid-local-search-page');
+                    
+                    if(matchedMovies.length > 0) matchedMovies.forEach(m => targetContainer.innerHTML += createPosterHTML(m, m.originalIndex));
+                    else targetContainer.innerHTML = `<div style="color: #788a9e; grid-column: 1 / -1; padding: 40px 0; text-align: center;">앗, 아직 기록되지 않은 영화이거나 검색어가 잘못되었어요. 😢</div>`;
                 }
             }
         }
