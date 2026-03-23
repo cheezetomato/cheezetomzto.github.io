@@ -7,10 +7,10 @@
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
         /* ---------------------------------------------------- */
-        /* [1. 테마 변수 설정] (index.html 참고하여 구성) */
+        /* [1. 테마 변수 설정] */
         /* ---------------------------------------------------- */
         :root {
-            /* ☀️ 라이트 모드 (사과 게임 전용 파스텔톤 유지) */
+            /* ☀️ 라이트 모드 */
             --bg-body: #fff5f5;
             --bg-overlay: #fff5f5;
             --text-main: #333;
@@ -28,7 +28,7 @@
         }
 
         body.dark-mode {
-            /* 🌙 다크 모드 (index.html과 동일한 짙은 회색 톤 적용) */
+            /* 🌙 다크 모드 */
             --bg-body: #121212; 
             --bg-overlay: #232323;
             --text-main: #f0f0f0;
@@ -93,14 +93,16 @@
         /* ---------------------------------------------------- */
         /* [3. 상단 네비게이션 (홈 버튼 & 다크모드 스위치)] */
         /* ---------------------------------------------------- */
-        .top-nav {
-            position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 30px; box-sizing: border-box; z-index: 1000;
+        
+        /* 다크모드 스위치: index.html과 동일하게 좌측 상단 고정 */
+        .theme-switch-wrapper {
+            position: fixed; 
+            top: 20px; 
+            left: 20px; 
+            display: flex; 
+            align-items: center; 
+            z-index: 1000;
         }
-
-        .home-btn {
-            background-color: var(--switch-track); color: var(--switch-knob); padding: 8px 16px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.4s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 5px;
-        }
-        .home-btn:hover { opacity: 0.8; }
 
         .theme-switch { display: inline-block; height: 30px; position: relative; width: 60px; }
         .theme-switch input { display: none; }
@@ -110,17 +112,43 @@
         
         input:checked + .slider:before { transform: translateX(30px); }
         input:checked + .slider::after { transform: translateX(30px); opacity: 1; }
+
+        /* 홈 버튼: 모던하고 심플한 테두리 스타일로 우측 상단 고정 */
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: transparent;
+            color: var(--text-main);
+            border: 2px solid var(--text-main);
+            padding: 6px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1000;
+        }
+        
+        .home-btn:hover {
+            background-color: var(--text-main);
+            color: var(--bg-body);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
-<div class="top-nav">
-    <a href="index.html" class="home-btn">🏠 홈으로</a>
+<div class="theme-switch-wrapper">
     <label class="theme-switch" for="checkbox">
         <input type="checkbox" id="checkbox" />
         <div class="slider round"></div>
     </label>
 </div>
+
+<a href="index.html" class="home-btn">Home</a>
 
 <div id="game-container">
     <div id="main-menu" class="overlay">
