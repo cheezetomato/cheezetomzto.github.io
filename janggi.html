@@ -56,7 +56,7 @@
         .panel-title { font-weight: 800; font-size: 18px; margin-bottom: 10px; text-align: center; }
         .p2-name { color: #1e8f4e; }
         .p1-name { color: #c0392b; }
-        .hand-pieces-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px;}
+        .hand-pieces-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; }
 
         /* 장기판 영역 */
         #game-board {
@@ -75,26 +75,23 @@
             width: 76px; height: 76px; background-color: #fff; border: 3px solid #333; 
             border-radius: 8px; display: flex; align-items: center; justify-content: center; 
             font-size: 40px; font-weight: 900; font-family: 'Batang', serif; box-shadow: 2px 4px 0 rgba(0,0,0,0.2); cursor: grab; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s; position: absolute; z-index: 100;
-            pointer-events: none; /* 드래그 중인 본체는 마우스 이벤트를 안 받음 */
         }
-        .piece.on-board { pointer-events: auto; } /* 보드 위에 있을 때만 클릭 가능 */
+        .piece.on-board { pointer-events: auto; }
         .piece.in-hand { position: relative; pointer-events: auto; top:auto !important; left:auto !important; transform: none !important; margin: 0;}
-        .piece:active { cursor: grabbing; z-index: 1000 !important; }
+        
+        .piece.dragging { position: fixed !important; z-index: 9999 !important; pointer-events: none !important; cursor: grabbing !important; box-shadow: 0 15px 25px rgba(0,0,0,0.4) !important; transition: none !important; margin: 0 !important; }
+
+        .piece:active { cursor: grabbing; }
         .piece.selected { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.3); border-color: #fbc531; border-width: 4px; z-index: 1000;}
         
         /* 팀 컬러 */
         .piece.p1 { color: #c0392b; border-color: #c0392b; } 
         .piece.p2 { color: #1e8f4e; border-color: #1e8f4e; } 
         .piece.p2-rotate { transform: rotate(180deg); } 
-        /* P2 선택 시 애니메이션 (180도 회전 유지하며 위로 띄움) */
         .piece.selected.p2-rotate { transform: rotate(180deg) translateY(5px); }
-        /* 포획 시 애니메이션 (회전 제거하며 이동) */
-        .piece.captured-move { transform: none !important; z-index: 2000 !important; transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1) !important; }
+        .piece.captured-move { transform: none !important; z-index: 2000 !important; transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1) !important; }
 
-        /* 드래그 앤 드롭용 고스트 객체 */
-        .piece.ghost { position: absolute; pointer-events: none; opacity: 0.8; z-index: 3000; box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
-
-        /* 💥 이펙트 오버레이 (장군/외통수) */
+        /* 💥 이펙트 오버레이 */
         #effect-overlay {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
             font-size: 100px; font-weight: 900; color: #ff4757; text-shadow: 0 0 30px #fff, 0 5px 15px rgba(0,0,0,0.5);
@@ -133,8 +130,7 @@
                 <div id="p2-pieces-container" class="hand-pieces-container"></div>
             </div>
 
-            <div id="game-board">
-                </div>
+            <div id="game-board"></div>
 
             <div class="side-panel" id="hand-p1">
                 <div class="panel-title p1-name">P1 대기석</div>
@@ -145,7 +141,6 @@
     </div>
 
     <script>
-        // --- 🌙 다크모드 ---
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
         function switchTheme(e) {
             if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('theme', 'dark'); }
@@ -154,35 +149,29 @@
         toggleSwitch.addEventListener('change', switchTheme);
         if (localStorage.getItem('theme') === 'dark') { toggleSwitch.checked = true; document.body.classList.add('dark-mode'); }
 
-        // --- 🎲 게임 상태 데이터 ---
-        // 각 말에게 고유 ID를 부여하여 객체로 관리합니다 (애니메이션을 위해)
         let pieces = [
             { id: 1, type: '將', owner: 'p2', pos: 0, promoted: false }, { id: 2, type: '王', owner: 'p2', pos: 1, promoted: false }, { id: 3, type: '相', owner: 'p2', pos: 2, promoted: false }, { id: 4, type: '子', owner: 'p2', pos: 4, promoted: false },
             { id: 5, type: '子', owner: 'p1', pos: 7, promoted: false }, { id: 6, type: '相', owner: 'p1', pos: 9, promoted: false }, { id: 7, type: '王', owner: 'p1', pos: 10, promoted: false }, { id: 8, type: '將', owner: 'p1', pos: 11, promoted: false }
         ];
         
-        let board = Array(12).fill(null); // 보드 데이터판 (0~11 인덱스에 piece ID 저장)
-        let hands = { p1: [], p2: [] };   // 대기석에 있는 piece 객체 배열
+        let board = Array(12).fill(null); 
+        let hands = { p1: [], p2: [] };   
         
-        // 초기 데이터 매핑
         pieces.forEach(p => board[p.pos] = p.id);
 
         let currentTurn = 'p1'; 
         let selectedIndex = -1; 
         let validMoves = [];    
         let gameActive = true;
-        let draggingPieceId = null; // 대기석 드래그용
 
         const boardEl = document.getElementById('game-board');
         const piecesLayer = document.getElementById('pieces-layer');
         const turnIndicator = document.getElementById('turn-indicator');
         const effectOverlay = document.getElementById('effect-overlay');
 
-        // 칸 위치 좌표 계산용 (Grid gap 고려)
         const CELL_SIZE = 90;
         const GAP = 2;
 
-        // --- 🛠️ 초기 보드 및 말 렌더링 ---
         function initGame() {
             boardEl.innerHTML = '';
             for (let i = 0; i < 12; i++) {
@@ -192,18 +181,16 @@
                 cell.addEventListener('click', () => handleCellClick(i));
                 boardEl.appendChild(cell);
             }
-            renderBoardPieces(); // 보드 위 말 배치
-            renderHands();      // 대기석 배치
+            renderBoardPieces(); 
+            renderHands();      
             updateTurnIndicator();
         }
 
-        // 보드 위 말들의 위치를 데이터에 맞춰 절대좌표로 이동시킵니다.
         function renderBoardPieces() {
             for (let i = 0; i < 12; i++) {
                 const pieceId = board[i];
                 if (pieceId) {
                     let pieceEl = document.getElementById(`piece-${pieceId}`);
-                    // 없으면 새로 생성, 있으면 위치만 이동
                     if (!pieceEl) {
                         const pieceData = pieces.find(p => p.id === pieceId);
                         pieceEl = createPieceElement(pieceData);
@@ -211,12 +198,9 @@
                     }
                     pieceEl.className = getPieceClasses(pieces.find(p => p.id === pieceId), true);
                     placePieceOnCell(pieceEl, i);
-                    
-                    // 장군 체크를 위한 왕 표시 (옵션)
-                    if(pieceEl.innerText === '王') pieceEl.id = `king-${pieceId % 2 === 0 ? 'p2' : 'p1'}`;
                 }
             }
-            // 선택된 칸 하이라이트
+            
             const cells = document.querySelectorAll('.cell');
             cells.forEach((cell, idx) => {
                 if (validMoves.includes(idx)) cell.classList.add('highlight');
@@ -245,14 +229,12 @@
             return data.promoted ? '侯' : data.type;
         }
 
-        // 말 엘리먼트를 특정 칸 위에 배치
         function placePieceOnCell(pieceEl, cellIndex) {
             const row = Math.floor(cellIndex / 3);
             const col = cellIndex % 3;
             const left = col * (CELL_SIZE + GAP);
             const top = row * (CELL_SIZE + GAP);
             
-            // 보드판 기준 상대좌표로 이동
             const boardRect = boardEl.getBoundingClientRect();
             const wrapperRect = document.querySelector('.game-area-wrapper').getBoundingClientRect();
             
@@ -260,23 +242,20 @@
             pieceEl.style.top = `${boardRect.top - wrapperRect.top + top}px`;
         }
 
-        // --- 🌟 포획 애니메이션 (본체 이동) ---
+        // 🌟 포획 애니메이션 로직
         function animateCapture(attackerPieceId, capturedPieceId, targetIndex) {
             return new Promise((resolve) => {
-                gameActive = false; // 애니메이션 중 조작 방지
+                gameActive = false; 
 
                 const attackerEl = document.getElementById(`piece-${attackerPieceId}`);
                 const capturedEl = document.getElementById(`piece-${capturedPieceId}`);
                 const capturedData = pieces.find(p => p.id === capturedPieceId);
 
-                // 1. 공격자 말을 목표 칸으로 이동
                 placePieceOnCell(attackerEl, targetIndex);
 
-                // 2. 잡힌 말 객체의 '본체'를 가져와서 대기석으로 이동시키는 애니메이션
-                // 회전 제거, 팀 컬러 변경
                 capturedEl.className = `piece ${currentTurn} captured-move`;
                 if(capturedData.promoted) {
-                    capturedData.promoted = false; // 잡히면 즉시 자(子)로 강등
+                    capturedData.promoted = false; 
                     capturedEl.innerText = '子';
                 }
 
@@ -284,25 +263,19 @@
                 const handRect = handPanel.getBoundingClientRect();
                 const wrapperRect = document.querySelector('.game-area-wrapper').getBoundingClientRect();
 
-                // 대기석 중앙 쯤으로 이동
                 capturedEl.style.left = `${handRect.left - wrapperRect.left + handRect.width / 2 - CELL_SIZE / 2}px`;
                 capturedEl.style.top = `${handRect.top - wrapperRect.top + handRect.height / 2 - CELL_SIZE / 2}px`;
 
-                // 애니메이션 종료 후 데이터 정리 및 리렌더링
                 setTimeout(() => {
-                    // 데이터 업데이트
                     hands[currentTurn].push(capturedData);
-                    
-                    // DOM 정리 (piecesLayer에서 제거하고 대기석 HTML로 옮김)
-                    piecesLayer.removeChild(capturedEl);
+                    if(capturedEl.parentNode) capturedEl.parentNode.removeChild(capturedEl);
                     renderHands(); 
                     gameActive = true;
                     resolve();
-                }, 750); // cubic-bezier 애니메이션 시간에 맞춤
+                }, 600); 
             });
         }
 
-        // --- 🌟 대기석 렌더링 (드래그 앤 드롭 세팅) ---
         function renderHands() {
             renderHand('p1', document.getElementById('p1-pieces-container'));
             renderHand('p2', document.getElementById('p2-pieces-container'));
@@ -314,112 +287,107 @@
                 const pieceEl = createPieceElement(pieceData);
                 pieceEl.className = getPieceClasses(pieceData, false);
                 
-                // 마우스 드래그 시작 이벤트
-                pieceEl.addEventListener('mousedown', (e) => startHandDrag(e, pieceData.id));
+                // 🌟 본체 드래그 앤 드롭 마우스 이벤트 바인딩
+                pieceEl.addEventListener('mousedown', (e) => startRealDrag(e, pieceData.id));
+                // 모바일 터치 지원
+                pieceEl.addEventListener('touchstart', (e) => startRealDrag(e.touches[0], pieceData.id), {passive: false});
+                
                 container.appendChild(pieceEl);
             });
         }
 
-        // --- 🌟 대기석 드래그 앤 드롭 구현 (본체 끌어다 놓기) ---
-        let ghostEl = null;
-        let startX, startY;
+        // --- 🌟 완벽한 본체 드래그 앤 드롭 로직 ---
+        let draggedPieceEl = null;
+        let draggedPieceId = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
 
-        function startHandDrag(e, pieceId) {
-            if(!gameActive || currentTurn !== pieces.find(p => p.id === pieceId).owner) return;
-            e.stopPropagation(); // 부모 클릭 방지
-            draggingPieceId = pieceId;
-
-            const originalPiece = e.target;
+        function startRealDrag(e, pieceId) {
+            if(!gameActive) return;
             const pieceData = pieces.find(p => p.id === pieceId);
-
-            // 1. 고스트 객체 (끌고 다닐 복사본) 생성
-            ghostEl = createPieceElement(pieceData);
-            ghostEl.className = getPieceClasses(pieceData, true) + ' ghost'; // P2라면 회전 유지
+            if(currentTurn !== pieceData.owner) return;
             
-            const rect = originalPiece.getBoundingClientRect();
-            ghostEl.style.width = `${rect.width}px`;
-            ghostEl.style.height = `${rect.height}px`;
-            ghostEl.style.left = `${rect.left}px`;
-            ghostEl.style.top = `${rect.top}px`;
-            
-            document.body.appendChild(ghostEl);
-            
-            // 클릭한 위치와 객체 좌상단의 오차 저장
-            startX = e.clientX - rect.left;
-            startY = e.clientY - rect.top;
+            e.preventDefault?.(); 
 
-            // 기존 조각 투명하게 (숨김)
-            originalPiece.style.opacity = '0';
+            draggedPieceId = pieceId;
+            draggedPieceEl = document.getElementById(`piece-${pieceId}`);
+            
+            const rect = draggedPieceEl.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
 
-            // 마우스 이동 및 놓기 이벤트 등록
+            // 엘리먼트를 손에서 떼어내 화면 최상단 fixed로 변경
+            draggedPieceEl.classList.add('dragging');
+            draggedPieceEl.style.left = `${e.clientX - dragOffsetX}px`;
+            draggedPieceEl.style.top = `${e.clientY - dragOffsetY}px`;
+
             document.addEventListener('mousemove', dragMove);
             document.addEventListener('mouseup', dropPiece);
+            document.addEventListener('touchmove', (ev) => dragMove(ev.touches[0]), {passive: false});
+            document.addEventListener('touchend', dropPiece);
         }
 
         function dragMove(e) {
-            if(!ghostEl) return;
-            ghostEl.style.left = `${e.clientX - startX}px`;
-            ghostEl.style.top = `${e.clientY - startY}px`;
-            ghostEl.style.transform = 'none'; // 드래그 중엔 CSS transform 회전 일시 해제 (좌표 계산 편의)
+            if(!draggedPieceEl) return;
+            draggedPieceEl.style.left = `${e.clientX - dragOffsetX}px`;
+            draggedPieceEl.style.top = `${e.clientY - dragOffsetY}px`;
         }
 
         function dropPiece(e) {
             document.removeEventListener('mousemove', dragMove);
             document.removeEventListener('mouseup', dropPiece);
+            document.removeEventListener('touchmove', dragMove);
+            document.removeEventListener('touchend', dropPiece);
 
-            if(!draggingPieceId || !ghostEl) return;
+            if(!draggedPieceId || !draggedPieceEl) return;
 
-            // 마우스 위치에 있는 칸 찾기
-            ghostEl.style.display = 'none'; // 칸을 찾기 위해 고스트 일시 숨김
-            const targetCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
-            ghostEl.style.display = 'flex';
+            // 마우스/터치가 끝난 지점의 셀 찾기
+            draggedPieceEl.style.display = 'none'; // 포인터 이벤트 회피용
+            let clientX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
+            let clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
+            
+            const targetCell = document.elementFromPoint(clientX, clientY)?.closest('.cell');
+            draggedPieceEl.style.display = 'flex';
 
             let dropSuccess = false;
 
             if (targetCell) {
                 const targetIndex = parseInt(targetCell.dataset.index);
-                
-                // 배치 로직 실행
-                if (attemptDropFromHand(draggingPieceId, targetIndex)) {
+                if (attemptDropFromHand(draggedPieceId, targetIndex)) {
                     dropSuccess = true;
                 }
             }
 
-            // 고스트 객체 삭제
-            document.body.removeChild(ghostEl);
-            ghostEl = null;
-            draggingPieceId = null;
+            draggedPieceEl.classList.remove('dragging');
+            draggedPieceEl = null;
+            draggedPieceId = null;
 
-            // 대기석 렌더링 (드래그 실패 시 투명도 원복 포함)
-            renderHands(); 
+            renderHands(); // 드롭 실패 시 제자리로 복귀
         }
 
-        // 대기석 드롭 데이터 처리
         function attemptDropFromHand(pieceId, targetIndex) {
             const pieceData = pieces.find(p => p.id === pieceId);
             const player = pieceData.owner;
 
-            if (board[targetIndex] !== null) return false; // 빈 칸만 가능
+            if (board[targetIndex] !== null) return false; 
 
-            // 룰: 상대방의 진영(가장 끝 줄)에는 말을 바로 내려놓을 수 없습니다.
             if (player === 'p1' && targetIndex <= 2) { showOverlay("금수!", "#d35400", "<small>상대 진영 첫 줄에는<br>바로 놓을 수 없습니다.</small>", 1200); return false; }
             if (player === 'p2' && targetIndex >= 9) { showOverlay("금수!", "#d35400", "<small>상대 진영 첫 줄에는<br>바로 놓을 수 없습니다.</small>", 1200); return false; }
 
-            // 데이터 업데이트
-            hands[player] = hands[player].filter(p => p.id !== pieceId); // 대기석에서 제거
-            board[targetIndex] = pieceId; // 보드에 추가
+            hands[player] = hands[player].filter(p => p.id !== pieceId); 
+            board[targetIndex] = pieceId; 
             pieceData.pos = targetIndex;
             
-            // DOM에 추가
-            const pieceEl = createPieceElement(pieceData);
+            // 보드용 객체로 전환
+            const pieceEl = document.getElementById(`piece-${pieceId}`);
+            if(pieceEl.parentNode) pieceEl.parentNode.removeChild(pieceEl);
             piecesLayer.appendChild(pieceEl);
-
+            
             finishTurn();
             return true;
         }
 
-
-        // --- 🧠 이동 규칙 및 게임 로직 (수정됨) ---
+        // --- 🧠 룰 및 에러 수정된 승급/이동 로직 ---
         function getValidMoves(cellIndex, pieceId) {
             const piece = pieces.find(p => p.id === pieceId);
             if(!piece) return [];
@@ -433,22 +401,21 @@
                 if (newRow >= 0 && newRow < 4 && newCol >= 0 && newCol < 3) {
                     const tIndex = newRow * 3 + newCol;
                     const targetPieceId = board[tIndex];
-                    // 비어있거나 상대방 말이면 이동 가능
                     if (!targetPieceId || pieces.find(p => p.id === targetPieceId).owner !== piece.owner) moves.push(tIndex);
                 }
             };
 
-            const type = piece Promoted ? '侯' : piece.type;
+            const type = piece.promoted ? '侯' : piece.type; // 💥 여기서 발생했던 문법 오류 해결!
 
-            if (type === '王') { // 모든 방향 (8칸)
+            if (type === '王') { 
                 for(let r=-1; r<=1; r++) for(let c=-1; c<=1; c++) if(r!==0 || c!==0) addMove(r, c);
-            } else if (type === '將') { // 상하좌우 (4칸)
+            } else if (type === '將') { 
                 addMove(-1, 0); addMove(1, 0); addMove(0, -1); addMove(0, 1);
-            } else if (type === '相') { // 대각선 (4칸)
+            } else if (type === '相') { 
                 addMove(-1, -1); addMove(-1, 1); addMove(1, -1); addMove(1, 1);
-            } else if (type === '子') { // 오직 앞으로 (1칸)
+            } else if (type === '子') { 
                 if (piece.owner === 'p1') addMove(-1, 0); else addMove(1, 0);
-            } else if (type === '侯') { // 뒤쪽 대각선 제외 전방향 (6칸)
+            } else if (type === '侯') { 
                 addMove(-1, 0); addMove(1, 0); addMove(0, -1); addMove(0, 1);
                 if (piece.owner === 'p1') { addMove(-1, -1); addMove(-1, 1); } 
                 else { addMove(1, -1); addMove(1, 1); }
@@ -460,17 +427,13 @@
             if(!gameActive) return;
             const clickedPieceId = board[index];
 
-            // 1. 내 말이 선택된 상태에서, 이동 가능한 칸(초록불)을 눌렀을 때 => 이동!
             if (selectedIndex !== -1 && validMoves.includes(index)) {
-                
                 const attackerPieceId = board[selectedIndex];
                 
-                // 🌟 포획 처리 (애니메이션 포함)
                 if (board[index]) {
                     const capturedPieceId = board[index];
                     const capturedPiece = pieces.find(p => p.id === capturedPieceId);
 
-                    // 왕을 잡는 경우 즉시 승리 처리 (애니메이션 없이 깔끔하게)
                     if(capturedPiece.type === '王') { 
                         board[index] = attackerPieceId;
                         board[selectedIndex] = null;
@@ -478,20 +441,16 @@
                         endGame(`${currentTurn === 'p1' ? 'P1' : 'P2'} 승리!`, "상대의 왕을 체포했습니다.");
                         return; 
                     }
-                    
-                    // 일반 말 포획 애니메이션 대기
                     await animateCapture(attackerPieceId, capturedPieceId, index);
                 } else {
-                    // 그냥 이동
                     placePieceOnCell(document.getElementById(`piece-${attackerPieceId}`), index);
                 }
 
-                // 이동 데이터 업데이트 및 🌟 승급 로직
                 const movingPiece = pieces.find(p => p.id === attackerPieceId);
                 const targetRow = Math.floor(index / 3);
                 
-                // 자(子) 승급: 상대 끝 줄에 도달하면 후(侯)로 변신
-                if (movingPiece.type === '子' && !movingPiece Promoted && ((movingPiece.owner === 'p1' && targetRow === 0) || (movingPiece.owner === 'p2' && targetRow === 3))) {
+                // 💥 승급 조건 오류 수정 (movingPiece.promoted)
+                if (movingPiece.type === '子' && !movingPiece.promoted && ((movingPiece.owner === 'p1' && targetRow === 0) || (movingPiece.owner === 'p2' && targetRow === 3))) {
                     movingPiece.promoted = true;
                     document.getElementById(`piece-${attackerPieceId}`).innerText = '侯';
                 }
@@ -504,49 +463,39 @@
                 return;
             }
 
-            // 2. 내 말을 클릭했을 때 => 선택 및 이동 경로 표시
             const clickedPiece = pieces.find(p => p.id === clickedPieceId);
             if (clickedPiece && clickedPiece.owner === currentTurn) {
                 if (selectedIndex === index) { selectedIndex = -1; validMoves = []; } 
                 else { selectedIndex = index; validMoves = getValidMoves(index, clickedPieceId); }
-                renderBoardPieces(); // 하이라이트 표시
+                renderBoardPieces(); 
                 return;
             }
 
-            // 3. 빈 공간 선택 취소
             selectedIndex = -1; validMoves = [];
             renderBoardPieces();
         }
 
-        // --- 🧠 장군 및 외통수 로직 (핵심 수정) ---
-
-        // 시뮬레이션용 데이터 복사본 생성 함수
+        // --- 🧠 시뮬레이션 및 장군/외통수 ---
         function getBoardCopy() { return [...board]; }
         function getPiecesCopy() { return pieces.map(p => ({ ...p })); }
 
-        // 장군(Check)인지 확인
         function isJanggun(attacker, targetBoard, targetPieces) {
             const defender = attacker === 'p1' ? 'p2' : 'p1';
-            // 시뮬레이션 데이터 사용
             const king = targetPieces.find(p => p.type === '王' && p.owner === defender && hands[defender].find(hp => hp.id === p.id) === undefined); 
             
-            // 왕이 대기석에 있는 특수한 경우는 장군이 아님 (승리 판정 전 단계)
             if(!king || king.pos === -1) {
                  const kingInHand = hands[defender].find(p => p.type === '王');
-                 if(kingInHand) return false; // 게임 오버 전
-                 return false; // 왕이 아예 없음 (오류 상황 방지)
+                 if(kingInHand) return false; 
+                 return false; 
             }
-            
             const kingIndex = king.pos;
 
-            // 공격자의 모든 말에 대해 왕을 공격할 수 있는지 확인
             for(let i=0; i<12; i++) {
                 const pId = targetBoard[i];
                 if(pId) {
                     const p = targetPieces.find(piece => piece.id === pId);
                     if(p.owner === attacker) {
-                        // getValidMoves 시뮬레이션용 필요
-                        const type = p Promoted ? '侯' : p.type;
+                        const type = p.promoted ? '侯' : p.type;
                         const row = Math.floor(i / 3); const col = i % 3;
                         
                         let pieceMoves = [];
@@ -558,7 +507,6 @@
                                 if(!tPId || targetPieces.find(tp=>tp.id === tPId).owner !== attacker) pieceMoves.push(tIdx);
                             }
                         }
-                        // 무브먼트 패턴 정의 (getValidMoves와 동일)
                         if (type === '王') { for(let r=-1; r<=1; r++) for(let c=-1; c<=1; c++) if(r!==0 || c!==0) addSimMove(r, c); } 
                         else if (type === '將') { addSimMove(-1, 0); addSimMove(1, 0); addSimMove(0, -1); addSimMove(0, 1); } 
                         else if (type === '相') { addSimMove(-1, -1); addSimMove(-1, 1); addSimMove(1, -1); addSimMove(1, 1); } 
@@ -572,73 +520,55 @@
             return false;
         }
 
-        // 특정 수를 두었을 때 내가 자장(Self-check)에 걸리는지 확인
         function wouldBeInCheckAfterMove(startIdx, endIdx, player) {
             const bCopy = getBoardCopy();
             const pCopy = getPiecesCopy();
-            
             const pId = bCopy[startIdx];
             const capturedPieceId = bCopy[endIdx];
 
-            // 이동 시뮬레이션
             bCopy[endIdx] = pId;
             bCopy[startIdx] = null;
             pCopy.find(p => p.id === pId).pos = endIdx;
             
-            // 잡히는 말이 왕이라면 절대 안 됨 (이 상황은 handleCellClick에서 걸러지지만 시뮬레이션 안전장치)
             if(capturedPieceId) {
                 if(pCopy.find(p=>p.id === capturedPieceId).type === '王') return true; 
-                pCopy.find(p=>p.id === capturedPieceId).pos = -1; // 포획됨 표시
+                pCopy.find(p=>p.id === capturedPieceId).pos = -1; 
             }
-
             return isJanggun(player === 'p1' ? 'p2' : 'p1', bCopy, pCopy);
         }
 
-        // 대기석 수를 두었을 때 자장에 걸리는지 확인
         function wouldBeInCheckAfterDrop(pieceId, targetIdx, player) {
             const bCopy = getBoardCopy();
             const pCopy = getPiecesCopy();
 
             bCopy[targetIdx] = pieceId;
             pCopy.find(p => p.id === pieceId).pos = targetIdx;
-
             return isJanggun(player === 'p1' ? 'p2' : 'p1', bCopy, pCopy);
         }
 
-        // 🌟 외통수(Checkmate)인지 확인
-        // 현재 장군 상태에서 피할 방법이 하나도 없다면 외통수입니다.
         function isCheckmate(defender) {
-            // 1. 보드 위 말들을 움직여서 장군을 피할 수 있는지 확인
             for (let i = 0; i < 12; i++) {
                 const pId = board[i];
                 if (pId && pieces.find(p => p.id === pId).owner === defender) {
                     const legalMoves = getValidMoves(i, pId);
                     for (let move of legalMoves) {
-                        // 하나의 수라도 장군을 벗어날 수 있다면 외통수가 아님
                         if (!wouldBeInCheckAfterMove(i, move, defender)) return false;
                     }
                 }
             }
 
-            // 2. 대기석에 있는 말을 배치해서 장군을 피할 수 있는지 확인 (십이장기 특수 룰)
             const defenderHand = hands[defender];
             for (let piece of defenderHand) {
                 for (let i = 0; i < 12; i++) {
                     if (board[i] === null) {
-                        // 드롭 금지 구역 룰 고려
                         if ((defender === 'p1' && i <= 2) || (defender === 'p2' && i >= 9)) continue;
-                        
-                        // 드롭으로 장군을 멍군할 수 있다면 외통수가 아님
                         if (!wouldBeInCheckAfterDrop(piece.id, i, defender)) return false;
                     }
                 }
             }
-
-            // 모든 경우의 수를 따져봤는데 피할 수 없다면 외통수!
             return true;
         }
 
-        // 왕 생존 승리 규칙 확인
         function checkKingSurvivalWin(player) {
             if (player === 'p1') {
                 for (let i = 0; i <= 2; i++) { const p = pieces.find(pc => pc.id === board[i]); if (p && p.type === '王' && p.owner === 'p1') return true; }
@@ -648,35 +578,27 @@
             return false;
         }
 
-        // --- 턴 관리 및 게임 상태 업데이트 ---
-
         function finishTurn() {
             selectedIndex = -1; validMoves = [];
             
-            // 룰: 왕 생존 승리 확인
             if (checkKingSurvivalWin(currentTurn)) {
                 renderBoardPieces();
                 endGame(`${currentTurn === 'p1' ? 'P1' : 'P2'} 승리!`, "왕이 적진에서 턴을 버텨냈습니다.");
                 return;
             }
 
-            // 턴 교체
             currentTurn = currentTurn === 'p1' ? 'p2' : 'p1';
             updateTurnIndicator();
             
-            // 💥 장군 및 외통수 판정 💥
             const currentDefenderJanggun = isJanggun(currentTurn === 'p1' ? 'p2' : 'p1', board, pieces);
             
             if (currentDefenderJanggun) {
-                // 장군 상태라면 외통수인지 확인
                 if (isCheckmate(currentTurn)) {
-                    // 🌟 외통수 이펙트 표시 및 게임 종료
-                    showEffect(`외통수!<br><small>${currentTurn === 'p1' ? 'P1' : 'P2'} 패배</small>`, currentTurn === 'p1' ? '#c0392b' : '#1e8f4e');
+                    showEffect(`외통수!<br><small>${currentTurn === 'p1' ? 'P1' : 'P2'} 패배</small>`, currentTurn === 'p1' ? '#c0392b' : '#1e8f4e', 3000);
                     renderBoardPieces();
                     endGame(`${currentTurn === 'p1' ? 'P2' : 'P1'} 최종 승리!`, "상대에게 외통수를 가했습니다.");
                     return;
                 } else {
-                    // 그냥 장군
                     showEffect("장군!", currentTurn === 'p1' ? '#c0392b' : '#1e8f4e');
                 }
             }
@@ -686,23 +608,19 @@
 
         function updateTurnIndicator() {
             if(currentTurn === 'p1') { turnIndicator.innerHTML = "🔴 Player 1의 턴"; turnIndicator.style.color = "#c0392b"; } 
-            else { turnIndicator.innerHTML = "🔵 Player 2의 턴"; turnIndicator.style.color = "#1e8f4e"; }
+            else { turnIndicator.innerHTML = "🟢 Player 2의 턴"; turnIndicator.style.color = "#1e8f4e"; }
         }
 
-        // 이펙트 오버레이 표시 (장군, 금수)
         function showEffect(text, color, time=1500) {
             effectOverlay.innerHTML = text;
             effectOverlay.style.color = color;
             effectOverlay.classList.add('show');
             setTimeout(() => { effectOverlay.classList.remove('show'); }, time);
         }
-
         function showOverlay(title, color, text, time) { showEffect(`<strong>${title}</strong>${text}`, color, time); }
 
-        // 게임 종료 처리
         function endGame(title, msg) {
             gameActive = false;
-            // 로직 분리 (FADE OUT 등) - 여기선 간단히 얼럿
             setTimeout(() => {
                  alert(`🏁 게임 종료 🏁\n\n${title}\n${msg}`);
                  location.reload();
