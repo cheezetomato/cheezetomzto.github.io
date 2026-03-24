@@ -220,7 +220,6 @@
                     <div class="user-name" id="nav-user-name">👤 Guest ▾</div>
                     <div class="dropdown-content">
                         <a onclick="window.changeView('home')">Home</a>
-                        <a onclick="window.changeView('recent')">Recent</a>
                         <a onclick="window.changeView('all')">All Films</a>
                         <a onclick="window.changeView('rating')">By Rating</a>
                         <a onclick="window.changeView('recommended')">Recommended</a>
@@ -659,14 +658,8 @@
             } 
             else {
                 container.style.paddingTop = '80px';
-
-                if (currentView === 'recent') {
-                    const recentMovies = displayMovies.slice(0, 60);
-                    container.innerHTML += createGridSectionHTML('recent-page', 'RECENTLY WATCHED', '최근 시청한 영화 목록 전체입니다.');
-                    const recentGrid = document.getElementById('grid-recent-page');
-                    if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
-                }
-                else if (currentView === 'all') {
+                
+                if (currentView === 'all') {
                     // 🌟 수정 2: (Recent First) 영문 표시 추가 🌟
                     container.innerHTML += createGridSectionHTML('all-page', 'ALL FILMS <span style="font-size:0.9rem; color:#788a9e; font-weight:normal; margin-left:10px;">(Recent First)</span>', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
                     const allGrid = document.getElementById('grid-all-page');
