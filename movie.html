@@ -352,52 +352,79 @@
             else header.classList.remove('scrolled');
         });
 
-        // 🌟 수정 3: DOM 복제 기반 스무스 무한 캐러셀 🌟
-        // 레이아웃 깨짐을 방지하기 위해 CSS 변형(Transform) 대신 안정적인 네이티브 스크롤과 자바스크립트를 결합했습니다.
+        // 🌟 수정 2, 3: 정교한 픽셀 계산 + DOM 복제를 통한 부드러운 루핑 🌟
         window.scrollCarousel = function(containerId, direction) {
             const container = document.getElementById(containerId);
             if (!container || container.isAnimating) return;
             
-            const scrollAmount = 176 * 6; // 6개 카드 너비
-            const maxScroll = container.scrollWidth - container.clientWidth;
+            const itemWidth = 176; // 카드(160) + 간격(16)
+            const itemsPerPage = 6;
+            const scrollAmount = itemWidth * itemsPerPage; // 한 번에 이동할 픽셀 (1056px)
+            
+            const totalItems = parseInt(container.getAttribute('data-total') || 0);
+            if (totalItems <= itemsPerPage) return;
+
+            // 눈속임을 제외한 오리지널 아이템의 진짜 최대 스크롤 가능 수치
+            const originalMaxScroll = (totalItems * itemWidth) - container.clientWidth;
             
             if (direction === 1) { // 오른쪽 화살표 (다음 페이지)
-                if (container.scrollLeft >= maxScroll - 10) { 
-                    // 끝에 도달했을 때: 맨 앞의 요소들을 복제해서 뒤에 붙인 후 스무스 스크롤, 그 후 눈속임으로 0으로 점프
+                // 현재 끝부분에 거의 도달했을 때 무한 루핑 발동
+                if (container.scrollLeft >= originalMaxScroll - 10) { 
                     container.isAnimating = true;
+                    
+                    // 1. 원본 아이템 중 맨 앞 6개를 복제
                     const cards = Array.from(container.querySelectorAll('.movie-card:not(.clone)'));
-                    const clones = cards.slice(0, 6).map(c => { const clone = c.cloneNode(true); clone.classList.add('clone'); return clone; });
+                    const clones = cards.slice(0, itemsPerPage).map(c => { 
+                        const clone = c.cloneNode(true); 
+                        clone.classList.add('clone'); 
+                        return clone; 
+                    });
+                    
+                    // 2. 뒤에 복제본 몰래 붙이기
                     container.append(...clones);
                     
+                    // 3. 복제본 쪽으로 스무스하게 스크롤
                     container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
                     
+                    // 4. 스크롤 애니메이션이 끝나면(약 600ms 뒤), 맨 처음 위치로 티 안나게 순간이동
                     setTimeout(() => {
+                        container.isAnimating = false; // 상태 먼저 풀기
                         container.scrollTo({ left: 0, behavior: 'auto' });
                         clones.forEach(c => c.remove());
-                        container.isAnimating = false;
-                    }, 500);
+                    }, 600);
                 } else {
+                    // 끝부분이 아니라면, 남은 개수에 맞춰 브라우저가 알아서 6-6-6-2 등 맞춰서 스크롤함
                     container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
                 }
             } else { // 왼쪽 화살표 (이전 페이지)
+                // 맨 처음에 있을 때 뒤로 무한 루핑 발동
                 if (container.scrollLeft <= 10) { 
-                    // 맨 앞에 도달했을 때: 맨 뒤의 요소들을 복제해서 앞에 붙이고 스무스 스크롤, 그 후 마지막으로 점프
                     container.isAnimating = true;
-                    const cards = Array.from(container.querySelectorAll('.movie-card:not(.clone)'));
-                    const clones = cards.slice(-6).map(c => { const clone = c.cloneNode(true); clone.classList.add('clone'); return clone; });
                     
+                    // 1. 원본 아이템 중 맨 뒤 6개를 복제
+                    const cards = Array.from(container.querySelectorAll('.movie-card:not(.clone)'));
+                    const clones = cards.slice(-itemsPerPage).map(c => { 
+                        const clone = c.cloneNode(true); 
+                        clone.classList.add('clone'); 
+                        return clone; 
+                    });
+                    
+                    // 2. 맨 앞에 복제본 몰래 붙이기
                     container.prepend(...clones);
-                    // 앞에 요소가 추가되면 스크롤이 밀리므로 위치를 강제로 잡아줍니다.
+                    
+                    // 3. 요소가 앞에 생겼으므로 시야가 밀리지 않게 강제로 스크롤 위치 조정
                     container.scrollLeft += scrollAmount; 
                     
+                    // 4. 렌더링 후 스무스하게 왼쪽 끝(0)으로 스크롤 이동
                     requestAnimationFrame(() => {
                         container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                        
+                        // 5. 애니메이션 끝나면 맨 뒤의 실제 위치로 티 안나게 순간이동
                         setTimeout(() => {
                             clones.forEach(c => c.remove());
-                            // 실제 마지막 위치로 조용히(auto) 점프
-                            container.scrollTo({ left: container.scrollWidth - container.clientWidth, behavior: 'auto' });
                             container.isAnimating = false;
-                        }, 500);
+                            container.scrollTo({ left: originalMaxScroll, behavior: 'auto' });
+                        }, 600);
                     });
                 } else {
                     container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
@@ -405,6 +432,7 @@
             }
         };
 
+        // 🌟 수정 1: 사라지는 페이지 수(인디케이터) 다시 고정 표시 🌟
         window.attachScrollListeners = function() {
             document.querySelectorAll('.movie-grid').forEach(grid => {
                 const indId = 'ind-' + grid.id;
@@ -413,14 +441,24 @@
                     if(!ind) return;
                     
                     const totalItems = parseInt(grid.getAttribute('data-total') || 0);
-                    if(totalItems <= 6) return; // 이미 inline style로 가려져 있음
+                    // 6개 이하면 아예 숨김. 초과면 무조건 표시
+                    if(totalItems <= 6) {
+                        ind.style.display = 'none';
+                        return;
+                    } else {
+                        ind.style.display = 'block'; 
+                    }
+
+                    // 복제 애니메이션 중에는 페이지 수가 깜빡거리지 않게 계산 보류
+                    if (grid.isAnimating) return;
 
                     const totalPages = Math.ceil(totalItems / 6);
-                    const maxScroll = grid.scrollWidth - grid.clientWidth;
+                    const originalMaxScroll = (totalItems * 176) - grid.clientWidth;
                     
                     let currentPage;
-                    if (grid.scrollLeft >= maxScroll - 10) {
-                        currentPage = totalPages; // 끝에 닿으면 무조건 막 페이지
+                    // 거의 끝에 다다랐으면 무조건 마지막 페이지로 인식
+                    if (grid.scrollLeft >= originalMaxScroll - 10) {
+                        currentPage = totalPages; 
                     } else {
                         currentPage = Math.floor(grid.scrollLeft / (176 * 6)) + 1;
                     }
@@ -532,7 +570,6 @@
             `;
         }
 
-        // 안정적인 오리지널 캐러셀 렌더링 방식 복구
         function createSectionHTML(id, title, desc, movieArray) {
             if (!movieArray || movieArray.length === 0) return '';
             
@@ -561,7 +598,6 @@
             `;
         }
 
-        // 전체/최근 나열형 섹션
         function createGridSectionHTML(id, title, desc) {
             return `
                 <section class="section view-section" id="section-${id}">
@@ -576,7 +612,6 @@
             `;
         }
 
-        // 🌟 수정 1: 히어로 슬라이더 하얀 상세보기 버튼 제거됨 🌟
         function createHeroHTML(movies) {
             if (!movies || movies.length === 0) return '';
             window.heroTotal = movies.length;
@@ -587,7 +622,6 @@
                 const posterSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}` : 'https://via.placeholder.com/300x450/1a1e24/788a9e?text=No+Poster';
                 const ratingVal = parseFloat(movie.rating) || 0;
                 
-                // 버튼 없이 슬라이드 영역 클릭만으로 상세보기가 열립니다.
                 return `
                     <div class="hero-slide" onclick="window.openDetailModal(${movie.originalIndex})">
                         <div class="hero-bg" style="background-image: url('${bgSrc}');"></div>
@@ -660,7 +694,6 @@
                 container.style.paddingTop = '80px';
                 
                 if (currentView === 'all') {
-                    // 🌟 수정 2: (Recent First) 영문 표시 추가 🌟
                     container.innerHTML += createGridSectionHTML('all-page', 'ALL FILMS <span style="font-size:0.9rem; color:#788a9e; font-weight:normal; margin-left:10px;">(Recent First)</span>', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
                     const allGrid = document.getElementById('grid-all-page');
                     if (displayMovies.length > 0) displayMovies.forEach(m => allGrid.innerHTML += createPosterHTML(m, m.originalIndex));
