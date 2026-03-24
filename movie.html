@@ -77,7 +77,7 @@
         /* 3. 대형 히어로 배너 */
         .hero-slider-wrapper { position: relative; width: 100%; height: 75vh; min-height: 500px; margin-top: -80px; overflow: hidden; }
         .hero-slides-container { display: flex; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
-        .hero-slide { flex: 0 0 100%; position: relative; width: 100%; height: 100%; display: flex; align-items: flex-end; padding-bottom: 60px; overflow: hidden; box-sizing: border-box; cursor: pointer; } /* 클릭 가능하게 커서 변경 */
+        .hero-slide { flex: 0 0 100%; position: relative; width: 100%; height: 100%; display: flex; align-items: flex-end; padding-bottom: 60px; overflow: hidden; box-sizing: border-box; cursor: pointer; } 
         
         .hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center 20%; filter: blur(12px) brightness(0.4); transform: scale(1.1); z-index: 1; }
         .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, #101215 0%, rgba(16,18,21,0.5) 40%, rgba(16,18,21,0) 100%); z-index: 2; }
@@ -91,9 +91,6 @@
         .hero-meta { font-size: 1.1rem; color: #d8e0e8; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; gap: 15px; align-items: center; }
         .hero-rating { color: #d4af37; font-weight: bold; font-size: 1.2rem; }
         .hero-desc { max-width: 600px; color: #a5b4c4; line-height: 1.6; font-size: 1.05rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.5); margin-bottom: 25px;}
-        
-        /* 🌟 수정 1: 히어로 슬라이더 상세보기 버튼 스타일 제거 🌟 */
-        /* .hero-btn { ... } 제거됨 */
 
         /* 히어로 전용 네비게이션 화살표 */
         .hero-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; font-size: 24px; cursor: pointer; z-index: 10; display: flex; justify-content: center; align-items: center; transition: 0.2s; backdrop-filter: blur(5px); }
@@ -116,8 +113,8 @@
         .section-desc { color: #788a9e; font-size: 0.95rem; margin-top: 8px; font-weight: 400; line-height: 1.4; margin-bottom: 0; }
         .carousel-indicator { font-size: 0.9rem; font-weight: 600; color: #a5b4c4; background: rgba(255,255,255,0.08); padding: 5px 14px; border-radius: 20px; display: none; }
 
-        /* 🌟 수정 3: 부드러운 무한 루핑을 위한 캐러셀 CSS 개편 🌟 */
-        .carousel-container { position: relative; margin-top: 10px; padding: 0 50px; overflow: hidden; } /* overflow hidden 추가 */
+        /* 캐러셀 디자인 */
+        .carousel-container { position: relative; margin-top: 10px; padding: 0 50px; }
         
         .carousel-btn {
             position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px;
@@ -130,41 +127,36 @@
         .carousel-btn.left { left: 0px; }
         .carousel-btn.right { right: 0px; }
 
-        /* 네이티브 스크롤 대신 JS Transform을 사용하므로 스타일 변경 */
-        .movie-grid { 
-            display: flex; gap: 16px; padding: 15px 5px; 
-            /* overflow-x: auto; scroll-behavior: smooth; 제거 */
-            will-change: transform; /* 성능 최적화 */
-        }
-        /* .movie-grid::-webkit-scrollbar { display: none; } 제거 */
+        /* 안정적인 네이티브 스크롤 복구 (scroll-behavior 제거) */
+        .movie-grid { display: flex; gap: 16px; overflow-x: auto; padding: 15px 5px; scrollbar-width: none; -ms-overflow-style: none; }
+        .movie-grid::-webkit-scrollbar { display: none; }
 
         /* 격자형(Grid Wrap) 디자인 */
         .movie-grid-wrap { display: flex; flex-wrap: wrap; gap: 16px; padding: 15px 5px; justify-content: flex-start; }
 
         .movie-card { 
-            flex: 0 0 160px; /* 카드 폭 160px 고정 */
+            flex: 0 0 160px;
             background-color: transparent; border-radius: 6px; overflow: hidden; position: relative; 
-            transition: all 0.3s ease; aspect-ratio: 2/3; border: 2px solid transparent; 
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; aspect-ratio: 2/3; border: 2px solid transparent; 
             box-sizing: border-box; cursor: pointer; 
         }
         .movie-card:hover { border-color: #e50914; transform: scale(1.05) translateY(-5px); z-index: 2; box-shadow: 0 15px 30px rgba(0,0,0,0.8); }
         .poster-wrapper { width: 100%; height: 100%; }
-        .tmdb-poster { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+        .tmdb-poster { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; pointer-events: none; }
 
-        .poster-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(16, 18, 21, 0.95) 0%, rgba(16, 18, 21, 0.6) 40%, rgba(16, 18, 21, 0) 100%); color: white; padding: 15px 12px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; text-align: center; opacity: 0; transition: opacity 0.3s ease; }
+        .poster-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(16, 18, 21, 0.95) 0%, rgba(16, 18, 21, 0.6) 40%, rgba(16, 18, 21, 0) 100%); color: white; padding: 15px 12px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; text-align: center; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
         .movie-card:hover .poster-overlay { opacity: 1; }
         .overlay-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.9); }
         .overlay-rating { color: #d4af37; font-size: 0.85rem; font-weight: bold; }
         .overlay-memo { font-size: 0.75rem; color: #a5b4c4; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
 
-        .edit-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); width: 30px; height: 30px; border-radius: 50%; color: #fff; cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; z-index: 10; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s; }
+        .edit-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); width: 30px; height: 30px; border-radius: 50%; color: #fff; cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; z-index: 10; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s; pointer-events: auto; }
         .edit-btn:hover { background: #e50914; border-color: #e50914; transform: scale(1.1); }
         .movie-card:hover .edit-btn { display: flex; }
 
         @media (max-width: 768px) {
             .carousel-btn { display: none; }
-            .carousel-container { padding: 0; overflow: auto; } /* 모바일에선 네이티브 스크롤 허용 */
-            .carousel-container .movie-grid { transform: none !important; transition: none !important; width: auto !important; }
+            .carousel-container { padding: 0; }
             .movie-card { flex: 0 0 130px; }
             .hero-title { font-size: 2.2rem; }
             .hero-nav { display: none; }
@@ -352,13 +344,6 @@
         let currentView = 'home';
         let searchQueryGlobal = ''; 
 
-        // 캐러셀 상태 저장 객체
-        window.carouselStates = {};
-        const ITEM_WIDTH = 160; // 카드 너비
-        const GAP = 16; // 간격
-        const ITEMS_PER_PAGE = 6;
-        const MOVE_WIDTH = (ITEM_WIDTH + GAP) * ITEMS_PER_PAGE; // 한번에 이동할 너비 (1056px)
-
         window.heroTotal = 0;
         window.currentHeroIndex = 0;
 
@@ -368,64 +353,90 @@
             else header.classList.remove('scrolled');
         });
 
-        // 🌟 수정 3: JS Transform 기반 무한 캐러셀 함수 🌟
-        window.scrollCarousel = function(carouselId, direction) {
-            // 모바일 환경(max-width: 768px)에서는 JS 스크롤 작동 안함 (CSS로 네이티브 스크롤)
-            if (window.innerWidth <= 768) return;
-
-            const state = window.carouselStates[carouselId];
-            if (!state || state.isTransitioning) return; // 애니메이션 중이면 클릭 방지
-
-            state.isTransitioning = true;
-            state.currentPage += direction;
-
-            const track = document.getElementById(state.trackId);
-            track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        // 🌟 수정 3: DOM 복제 기반 스무스 무한 캐러셀 🌟
+        // 레이아웃 깨짐을 방지하기 위해 CSS 변형(Transform) 대신 안정적인 네이티브 스크롤과 자바스크립트를 결합했습니다.
+        window.scrollCarousel = function(containerId, direction) {
+            const container = document.getElementById(containerId);
+            if (!container || container.isAnimating) return;
             
-            // 이동할 오프셋 계산 (앞에 복제된 6개 아이템 너비를 기본으로 깔고 계산)
-            const xOffset = - (state.currentPage * MOVE_WIDTH);
-            track.style.transform = `translateX(${xOffset}px)`;
-
-            // 애니메이션 종료 후 루핑 처리
-            setTimeout(() => {
-                handleLoop(carouselId);
-            }, 600); // transition 시간과 동일하게
+            const scrollAmount = 176 * 6; // 6개 카드 너비
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            
+            if (direction === 1) { // 오른쪽 화살표 (다음 페이지)
+                if (container.scrollLeft >= maxScroll - 10) { 
+                    // 끝에 도달했을 때: 맨 앞의 요소들을 복제해서 뒤에 붙인 후 스무스 스크롤, 그 후 눈속임으로 0으로 점프
+                    container.isAnimating = true;
+                    const cards = Array.from(container.querySelectorAll('.movie-card:not(.clone)'));
+                    const clones = cards.slice(0, 6).map(c => { const clone = c.cloneNode(true); clone.classList.add('clone'); return clone; });
+                    container.append(...clones);
+                    
+                    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                    
+                    setTimeout(() => {
+                        container.scrollTo({ left: 0, behavior: 'auto' });
+                        clones.forEach(c => c.remove());
+                        container.isAnimating = false;
+                    }, 500);
+                } else {
+                    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+            } else { // 왼쪽 화살표 (이전 페이지)
+                if (container.scrollLeft <= 10) { 
+                    // 맨 앞에 도달했을 때: 맨 뒤의 요소들을 복제해서 앞에 붙이고 스무스 스크롤, 그 후 마지막으로 점프
+                    container.isAnimating = true;
+                    const cards = Array.from(container.querySelectorAll('.movie-card:not(.clone)'));
+                    const clones = cards.slice(-6).map(c => { const clone = c.cloneNode(true); clone.classList.add('clone'); return clone; });
+                    
+                    container.prepend(...clones);
+                    // 앞에 요소가 추가되면 스크롤이 밀리므로 위치를 강제로 잡아줍니다.
+                    container.scrollLeft += scrollAmount; 
+                    
+                    requestAnimationFrame(() => {
+                        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                        setTimeout(() => {
+                            clones.forEach(c => c.remove());
+                            // 실제 마지막 위치로 조용히(auto) 점프
+                            container.scrollTo({ left: container.scrollWidth - container.clientWidth, behavior: 'auto' });
+                            container.isAnimating = false;
+                        }, 500);
+                    });
+                } else {
+                    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                }
+            }
         };
 
-        // 🌟 수정 3 추가: 무한 루핑 처리 함수 🌟
-        function handleLoop(carouselId) {
-            const state = window.carouselStates[carouselId];
-            const track = document.getElementById(state.trackId);
+        window.attachScrollListeners = function() {
+            document.querySelectorAll('.movie-grid').forEach(grid => {
+                const indId = 'ind-' + grid.id;
+                const updateInd = () => {
+                    const ind = document.getElementById(indId);
+                    if(!ind) return;
+                    
+                    const totalItems = parseInt(grid.getAttribute('data-total') || 0);
+                    if(totalItems <= 6) return; // 이미 inline style로 가려져 있음
 
-            track.style.transition = 'none'; // 눈속임을 위해 애니메이션 끔
+                    const totalPages = Math.ceil(totalItems / 6);
+                    const maxScroll = grid.scrollWidth - grid.clientWidth;
+                    
+                    let currentPage;
+                    if (grid.scrollLeft >= maxScroll - 10) {
+                        currentPage = totalPages; // 끝에 닿으면 무조건 막 페이지
+                    } else {
+                        currentPage = Math.floor(grid.scrollLeft / (176 * 6)) + 1;
+                    }
+                    
+                    if(currentPage > totalPages) currentPage = totalPages;
+                    if(currentPage < 1) currentPage = 1;
+                    
+                    ind.innerText = `${currentPage} / ${totalPages}`;
+                };
+                
+                updateInd(); 
+                grid.addEventListener('scroll', updateInd); 
+            });
+        };
 
-            // 마지막 -> 처음으로 넘어갔을 때
-            if (state.currentPage > state.totalPages) {
-                state.currentPage = 1;
-            } 
-            // 처음 -> 마지막으로 넘어갔을 때
-            else if (state.currentPage < 1) {
-                state.currentPage = state.totalPages;
-            }
-
-            // 실제 위치로 순간이동
-            const xOffset = - (state.currentPage * MOVE_WIDTH);
-            track.style.transform = `translateX(${xOffset}px)`;
-            
-            updateIndicator(carouselId);
-            state.isTransitioning = false;
-        }
-
-        // 인디케이터 업데이트
-        function updateIndicator(carouselId) {
-            const state = window.carouselStates[carouselId];
-            const ind = document.getElementById(state.indicatorId);
-            if(ind) {
-                ind.innerText = `${state.currentPage} / ${state.totalPages}`;
-            }
-        }
-
-        // 히어로 배너 슬라이더 (기존 유지, 부드럽게 무한 루핑 됨)
         window.moveHero = function(direction) {
             window.currentHeroIndex += direction;
             if (window.currentHeroIndex < 0) window.currentHeroIndex = window.heroTotal - 1;
@@ -441,7 +452,6 @@
             }
         };
 
-        // ... 인증, 로딩, 모달 관련 함수 (기존과 동일) ...
         onAuthStateChanged(auth, (user) => {
             if (user && user.uid === 'LjObLa6943Q1xyyVthX2aFA1zRQ2') {
                 isAdmin = true;
@@ -523,50 +533,14 @@
             `;
         }
 
-        // 🌟 수정 3: JS 캐러셀을 위한 HTML 구조 변경 및 아이템 복제 로직 추가 🌟
-        function createCarouselSectionHTML(id, title, desc, movieArray) {
-            const carouselId = `carousel-${id}`;
-            const trackId = `track-${id}`;
-            const indicatorId = `ind-grid-${id}`;
-            
+        // 안정적인 오리지널 캐러셀 렌더링 방식 복구
+        function createSectionHTML(id, title, desc, movieArray) {
             if (!movieArray || movieArray.length === 0) return '';
-
-            const originalTotalItems = movieArray.length;
-            const totalPages = Math.ceil(originalTotalItems / ITEMS_PER_PAGE);
             
-            // 캐러셀 상태 등록
-            window.carouselStates[carouselId] = {
-                currentPage: 1, // 실제 1페이지 (앞에 복제본 1페이지 분량이 숨겨져 있음)
-                totalPages: totalPages,
-                trackId: trackId,
-                indicatorId: indicatorId,
-                isTransitioning: false
-            };
-
-            // 🌟 무한 루핑의 핵심: 아이템 복제 🌟
-            // 1페이지 내용 HTML 생성
-            const firstPageMovies = movieArray.slice(0, ITEMS_PER_PAGE);
-            let firstPageHTML = '';
-            firstPageMovies.forEach(m => firstPageHTML += createPosterHTML(m, m.originalIndex));
-
-            // 마지막 페이지 내용 HTML 생성
-            const lastPageStartIndex = (totalPages - 1) * ITEMS_PER_PAGE;
-            const lastPageMovies = movieArray.slice(lastPageStartIndex, lastPageStartIndex + ITEMS_PER_PAGE);
-            let lastPageHTML = '';
-            lastPageMovies.forEach(m => lastPageHTML += createPosterHTML(m, m.originalIndex));
-
-            // 원본 전체 HTML 생성
-            let originalHTML = '';
-            movieArray.forEach(m => originalHTML += createPosterHTML(m, m.originalIndex));
-
-            // 최종 트랙 HTML: [마지막페이지 복제] + [원본전체] + [1페이지 복제]
-            const trackHTML = lastPageHTML + originalHTML + firstPageHTML;
-
-            // 영화가 6개 이하면 화살표/인디케이터 숨김 처리 (JS에서 추가 처리)
-            const hideClass = originalTotalItems <= ITEMS_PER_PAGE ? 'display:none;' : '';
-
-            // 초기 Transform 위치 설정 (앞에 복제된 마지막 페이지 너비만큼 왼쪽으로 이동해 있음)
-            const initialTransform = window.innerWidth > 768 ? `transform: translateX(-${MOVE_WIDTH}px);` : '';
+            let trackHTML = '';
+            movieArray.forEach(m => trackHTML += createPosterHTML(m, m.originalIndex));
+            
+            const hideClass = movieArray.length <= 6 ? 'display:none;' : '';
 
             return `
                 <section class="section view-section" id="section-${id}">
@@ -575,20 +549,20 @@
                             <div class="section-title">${title}</div>
                             ${desc ? `<p class="section-desc">${desc}</p>` : ''}
                         </div>
-                        <div class="carousel-indicator" id="${indicatorId}" style="${hideClass}">1 / ${totalPages}</div>
+                        <div class="carousel-indicator" id="ind-grid-${id}" style="${hideClass}">1 / 1</div>
                     </div>
-                    <div class="carousel-container" id="${carouselId}">
-                        <button class="carousel-btn left" onclick="window.scrollCarousel('${carouselId}', -1)" style="${hideClass}">&#10094;</button>
-                        <div class="movie-grid" id="${trackId}" style="${initialTransform}">
+                    <div class="carousel-container">
+                        <button class="carousel-btn left" onclick="window.scrollCarousel('grid-${id}', -1)" style="${hideClass}">&#10094;</button>
+                        <div class="movie-grid" id="grid-${id}" data-total="${movieArray.length}">
                             ${trackHTML}
                         </div>
-                        <button class="carousel-btn right" onclick="window.scrollCarousel('${carouselId}', 1)" style="${hideClass}">&#10095;</button>
+                        <button class="carousel-btn right" onclick="window.scrollCarousel('grid-${id}', 1)" style="${hideClass}">&#10095;</button>
                     </div>
                 </section>
             `;
         }
 
-        // 격자형(Grid Wrap) 섹션 생성 함수 (기존 유지 - All Films 등에 사용)
+        // 전체/최근 나열형 섹션
         function createGridSectionHTML(id, title, desc) {
             return `
                 <section class="section view-section" id="section-${id}">
@@ -603,7 +577,7 @@
             `;
         }
 
-        // 히어로 멀티 슬라이더
+        // 🌟 수정 1: 히어로 슬라이더 하얀 상세보기 버튼 제거됨 🌟
         function createHeroHTML(movies) {
             if (!movies || movies.length === 0) return '';
             window.heroTotal = movies.length;
@@ -613,7 +587,8 @@
                 const bgSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w1280${movie.poster_path}` : 'https://via.placeholder.com/1280x720/1a1e24/788a9e?text=No+Image';
                 const posterSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}` : 'https://via.placeholder.com/300x450/1a1e24/788a9e?text=No+Poster';
                 const ratingVal = parseFloat(movie.rating) || 0;
-                // 🌟 수정 1: 슬라이드 전체 클릭 시 상세정보 모달 오픈, 하얀 버튼 HTML 제거 🌟
+                
+                // 버튼 없이 슬라이드 영역 클릭만으로 상세보기가 열립니다.
                 return `
                     <div class="hero-slide" onclick="window.openDetailModal(${movie.originalIndex})">
                         <div class="hero-bg" style="background-image: url('${bgSrc}');"></div>
@@ -639,8 +614,8 @@
             let navHtml = '';
             if (window.heroTotal > 1) {
                 navHtml = `
-                    <button class="hero-nav left" onclick="window.moveHero(-1)">&#10094;</button>
-                    <button class="hero-nav right" onclick="window.moveHero(1)">&#10095;</button>
+                    <button class="hero-nav left" onclick="event.stopPropagation(); window.moveHero(-1)">&#10094;</button>
+                    <button class="hero-nav right" onclick="event.stopPropagation(); window.moveHero(1)">&#10095;</button>
                     <div class="hero-pagination" id="hero-page-indicator">1 / ${window.heroTotal}</div>
                 `;
             }
@@ -658,7 +633,6 @@
         window.changeView = function(viewName) {
             currentView = viewName;
             if(viewName !== 'local-search') document.getElementById('local-search-input').value = '';
-            window.carouselStates = {}; // 뷰 바뀔 때 캐러셀 상태 초기화
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => { renderView(); }, 150);
         };
@@ -677,35 +651,30 @@
                 const perfectMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0);
                 if(perfectMovies.length > 0) container.innerHTML += createHeroHTML(perfectMovies);
 
-                const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 18); // 18개까지 렌더링
-                // 🌟 수정 3: 개편된 캐러셀 함수(createCarouselSectionHTML) 적용 🌟
-                container.innerHTML += createCarouselSectionHTML('welcome', 'PERFECT 5.0', '최고의 평점을 준 완벽한 영화들입니다.', topMovies);
+                const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 18);
+                container.innerHTML += createSectionHTML('welcome', 'PERFECT 5.0', '최고의 평점을 준 완벽한 영화들입니다.', topMovies);
 
-                const recentMovies = displayMovies.slice(0, 24); // 24개까지 렌더링
-                // 🌟 수정 3: 개편된 캐러셀 함수(createCarouselSectionHTML) 적용 🌟
-                container.innerHTML += createCarouselSectionHTML('recent-home', 'RECENTLY WATCHED', '최근에 시청한 영화입니다.', recentMovies);
+                const recentMovies = displayMovies.slice(0, 24);
+                container.innerHTML += createSectionHTML('recent-home', 'RECENTLY WATCHED', '최근에 시청한 영화입니다.', recentMovies);
             } 
             else {
                 container.style.paddingTop = '80px';
 
                 if (currentView === 'recent') {
                     const recentMovies = displayMovies.slice(0, 60);
-                    // 목록 나열형(그리드) 섹션 사용
                     container.innerHTML += createGridSectionHTML('recent-page', 'RECENTLY WATCHED', '최근 시청한 영화 목록 전체입니다.');
                     const recentGrid = document.getElementById('grid-recent-page');
                     if (recentMovies.length > 0) recentMovies.forEach(m => recentGrid.innerHTML += createPosterHTML(m, m.originalIndex));
                 }
                 else if (currentView === 'all') {
-                    // 🌟 수정 2: 'ALL FILMS' 타이틀 옆에 (Recent First) 추가 🌟
-                    // 목록 나열형(그리드) 섹션 사용
+                    // 🌟 수정 2: (Recent First) 영문 표시 추가 🌟
                     container.innerHTML += createGridSectionHTML('all-page', 'ALL FILMS <span style="font-size:0.9rem; color:#788a9e; font-weight:normal; margin-left:10px;">(Recent First)</span>', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
                     const allGrid = document.getElementById('grid-all-page');
                     if (displayMovies.length > 0) displayMovies.forEach(m => allGrid.innerHTML += createPosterHTML(m, m.originalIndex));
                 }
                 else if (currentView === 'recommended') {
                     const recommendedMovies = displayMovies.filter(m => (m.memo || '').includes('#추천'));
-                    // 추천 영역은 캐러셀로 유지 (최대 18개)
-                    container.innerHTML += createCarouselSectionHTML('rec-page', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.', recommendedMovies.slice(0, 18));
+                    container.innerHTML += createSectionHTML('rec-page', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.', recommendedMovies.slice(0, 18));
                     if (recommendedMovies.length === 0) document.getElementById('section-rec-page').innerHTML += '<div style="color:#788a9e; margin-top:10px; padding:0 20px;">추천 영화가 없습니다. 메모에 #추천 을 적어보세요.</div>';
                 }
                 else if (currentView === 'rating') {
@@ -720,11 +689,9 @@
                     Object.keys(ratingGroups).sort((a,b) => parseFloat(b) - parseFloat(a)).forEach((k, idx) => {
                         const sId = `rating-${idx}`;
                         const titleHtml = `<span style="color: #d4af37;">★ ${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${ratingGroups[k].length}편)</span></span>`;
-                        // 평점별 그룹은 캐러셀로 유지 (그룹별 최대 18개 나열)
-                        container.innerHTML += createCarouselSectionHTML(sId, titleHtml, null, ratingGroups[k].slice(0, 18));
+                        container.innerHTML += createSectionHTML(sId, titleHtml, null, ratingGroups[k].slice(0, 18));
                     });
                 }
-                // ... Region, Genre, Local-search 영역 (캐러셀 함수로 업데이트) ...
                 else if (currentView === 'region') {
                     container.innerHTML += `<div class="section view-section" style="padding-bottom:0;"><h2 style="color:#fff; padding-bottom:5px; font-size:1.5rem; margin:0;">BY REGION</h2></div>`;
                     const regionGroups = {};
@@ -736,7 +703,7 @@
                     Object.keys(regionGroups).sort().forEach((k, idx) => {
                         const sId = `region-${idx}`;
                         const titleHtml = `<span style="color: #fff;">${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${regionGroups[k].length}편)</span></span>`;
-                        container.innerHTML += createCarouselSectionHTML(sId, titleHtml, null, regionGroups[k].slice(0, 18));
+                        container.innerHTML += createSectionHTML(sId, titleHtml, null, regionGroups[k].slice(0, 18));
                     });
                 }
                 else if (currentView === 'genre') {
@@ -750,14 +717,13 @@
                     Object.keys(genreGroups).sort().forEach((k, idx) => {
                         const sId = `genre-${idx}`;
                         const titleHtml = `<span style="color: #fff;">${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${genreGroups[k].length}편)</span></span>`;
-                        container.innerHTML += createCarouselSectionHTML(sId, titleHtml, null, genreGroups[k].slice(0, 18));
+                        container.innerHTML += createSectionHTML(sId, titleHtml, null, genreGroups[k].slice(0, 18));
                     });
                 }
                 else if (currentView === 'local-search') {
                     const safeQuery = searchQueryGlobal.replace(/\s+/g, '').toLowerCase();
                     const matchedMovies = displayMovies.filter(m => (m.title || '').replace(/\s+/g, '').toLowerCase().includes(safeQuery));
                     
-                    // 검색 결과는 그리드 나열형 섹션 사용
                     container.innerHTML += createGridSectionHTML('local-search-page', 'SEARCH RESULTS', `'${searchQueryGlobal}' 검색 결과입니다. (총 ${matchedMovies.length}편)`);
                     const targetContainer = document.getElementById('grid-local-search-page');
                     
@@ -765,9 +731,10 @@
                     else document.getElementById('section-local-search-page').innerHTML += `<div style="color: #788a9e; text-align: center; margin-top: 20px; width:100%;">앗, 아직 기록되지 않은 영화이거나 검색어가 잘못되었어요. 😢</div>`;
                 }
             }
+
+            window.attachScrollListeners();
         }
 
-        // ... TMDB 검색 및 Firebase 저장 관련 함수 (기존과 동일) ...
         function getSpaceVariations(str) {
             if (str.includes(' ') || str.length < 2 || str.length > 8) return [];
             const vars = [];
