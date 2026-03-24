@@ -113,7 +113,7 @@
         .section-desc { color: #788a9e; font-size: 0.95rem; margin-top: 8px; font-weight: 400; line-height: 1.4; margin-bottom: 0; }
         .carousel-indicator { font-size: 0.9rem; font-weight: 600; color: #a5b4c4; background: rgba(255,255,255,0.08); padding: 5px 14px; border-radius: 20px; display: none; }
 
-        /* 캐러셀 디자인 */
+        /* 🌟 캐러셀 디자인 개편 (호버 잘림 방지용 뷰포트) 🌟 */
         .carousel-container { position: relative; margin-top: 10px; padding: 0 50px; }
         
         .carousel-btn {
@@ -127,16 +127,19 @@
         .carousel-btn.left { left: 0px; }
         .carousel-btn.right { right: 0px; }
 
-        /* 🌟 수정: 6개 단위 프리렌더링을 위한 뷰포트 & 트랙 CSS 🌟 */
         .carousel-viewport {
             overflow: hidden;
             width: 100%;
-            max-width: 1040px; /* 160px * 6 + 16px * 5 = 딱 6개 폭 */
-            padding: 15px 0; /* 그림자가 잘리지 않게 상하 여백 부여 */
+            max-width: 1072px; /* (160px*6장) + (16px*5개 간격) + 좌우 padding 16px*2 = 1072px */
+            margin: 0 auto;
         }
+        
         .movie-grid { 
-            display: flex; gap: 16px; width: max-content; 
-            /* 트랜지션은 JS에서 제어합니다 */
+            display: flex; 
+            gap: 16px; 
+            width: max-content; 
+            padding: 25px 16px; /* 상하 호버 스케일 공간 25px, 좌우 첫/막 포스터 잘림 방지 16px */
+            /* 트랜지션은 자바스크립트로 동적 제어됨 */
         }
 
         /* 격자형(Grid Wrap) 디자인 */
@@ -148,6 +151,7 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; aspect-ratio: 2/3; border: 2px solid transparent; 
             box-sizing: border-box; cursor: pointer; 
         }
+        /* 빈칸(empty)은 호버 이벤트 제외 */
         .movie-card:not(.empty-item):hover { border-color: #e50914; transform: scale(1.05) translateY(-5px); z-index: 2; box-shadow: 0 15px 30px rgba(0,0,0,0.8); }
         .poster-wrapper { width: 100%; height: 100%; overflow: hidden; border-radius: 4px; }
         .tmdb-poster { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; pointer-events: none; }
@@ -160,15 +164,17 @@
 
         .edit-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); width: 30px; height: 30px; border-radius: 50%; color: #fff; cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; z-index: 10; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s; pointer-events: auto; }
         .edit-btn:hover { background: #e50914; border-color: #e50914; transform: scale(1.1); }
-        .movie-card:hover .edit-btn { display: flex; }
+        .movie-card:not(.empty-item):hover .edit-btn { display: flex; }
 
         @media (max-width: 768px) {
             .carousel-btn { display: none; }
             .carousel-container { padding: 0; }
-            /* 모바일은 네이티브 스크롤 허용, 트랜스폼 및 복제요소 무시 */
+            /* 모바일은 네이티브 가로 스크롤로 대체 */
             .carousel-viewport { overflow-x: auto !important; max-width: none !important; padding: 15px 5px !important; scrollbar-width: none; -ms-overflow-style: none;}
             .carousel-viewport::-webkit-scrollbar { display: none; }
-            .movie-grid { transform: none !important; transition: none !important; }
+            .movie-grid { transform: none !important; transition: none !important; padding: 10px 5px !important; gap: 12px; }
+            
+            /* 모바일 환경에서는 클론(가짜 복제본)과 빈칸 숨김 */
             .clone-item, .empty-item { display: none !important; }
             
             .movie-card { flex: 0 0 130px; }
@@ -359,7 +365,7 @@
 
         window.heroTotal = 0;
         window.currentHeroIndex = 0;
-        window.carouselStates = {}; // 캐러셀 상태 관리
+        window.carouselStates = {}; // 캐러셀 상태 객체 관리
 
         window.addEventListener('scroll', () => {
             const header = document.getElementById('main-header');
@@ -367,9 +373,9 @@
             else header.classList.remove('scrolled');
         });
 
-        // 🌟 완벽한 CSS Transform 기반 무한 스크롤 & 고정 페이지 이동 🌟
+        // 🌟 완벽하고 부드러운 CSS Transform 기반 프리렌더링 무한 캐러셀 동작 제어 🌟
         window.scrollCarousel = function(trackId, direction) {
-            if (window.innerWidth <= 768) return; // 모바일은 JS 이동 무시
+            if (window.innerWidth <= 768) return; // 모바일 네이티브 스크롤 환경일 경우 무시
 
             const state = window.carouselStates[trackId];
             if (!state || state.isAnimating || state.totalPages <= 1) return;
@@ -378,75 +384,45 @@
             state.currentPage += direction;
 
             const track = document.getElementById(trackId);
+            const MOVE_OFFSET = 1056; // 6개 아이템 + 간격의 너비 (176px * 6)
             
-            // 이동할 오프셋 계산: (160px 넓이 + 16px 간격) * 6개 = 1056px
-            const xOffset = -(state.currentPage * 1056);
-            
-            // 1. 부드러운 애니메이션 적용 (이징 함수로 고급스러운 움직임 구현)
+            // 1. 트랜지션을 주며 부드럽게 스크롤
+            const xOffset = -(state.currentPage * MOVE_OFFSET);
             track.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)';
             track.style.transform = `translateX(${xOffset}px)`;
 
-            // 2. 인디케이터(페이지 수) 즉시 업데이트
+            // 2. 우측 상단 인디케이터 즉시 숫자 업데이트
             let displayPage = state.currentPage;
             if (displayPage > state.totalPages) displayPage = 1;
             if (displayPage < 1) displayPage = state.totalPages;
             const ind = document.getElementById(`ind-${trackId}`);
             if (ind) ind.innerText = `${displayPage} / ${state.totalPages}`;
 
-            // 3. 애니메이션 종료 후 티 나지 않게(None) 진짜 위치로 순간이동(Loop)
-            setTimeout(() => {
+            // 3. 트랜지션 애니메이션이 완전히 끝난 직후(transitionend)에 눈속임 위치 점프
+            let transitionFired = false;
+            const handleTransitionEnd = () => {
+                if (transitionFired) return;
+                transitionFired = true;
+                track.removeEventListener('transitionend', handleTransitionEnd);
+                
+                // 가짜 페이지(복제본)에 도달했으면 진짜 페이지 위치로 애니메이션 없이 순간이동
                 if (state.currentPage > state.totalPages) {
                     state.currentPage = 1;
                     track.style.transition = 'none';
-                    track.style.transform = `translateX(-1056px)`; // 1페이지 본체 위치
+                    track.style.transform = `translateX(-${MOVE_OFFSET}px)`;
                 } else if (state.currentPage < 1) {
                     state.currentPage = state.totalPages;
                     track.style.transition = 'none';
-                    track.style.transform = `translateX(-${state.totalPages * 1056}px)`; // 막페이지 본체 위치
+                    track.style.transform = `translateX(-${state.totalPages * MOVE_OFFSET}px)`;
                 }
                 
-                // 연속 클릭 방지 해제
-                setTimeout(() => { state.isAnimating = false; }, 20);
-            }, 500); // CSS 트랜지션 타임과 동일하게 설정
-        };
+                state.isAnimating = false; // 클릭 방지 해제
+            };
 
-        // 모바일 네이티브 스크롤용 리스너 (데스크탑은 위 함수에서 바로 업데이트 됨)
-        window.attachScrollListeners = function() {
-            if (window.innerWidth > 768) return; 
+            track.addEventListener('transitionend', handleTransitionEnd);
 
-            document.querySelectorAll('.carousel-viewport').forEach(viewport => {
-                const track = viewport.querySelector('.movie-grid');
-                if (!track) return;
-                const trackId = track.id;
-                const ind = document.getElementById(`ind-${trackId}`);
-                if (!ind) return;
-
-                const updateInd = () => {
-                    const cards = track.querySelectorAll('.movie-card:not(.clone-item):not(.empty-item)');
-                    const totalItems = cards.length;
-                    
-                    if (totalItems <= 6) { ind.style.display = 'none'; return; }
-                    ind.style.display = 'block';
-
-                    const totalPages = Math.ceil(totalItems / 6);
-                    const maxScroll = viewport.scrollWidth - viewport.clientWidth;
-                    
-                    let currentPage;
-                    if (viewport.scrollLeft >= maxScroll - 10) {
-                        currentPage = totalPages;
-                    } else {
-                        currentPage = Math.floor(viewport.scrollLeft / ((130 + 16) * 6)) + 1; // 모바일 기준 계산
-                    }
-                    
-                    if (currentPage > totalPages) currentPage = totalPages;
-                    if (currentPage < 1) currentPage = 1;
-                    
-                    ind.innerText = `${currentPage} / ${totalPages}`;
-                };
-                
-                updateInd();
-                viewport.addEventListener('scroll', updateInd);
-            });
+            // 혹시나 브라우저 버그로 이벤트가 씹히는 것을 방지하기 위한 예비 안전장치
+            setTimeout(() => { if (!transitionFired) handleTransitionEnd(); }, 550);
         };
 
         window.moveHero = function(direction) {
@@ -528,16 +504,16 @@
         }
         window.closeDetailModal = function() { document.getElementById('detail-modal').style.display = 'none'; }
 
-        // 🌟 수정 1,2 : 빈칸과 복제본을 생성할 수 있도록 포스터 생성 함수 강화 🌟
+        // 빈칸 유지 및 가짜 복제본 구분을 위한 HTML 포스터 렌더링
         function createPosterHTML(movie, originalIndex, isClone = false) {
-            // 6개 단위 부족할 때 투명한 박스로 칸 채우기 (빈칸 유지용)
-            if (movie.isEmpty) {
+            if (movie.isEmpty) { // 투명한 더미(빈칸) 박스 생성
                 return `<div class="movie-card empty-item ${isClone ? 'clone-item' : ''}" style="visibility: hidden; pointer-events: none;"></div>`;
             }
 
             const ratingVal = parseFloat(movie.rating) || 0;
             const editBtnHTML = isAdmin && !isClone ? `<button class="edit-btn" onclick="event.stopPropagation(); window.openModal(${originalIndex})">✏️</button>` : '';
             const posterSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w300_and_h450_bestv2${movie.poster_path}` : 'https://via.placeholder.com/300x450/1a1e24/788a9e?text=No+Poster';
+            
             return `
                 <div class="movie-card ${isClone ? 'clone-item' : ''}" onclick="window.openDetailModal(${originalIndex})">
                     ${editBtnHTML}
@@ -551,43 +527,42 @@
             `;
         }
 
-        // 🌟 수정 1,2 : HTML 생성 시 프리렌더링으로 6개 고정 및 클론 삽입 🌟
+        // 🌟 6개 단위 레이아웃 및 무한 루프 프리렌더링 🌟
         function createSectionHTML(id, title, desc, movieArray) {
             if (!movieArray || movieArray.length === 0) return '';
             
-            // 1. 6개 단위로 딱 떨어지게 빈 객체 추가
+            // 부족한 칸수만큼 투명 빈칸 채우기 (6개 단위 맞춤)
             let paddedArray = [...movieArray];
             while (paddedArray.length % 6 !== 0) {
                 paddedArray.push({ isEmpty: true });
             }
             
             const totalPages = paddedArray.length / 6;
-            const hideClass = totalPages <= 1 ? 'display:none;' : '';
-            
+            const hideClass = totalPages <= 1 ? 'display:none;' : ''; // 1페이지만 있으면 UI 숨김
             let trackHTML = '';
             
             if (totalPages > 1) {
                 const firstPage = paddedArray.slice(0, 6);
                 const lastPage = paddedArray.slice(-6);
                 
-                // 맨 앞에 마지막 페이지 복제본 삽입
+                // 1. 맨 앞에 '마지막 페이지' 복제본 배치
                 lastPage.forEach(m => trackHTML += createPosterHTML(m, m.originalIndex, true));
-                // 실제 원본 삽입
+                // 2. 실제 데이터 순서대로 배치
                 paddedArray.forEach(m => trackHTML += createPosterHTML(m, m.originalIndex, false));
-                // 맨 뒤에 첫 페이지 복제본 삽입
+                // 3. 맨 뒤에 '첫 페이지' 복제본 배치
                 firstPage.forEach(m => trackHTML += createPosterHTML(m, m.originalIndex, true));
             } else {
                 paddedArray.forEach(m => trackHTML += createPosterHTML(m, m.originalIndex, false));
             }
 
-            // JS가 다룰 캐러셀 상태 등록
+            // 트랙별 상태 저장
             window.carouselStates[`track-${id}`] = {
                 currentPage: 1,
                 totalPages: totalPages,
                 isAnimating: false
             };
 
-            // 복제본이 앞에 붙어있으므로 1페이지 본체를 보여주기 위해 -1056px 기본 이동 설정
+            // 복제본 1페이지 분량이 숨겨져야 하므로 초기 위치를 -1056px로 고정 세팅
             const initialTransform = totalPages > 1 ? `transform: translateX(-1056px);` : '';
 
             return `
@@ -612,6 +587,7 @@
             `;
         }
 
+        // 전체/최근 나열형 섹션
         function createGridSectionHTML(id, title, desc) {
             return `
                 <section class="section view-section" id="section-${id}">
@@ -680,7 +656,7 @@
         window.changeView = function(viewName) {
             currentView = viewName;
             if(viewName !== 'local-search') document.getElementById('local-search-input').value = '';
-            window.carouselStates = {}; // 뷰 이동 시 상태 초기화
+            window.carouselStates = {}; 
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => { renderView(); }, 150);
         };
@@ -699,15 +675,17 @@
                 const perfectMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0);
                 if(perfectMovies.length > 0) container.innerHTML += createHeroHTML(perfectMovies);
 
+                // 홈 화면 한정 보여주는 개수 제한
                 const topMovies = displayMovies.filter(m => parseFloat(m.rating) === 5.0).slice(0, 18);
                 container.innerHTML += createSectionHTML('welcome', 'PERFECT 5.0', '최고의 평점을 준 완벽한 영화들입니다.', topMovies);
 
-                const recentMovies = displayMovies.slice(0, 24);
+                const recentMovies = displayMovies.slice(0, 30);
                 container.innerHTML += createSectionHTML('recent-home', 'RECENTLY WATCHED', '최근에 시청한 영화입니다.', recentMovies);
             } 
             else {
                 container.style.paddingTop = '80px';
                 
+                // 🌟 분류/모아보기 화면에서는 제한 없이 원본 개수 모두 출력 (.slice 부분 제거됨) 🌟
                 if (currentView === 'all') {
                     container.innerHTML += createGridSectionHTML('all-page', 'ALL FILMS <span style="font-size:0.9rem; color:#788a9e; font-weight:normal; margin-left:10px;">(Recent First)</span>', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`);
                     const allGrid = document.getElementById('grid-all-page');
@@ -715,7 +693,7 @@
                 }
                 else if (currentView === 'recommended') {
                     const recommendedMovies = displayMovies.filter(m => (m.memo || '').includes('#추천'));
-                    container.innerHTML += createSectionHTML('rec-page', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.', recommendedMovies.slice(0, 18));
+                    container.innerHTML += createSectionHTML('rec-page', 'HIGHLY RECOMMENDED', '다른 사람에게 강력히 추천하고 싶은 영화들입니다.', recommendedMovies);
                     if (recommendedMovies.length === 0) document.getElementById('section-rec-page').innerHTML += '<div style="color:#788a9e; margin-top:10px; padding:0 20px;">추천 영화가 없습니다. 메모에 #추천 을 적어보세요.</div>';
                 }
                 else if (currentView === 'rating') {
@@ -730,7 +708,7 @@
                     Object.keys(ratingGroups).sort((a,b) => parseFloat(b) - parseFloat(a)).forEach((k, idx) => {
                         const sId = `rating-${idx}`;
                         const titleHtml = `<span style="color: #d4af37;">★ ${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${ratingGroups[k].length}편)</span></span>`;
-                        container.innerHTML += createSectionHTML(sId, titleHtml, null, ratingGroups[k].slice(0, 18));
+                        container.innerHTML += createSectionHTML(sId, titleHtml, null, ratingGroups[k]);
                     });
                 }
                 else if (currentView === 'region') {
@@ -744,7 +722,7 @@
                     Object.keys(regionGroups).sort().forEach((k, idx) => {
                         const sId = `region-${idx}`;
                         const titleHtml = `<span style="color: #fff;">${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${regionGroups[k].length}편)</span></span>`;
-                        container.innerHTML += createSectionHTML(sId, titleHtml, null, regionGroups[k].slice(0, 18));
+                        container.innerHTML += createSectionHTML(sId, titleHtml, null, regionGroups[k]);
                     });
                 }
                 else if (currentView === 'genre') {
@@ -758,7 +736,7 @@
                     Object.keys(genreGroups).sort().forEach((k, idx) => {
                         const sId = `genre-${idx}`;
                         const titleHtml = `<span style="color: #fff;">${k} <span style="font-size:0.85rem; color:#788a9e; font-weight:normal;">(${genreGroups[k].length}편)</span></span>`;
-                        container.innerHTML += createSectionHTML(sId, titleHtml, null, genreGroups[k].slice(0, 18));
+                        container.innerHTML += createSectionHTML(sId, titleHtml, null, genreGroups[k]);
                     });
                 }
                 else if (currentView === 'local-search') {
@@ -772,8 +750,6 @@
                     else document.getElementById('section-local-search-page').innerHTML += `<div style="color: #788a9e; text-align: center; margin-top: 20px; width:100%;">앗, 아직 기록되지 않은 영화이거나 검색어가 잘못되었어요. 😢</div>`;
                 }
             }
-
-            window.attachScrollListeners(); // 모바일 이벤트 리스너 할당
         }
 
         function getSpaceVariations(str) {
