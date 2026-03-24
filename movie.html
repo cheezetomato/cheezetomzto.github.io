@@ -107,11 +107,11 @@
         main { padding-top: 80px; padding-bottom: 40px; flex-grow: 1; overflow-x: hidden; }
         .section { padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
         
-        /* 섹션 헤더 */
+        /* 섹션 헤더 (인디케이터 노출 보장) */
         .section-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #232a31; padding-bottom: 10px; margin-bottom: 5px; }
         .section-title { font-size: 1.3rem; font-weight: 600; color: #fff; letter-spacing: -0.5px; margin: 0; padding: 0; border: none; }
         .section-desc { color: #788a9e; font-size: 0.95rem; margin-top: 8px; font-weight: 400; line-height: 1.4; margin-bottom: 0; }
-        .carousel-indicator { font-size: 0.9rem; font-weight: 600; color: #a5b4c4; background: rgba(255,255,255,0.08); padding: 5px 14px; border-radius: 20px; display: none; }
+        .carousel-indicator { font-size: 0.9rem; font-weight: 600; color: #a5b4c4; background: rgba(255,255,255,0.08); padding: 5px 14px; border-radius: 20px; } /* display: none 삭제함 */
 
         /* 캐러셀 디자인 */
         .carousel-container { position: relative; margin-top: 10px; padding: 0 50px; }
@@ -142,7 +142,7 @@
         /* 격자형(Grid Wrap) 디자인 */
         .movie-grid-wrap { display: flex; flex-wrap: wrap; gap: 16px; padding: 15px 5px; justify-content: flex-start; }
 
-        /* 🌟 새로 추가된 그리드 페이지네이션 디자인 🌟 */
+        /* 새로 추가된 그리드 페이지네이션 디자인 */
         .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 30px; padding-bottom: 20px; flex-wrap: wrap; }
         .page-btn { background: #1a1e24; border: 1px solid #2c3440; color: #a5b4c4; padding: 8px 14px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 0.9rem; }
         .page-btn:hover { background: #2c3440; color: #fff; }
@@ -366,7 +366,6 @@
         window.currentHeroIndex = 0;
         window.carouselStates = {}; 
 
-        // 🌟 1. 전역으로 그리드 페이지 상태 변수 선언 🌟
         window.gridPage = 1;
 
         window.addEventListener('scroll', () => {
@@ -568,7 +567,8 @@
             }
             
             const totalPages = paddedArray.length / 6;
-            const hideClass = totalPages <= 1 ? 'display:none;' : ''; 
+            // 🌟 수정: 인디케이터를 숨기지 않고 스타일 자체를 블록으로 할당 🌟
+            const hideStyle = totalPages <= 1 ? 'display:none;' : 'display:block;'; 
             let trackHTML = '';
             
             if (totalPages > 1) {
@@ -597,16 +597,16 @@
                             <div class="section-title">${title}</div>
                             ${desc ? `<p class="section-desc">${desc}</p>` : ''}
                         </div>
-                        <div class="carousel-indicator" id="ind-track-${id}" style="${hideClass}">1 / ${totalPages}</div>
+                        <div class="carousel-indicator" id="ind-track-${id}" style="${hideStyle}">1 / ${totalPages}</div>
                     </div>
                     <div class="carousel-container">
-                        <button class="carousel-btn left" onclick="window.scrollCarousel('track-${id}', -1)" style="${hideClass}">&#10094;</button>
+                        <button class="carousel-btn left" onclick="window.scrollCarousel('track-${id}', -1)" style="${hideStyle}">&#10094;</button>
                         <div class="carousel-viewport">
                             <div class="movie-grid" id="track-${id}" style="${initialTransform}">
                                 ${trackHTML}
                             </div>
                         </div>
-                        <button class="carousel-btn right" onclick="window.scrollCarousel('track-${id}', 1)" style="${hideClass}">&#10095;</button>
+                        <button class="carousel-btn right" onclick="window.scrollCarousel('track-${id}', 1)" style="${hideStyle}">&#10095;</button>
                     </div>
                 </section>
             `;
@@ -626,25 +626,21 @@
             `;
         }
 
-        // 🌟 2. 하단 페이지 기능 처리를 위한 헬퍼 함수 🌟
         function renderGridWithPagination(id, title, desc, movieArray) {
             const container = document.getElementById('main-content');
             
-            const ITEMS_PER_PAGE = 24; // 한 페이지당 24개 (6개씩 4줄)
+            const ITEMS_PER_PAGE = 24; 
             const totalPages = Math.ceil(movieArray.length / ITEMS_PER_PAGE) || 1;
             if(window.gridPage > totalPages) window.gridPage = totalPages;
             
             const start = (window.gridPage - 1) * ITEMS_PER_PAGE;
             const currentMovies = movieArray.slice(start, start + ITEMS_PER_PAGE);
 
-            // 섹션 HTML 주입
             container.innerHTML += createGridSectionHTML(id, title, desc);
             const grid = document.getElementById(`grid-${id}`);
             
-            // 해당 페이지의 영화만 렌더링
             currentMovies.forEach(m => grid.innerHTML += createPosterHTML(m, m.originalIndex));
 
-            // 하단 페이지네이션 버튼 렌더링
             if(totalPages > 1) {
                 let pageHTML = '<div class="pagination">';
                 for(let i = 1; i <= totalPages; i++) {
@@ -655,11 +651,10 @@
             }
         }
 
-        // 🌟 3. 페이지 이동 클릭 시 실행될 함수 🌟
         window.changeGridPage = function(pageNum) {
             window.gridPage = pageNum;
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // 상단으로 부드럽게 스크롤
-            setTimeout(() => { renderView(); }, 150); // 화면 새로 렌더링
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            setTimeout(() => { renderView(); }, 150); 
         };
 
         function createHeroHTML(movies) {
@@ -715,7 +710,7 @@
 
         window.changeView = function(viewName) {
             currentView = viewName;
-            window.gridPage = 1; // 🌟 뷰 이동 시 1페이지로 자동 리셋
+            window.gridPage = 1; 
             if(viewName !== 'local-search') document.getElementById('local-search-input').value = '';
             window.carouselStates = {}; 
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -745,7 +740,6 @@
             else {
                 container.style.paddingTop = '80px';
                 
-                // 🌟 4. 페이지 기능(renderGridWithPagination)이 적용된 부분 🌟
                 if (currentView === 'all') {
                     renderGridWithPagination('all-page', 'ALL FILMS <span style="font-size:0.9rem; color:#788a9e; font-weight:normal; margin-left:10px;">(Recent First)</span>', `지금까지 기록한 총 ${displayMovies.length}편의 영화들입니다.`, displayMovies);
                 }
