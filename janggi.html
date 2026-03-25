@@ -3,41 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>십이장기 - Premium</title>
+    <title>십이장기 - 지니어스 에디션</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
         :root {
-            /* 🪵 전통 나무 느낌의 색상 조합 */
-            --bg-body: #f4ece1;
-            --text-main: #3e2723;
-            --board-border: #4e342e;
-            --board-bg-1: #d7a86e;
-            --board-bg-2: #c59154;
-            --cell-bg: rgba(0, 0, 0, 0.08);
-            --cell-hover: rgba(255, 255, 255, 0.25);
-            --cell-highlight: rgba(46, 213, 115, 0.5);
-            --piece-bg: #fffae6;
-            --piece-border: #8d6e63;
-            --piece-shadow: #bcaaa4;
-            --hand-bg: #ffffff;
-            --hand-border: #d7ccc8;
+            /* 🕹️ 지니어스 느낌의 색상 조합 */
+            --bg-body: #1a1a1a; /* 아주 어두운 회색 */
+            --text-main: #e8e6e3;
+            --table-bg: #1b5e20; /* 녹색 테이블 배경 */
+            --board-bg: #e0ac69; /* 밝은 나무색 장기판 */
+            --board-line: #333; /* 장기판 선 */
+            --piece-bg: #ffffff; /* 기물 배경 */
+            --piece-text: #000; /* 기물 글자색 */
+            --hand-bg: #2c2c2c;
+            --hand-border: #444;
+
+            /* 플레이어 색상 */
+            --p1-color: #2e7d32; /* P1 (녹색) - 지니어스 색상 */
+            --p2-color: #c62828; /* P2 (적색) - 지니어스 색상 */
         }
 
         body.dark-mode {
-            /* 🌙 고급스러운 어두운 나무 느낌 */
-            --bg-body: #1e1e1e;
-            --text-main: #e8e6e3;
-            --board-border: #1a100c;
-            --board-bg-1: #6d4c41;
-            --board-bg-2: #5d4037;
-            --cell-bg: rgba(0, 0, 0, 0.3);
-            --piece-bg: #3e2723;
-            --piece-border: #1f1411;
-            --piece-shadow: #140d0b;
-            --hand-bg: #2c2c2c;
-            --hand-border: #444;
+            /* 어두운 모드 */
+            --bg-body: #111;
+            --table-bg: #0d3b14;
+            --board-bg: #c59154;
         }
 
         * { box-sizing: border-box; }
@@ -48,13 +40,11 @@
             user-select: none; overflow: hidden;
         }
 
-        h1 { margin-bottom: 5px; font-size: 48px; color: #c0392b; font-family: 'Batang', serif; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
-        body.dark-mode h1 { color: #e74c3c; }
-
+        h1 { margin-bottom: 5px; font-size: 50px; color: #ff6b6b; font-family: 'Batang', serif; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.4); }
         #turn-indicator { 
-            font-size: 22px; margin-bottom: 25px; font-weight: 800; transition: 0.3s; 
-            padding: 8px 24px; border-radius: 30px; background: var(--hand-bg); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid var(--hand-border);
+            font-size: 24px; margin-bottom: 30px; font-weight: 800; transition: 0.3s; 
+            padding: 10px 30px; border-radius: 40px; background: var(--hand-bg); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 3px solid var(--hand-border);
         }
 
         /* 🌟 로비 화면 UI */
@@ -65,76 +55,115 @@
         }
         .menu-btn {
             background: var(--hand-bg); color: var(--text-main); border: 2px solid var(--hand-border);
-            padding: 18px 40px; font-size: 20px; font-weight: 800; border-radius: 12px; margin: 10px;
-            cursor: pointer; box-shadow: 0 6px 0 var(--hand-border); transition: 0.2s; width: 320px;
+            padding: 20px 50px; font-size: 22px; font-weight: 800; border-radius: 15px; margin: 15px;
+            cursor: pointer; box-shadow: 0 8px 0 var(--hand-border); transition: 0.2s; width: 360px;
         }
-        .menu-btn:hover { transform: translateY(2px); box-shadow: 0 4px 0 var(--hand-border); background: var(--board-bg-1); color: #fff; border-color: var(--board-border); }
-        .menu-btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--hand-border); }
+        .menu-btn:hover { transform: translateY(2px); box-shadow: 0 6px 0 var(--hand-border); background: var(--table-bg); color: #fff; border-color: var(--board-border); }
+        .menu-btn:active { transform: translateY(8px); box-shadow: 0 0 0 var(--hand-border); }
         
         #invite-box {
-            margin-top: 20px; padding: 15px; background: var(--hand-bg); border-radius: 15px; border: 2px dashed var(--board-bg-1);
-            text-align: center; display: none; width: 80%; max-width: 400px; word-break: break-all;
+            margin-top: 25px; padding: 20px; background: var(--hand-bg); border-radius: 20px; border: 3px dashed var(--table-bg);
+            text-align: center; display: none; width: 85%; max-width: 450px; word-break: break-all;
         }
         #invite-box a { color: #ff6b6b; font-weight: bold; }
 
         /* 게임 보드 및 말 CSS */
         #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; }
-        .game-layout { display: flex; align-items: stretch; gap: 30px; justify-content: center; width: 100%; max-width: 1000px; padding: 20px;}
+        .game-layout { display: flex; align-items: stretch; gap: 40px; justify-content: center; width: 100%; max-width: 1100px; padding: 30px;}
         
         .side-panel { 
-            width: 140px; background: var(--hand-bg); border: 4px solid var(--board-border); border-radius: 12px; 
-            padding: 15px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: 0.4s;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 0 10px 20px rgba(0,0,0,0.15);
+            width: 160px; background: var(--hand-bg); border: 5px solid var(--hand-border); border-radius: 15px; 
+            padding: 20px 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; transition: 0.4s;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.1), 0 10px 25px rgba(0,0,0,0.3);
         }
-        .panel-title { font-weight: 900; font-size: 18px; margin-bottom: 10px; text-align: center; border-bottom: 2px solid var(--hand-border); padding-bottom: 8px; width: 100%;}
-        .p2-name { color: #218c74; }
-        .p1-name { color: #b33939; }
-        .hand-pieces-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1; min-height: 400px; }
+        .panel-title { font-weight: 900; font-size: 20px; margin-bottom: 12px; text-align: center; border-bottom: 3px solid var(--hand-border); padding-bottom: 10px; width: 100%;}
+        .p2-name { color: var(--p2-color); }
+        .p1-name { color: var(--p1-color); }
+        .hand-pieces-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; flex: 1; min-height: 450px; }
+
+        /* 🌟 녹색 테이블 및 나무 장기판 구현 */
+        #game-board-outer {
+            display: flex; justify-content: center; align-items: center;
+            background-color: var(--table-bg); /* 녹색 테이블 천 */
+            padding: 40px; border-radius: 15px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.4), 0 20px 40px rgba(0,0,0,0.5);
+        }
 
         #game-board {
-            display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(4, 100px); 
-            gap: 2px; background: linear-gradient(135deg, var(--board-bg-1), var(--board-bg-2)); 
-            border: 12px solid var(--board-border); border-radius: 8px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 0 15px rgba(0,0,0,0.5); 
-            padding: 6px; position: relative;
+            display: grid; grid-template-columns: repeat(3, 110px); grid-template-rows: repeat(4, 110px); 
+            gap: 3px; background-color: var(--board-bg); /* 밝은 나무색 장기판 */
+            border: 15px solid #6d4c41; /* 나무 프레임 */
+            border-radius: 10px; padding: 8px; position: relative;
         }
 
         .cell { 
-            background-color: var(--cell-bg); border-radius: 4px; position: relative; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s; 
+            background-color: transparent; border-radius: 5px; position: relative; 
+            box-shadow: inset 0 0 0 1px var(--board-line); transition: 0.2s; 
             display: flex; justify-content: center; align-items: center;
         }
         .cell:hover { background-color: var(--cell-hover); cursor: pointer; }
         .cell.highlight { background-color: var(--cell-highlight); box-shadow: inset 0 0 0 4px #2ed573; }
-        .cell.highlight::after { content: ''; position: absolute; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.9); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3);}
+        .cell.highlight::after { content: ''; position: absolute; width: 22px; height: 22px; background: rgba(255, 255, 255, 1); border-radius: 50%; box-shadow: 0 3px 6px rgba(0,0,0,0.4);}
 
-        /* ♟️ 기물(말) 디자인 상향 */
+        /* ♟️ 지니어스 스타일 기물 (말) 디자인 구현 */
         .piece {
-            width: 86px; height: 86px; background-color: var(--piece-bg); 
-            border: 3px solid var(--piece-border); border-radius: 12px; 
+            width: 96px; height: 96px; /* 직사각형 블록 */
+            aspect-ratio: 2/3; /* 직사각형 비율 */
+            background-color: var(--piece-bg); 
+            border: 4px solid; 
+            border-radius: 15px; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 50px; font-weight: 900; font-family: 'Batang', 'Gungsuh', serif; 
-            box-shadow: 0 8px 0 var(--piece-shadow), 0 10px 15px rgba(0,0,0,0.4); 
-            cursor: grab; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s, background-color 0.4s; 
+            font-size: 56px; font-weight: 900; font-family: 'Batang', 'Gungsuh', serif; 
+            box-shadow: 0 10px 0; /* 두꺼운 블록 느낌 */
+            cursor: grab; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s; 
             touch-action: none; position: relative; z-index: 10;
         }
         
-        .piece.on-board:active { cursor: grabbing; transform: translateY(6px); box-shadow: 0 2px 0 var(--piece-shadow), 0 4px 6px rgba(0,0,0,0.4); transition: 0.1s;}
-        .piece.selected { transform: translateY(-8px) scale(1.1); box-shadow: 0 12px 0 #e1b12c, 0 15px 25px rgba(0,0,0,0.5); border-color: #fbc531; z-index: 20;}
+        /* 플레이어 색상 적용 */
+        .piece.p1 { 
+            border-color: var(--p1-color); 
+            box-shadow: 0 10px 0 var(--p1-color), 0 12px 20px rgba(0,0,0,0.5);
+            color: #000;
+        } 
+        .piece.p2 { 
+            border-color: var(--p2-color); 
+            box-shadow: 0 10px 0 var(--p2-color), 0 12px 20px rgba(0,0,0,0.5);
+            color: #000;
+        }
         
-        .piece.p1 { color: #c0392b; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); } 
-        body.dark-mode .piece.p1 { color: #ff6b6b; }
-        .piece.p2 { color: #218c74; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); } 
-        body.dark-mode .piece.p2 { color: #1dd1a1; }
+        .piece.on-board:active { cursor: grabbing; transform: translateY(8px); box-shadow: 0 2px 0 var(--piece-shadow), 0 5px 10px rgba(0,0,0,0.5); transition: 0.1s;}
+        .piece.selected { transform: translateY(-10px) scale(1.15); box-shadow: 0 15px 0 #e1b12c, 0 18px 30px rgba(0,0,0,0.6); border-color: #fbc531; z-index: 20;}
         
+        /* 한자 크기 조정 */
+        .piece.king { font-size: 60px; } /* 王 */
+        .piece.promoted { font-size: 50px; } /* 侯 */
+        .piece.child { font-size: 40px; } /* 子 */
+        
+        /* 🌟 이동 방향 화살표 구현 (CSS 삼각형) */
+        .arrow {
+            position: absolute;
+            width: 0; height: 0;
+            border-style: solid;
+            pointer-events: none;
+        }
+        /* 각 방향 화살표 스타일 */
+        .arrow.top { border-width: 0 10px 10px 10px; border-color: transparent transparent #000 transparent; top: -15px; left: 50%; transform: translateX(-50%); }
+        .arrow.bottom { border-width: 10px 10px 0 10px; border-color: #000 transparent transparent transparent; bottom: -15px; left: 50%; transform: translateX(-50%); }
+        .arrow.left { border-width: 10px 10px 10px 0; border-color: transparent #000 transparent transparent; left: -15px; top: 50%; transform: translateY(-50%); }
+        .arrow.right { border-width: 10px 0 10px 10px; border-color: transparent transparent transparent #000; right: -15px; top: 50%; transform: translateY(-50%); }
+        .arrow.top-left { border-width: 10px 10px 0 0; border-color: #000 transparent transparent transparent; top: -15px; left: -15px; transform: rotate(-45deg); }
+        .arrow.top-right { border-width: 0 10px 10px 0; border-color: transparent #000 transparent transparent; top: -15px; right: -15px; transform: rotate(45deg); }
+        .arrow.bottom-left { border-width: 10px 0 0 10px; border-color: transparent transparent transparent #000; bottom: -15px; left: -15px; transform: rotate(45deg); }
+        .arrow.bottom-right { border-width: 0 0 10px 10px; border-color: transparent transparent #000 transparent; bottom: -15px; right: -15px; transform: rotate(-45deg); }
+
         .piece.p2-rotate { transform: rotate(180deg); } 
-        .piece.on-board.p2-rotate:active { transform: rotate(180deg) translateY(-6px); }
-        .piece.selected.p2-rotate { transform: rotate(180deg) translateY(8px) scale(1.1); box-shadow: 0 -12px 0 #e1b12c, 0 -15px 25px rgba(0,0,0,0.5); }
+        .piece.on-board.p2-rotate:active { transform: rotate(180deg) translateY(-8px); }
+        .piece.selected.p2-rotate { transform: rotate(180deg) translateY(10px) scale(1.15); box-shadow: 0 -15px 0 #e1b12c, 0 -18px 30px rgba(0,0,0,0.6); }
 
         .piece.dragging { 
             position: fixed !important; z-index: 9999 !important; pointer-events: none !important; 
-            transform: scale(1.15) rotate(5deg) !important; cursor: grabbing !important; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6) !important; margin: 0 !important; transition: none !important; 
+            transform: scale(1.2) rotate(5deg) !important; cursor: grabbing !important; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7) !important; margin: 0 !important; transition: none !important; 
         }
 
         #effect-overlay {
@@ -148,25 +177,25 @@
         #effect-overlay small { font-size: 45px; display: block; margin-top: 10px; font-weight: 700; letter-spacing: 0; text-shadow: none; font-family: 'Pretendard', sans-serif;}
 
         /* 공통 UI (다크모드 & 홈 버튼) */
-        .top-ui-container { position: fixed; top: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 30px; z-index: 3000; pointer-events: none; }
+        .top-ui-container { position: fixed; top: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 40px; z-index: 3000; pointer-events: none; }
         .theme-switch-wrapper { display: flex; align-items: center; pointer-events: auto; }
-        .theme-switch { display: inline-block; height: 34px; position: relative; width: 66px; }
+        .theme-switch { display: inline-block; height: 38px; position: relative; width: 70px; }
         .theme-switch input { display: none; }
-        .slider { background-color: #bdc3c7; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; border: 2px solid rgba(0,0,0,0.1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 26px; left: 2px; position: absolute; transition: .4s; width: 26px; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        .slider::after { content: '🌙'; position: absolute; left: 8px; bottom: 7px; transition: .4s; color: #000; font-size: 14px; opacity: 0.5; }
+        .slider { background-color: #bdc3c7; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 38px; border: 2px solid rgba(0,0,0,0.1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 30px; left: 2px; position: absolute; transition: .4s; width: 30px; border-radius: 50%; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
+        .slider::after { content: '🌙'; position: absolute; left: 10px; bottom: 8px; transition: .4s; color: #000; font-size: 16px; opacity: 0.5; }
         input:checked + .slider { background-color: #34495e; }
-        input:checked + .slider:before { transform: translateX(32px); }
-        input:checked + .slider::after { transform: translateX(32px); opacity: 1; color: #fff; }
+        input:checked + .slider:before { transform: translateX(34px); }
+        input:checked + .slider::after { transform: translateX(34px); opacity: 1; color: #fff; }
         
         .home-btn { 
             background-color: var(--hand-bg); color: var(--text-main); border: 2px solid var(--hand-border); 
-            padding: 8px 24px; border-radius: 30px; font-weight: 800; font-size: 16px; transition: 0.2s; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; pointer-events: auto;
+            padding: 10px 30px; border-radius: 40px; font-weight: 800; font-size: 18px; transition: 0.2s; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; pointer-events: auto;
         }
-        .home-btn:hover { background-color: var(--text-main); color: var(--bg-body); transform: translateY(-2px);}
+        .home-btn:hover { background-color: var(--text-main); color: var(--bg-body); transform: translateY(-3px);}
         
-        #loading-text { font-size: 20px; color: #c0392b; font-weight: bold; display: none; margin-top: 20px; }
+        #loading-text { font-size: 22px; color: #c0392b; font-weight: bold; display: none; margin-top: 25px; }
     </style>
 </head>
 <body>
@@ -182,7 +211,7 @@
     </div>
 
     <div id="lobby-screen">
-        <h1 style="font-size: 70px; margin-bottom: 50px;">십이장기</h1>
+        <h1 style="font-size: 80px; margin-bottom: 60px;">십이장기</h1>
         <button class="menu-btn" onclick="startGame('local')">👤 1기기 2인 플레이</button>
         <button class="menu-btn" onclick="startGame('ai')">🤖 AI와 대결 (싱글)</button>
         <button class="menu-btn" onclick="createMultiplayerRoom()">🌐 친구와 대결 (방장)</button>
@@ -192,7 +221,7 @@
 
     <div id="game-screen">
         <h1>십이장기</h1>
-        <div id="turn-indicator" style="color: #c0392b;">🔴 Player 1의 턴</div>
+        <div id="turn-indicator" style="color: var(--p1-color); border-color: var(--p1-color);">🔴 Player 1의 턴</div>
         <div id="effect-overlay">장군!</div>
 
         <div class="game-layout">
@@ -201,7 +230,9 @@
                 <div id="p2-pieces-container" class="hand-pieces-container"></div>
             </div>
 
-            <div id="game-board"></div>
+            <div id="game-board-outer">
+                <div id="game-board"></div>
+            </div>
 
             <div class="side-panel" id="hand-p1">
                 <div class="panel-title p1-name">P1 대기석</div>
@@ -323,6 +354,7 @@
             pieces.forEach(p => { if(p.pos >= 0 && p.pos < 12) board[p.pos] = p.id; });
         }
 
+        /* 🌟 화살표 추가를 위한 renderAll 함수 수정 */
         function renderAll() {
             for (let i = 0; i < 12; i++) {
                 const cell = document.getElementById(`cell-${i}`);
@@ -341,7 +373,20 @@
                 pieceEl.className = `piece ${pieceData.owner}`;
                 pieceEl.innerText = pieceData.promoted ? '侯' : pieceData.type;
 
+                // 한자 크기 조정을 위한 클래스 추가
+                if (pieceData.type === '王') pieceEl.classList.add('king');
+                else if (pieceData.promoted) pieceEl.classList.add('promoted');
+                else if (pieceData.type === '子') pieceEl.classList.add('child');
+
                 if (pieceData.owner === 'p2') pieceEl.classList.add('p2-rotate');
+
+                // 🌟 화살표 추가
+                const directions = getPieceDirections(pieceData);
+                directions.forEach(dir => {
+                    const arrow = document.createElement('div');
+                    arrow.className = `arrow ${dir}`;
+                    pieceEl.appendChild(arrow);
+                });
 
                 if (pieceData.pos >= 0) {
                     pieceEl.classList.add('on-board');
@@ -358,8 +403,23 @@
             let roleText = myRole === 'p1' ? '(당신)' : (myRole === 'p2' ? '(상대)' : '');
             let roleText2 = myRole === 'p2' ? '(당신)' : (myRole === 'p1' ? '(상대)' : '');
             
-            if(currentTurn === 'p1') { turnIndicator.innerHTML = `🔴 Player 1의 턴 ${roleText}`; turnIndicator.style.color = "#c0392b"; turnIndicator.style.borderColor = "#c0392b"; } 
-            else { turnIndicator.innerHTML = `🟢 Player 2의 턴 ${roleText2}`; turnIndicator.style.color = "#218c74"; turnIndicator.style.borderColor = "#218c74"; }
+            if(currentTurn === 'p1') { turnIndicator.innerHTML = `🔴 Player 1의 턴 ${roleText}`; turnIndicator.style.color = "var(--p1-color)"; turnIndicator.style.borderColor = "var(--p1-color)"; } 
+            else { turnIndicator.innerHTML = `🟢 Player 2의 턴 ${roleText2}`; turnIndicator.style.color = "var(--p2-color)"; turnIndicator.style.borderColor = "var(--p2-color)"; }
+        }
+
+        /* 🌟 각 기물의 이동 방향을 가져오는 함수 추가 */
+        function getPieceDirections(piece) {
+            const type = piece.promoted ? '侯' : piece.type;
+            let dirs = [];
+            if (type === '王') dirs = ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'];
+            else if (type === '將') dirs = ['top', 'bottom', 'left', 'right'];
+            else if (type === '相') dirs = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+            else if (type === '子') dirs = piece.owner === 'p1' ? ['top'] : ['bottom'];
+            else if (type === '侯') {
+                dirs = ['top', 'bottom', 'left', 'right'];
+                dirs = piece.owner === 'p1' ? dirs.concat(['top-left', 'top-right']) : dirs.concat(['bottom-left', 'bottom-right']);
+            }
+            return dirs;
         }
 
         function handleCellClick(index) {
@@ -568,7 +628,7 @@
             if (gameMode === 'ai' && currentTurn === 'p2') setTimeout(playAITurn, 600);
         }
 
-        // --- 🧠 향상된 AI (미니맥스 - Depth 2 상대 대응 계산) ---
+        // --- 🧠 향상된 AI (미니맥스 기초 / 탐욕 알고리즘) ---
         function playAITurn() {
             if(!gameActive) return;
             
@@ -582,6 +642,7 @@
                         moves.forEach(m => allMoves.push({pieceId: p.id, targetPos: m, isDrop: false}));
                     } else {
                         for(let i=0; i<12; i++) {
+                            // 적진 드롭 금지 규칙 적용
                             if(simBoard[i] === null && ((player==='p2' && i<9) || (player==='p1' && i>2))) {
                                 allMoves.push({pieceId: p.id, targetPos: i, isDrop: true});
                             }
@@ -620,44 +681,25 @@
                 // 2. 내가 뒀는데 내 왕이 잡히는 자살수면 스킵
                 if(!simPieces.find(p => p.type === '王' && p.owner === 'p2' && p.pos >= 0)) continue;
 
-                // 3. 상대방(p1)의 반격 시뮬레이션
-                let p1Moves = getMovesFor('p1', simPieces, simBoard);
-                let minScoreForP2 = Infinity;
+                // 점수 평가 (P2 관점)
+                let score = 0;
+                const vals = {'王': 10000, '將': 50, '侯': 40, '相': 30, '子': 10};
+                simPieces.forEach(p => {
+                    let val = vals[p.promoted ? '侯' : p.type];
+                    if(p.owner === 'p2') score += val; else score -= val;
+                });
 
-                for(let oppMove of p1Moves) {
-                    let oppSimPieces = JSON.parse(JSON.stringify(simPieces));
-                    let oppSimBoard = [...simBoard];
-                    applyMove(oppMove, oppSimPieces, oppSimBoard, 'p1');
-
-                    // 상대가 내 왕을 잡을 수 있는 수라면 이 P2의 수는 기각(-Infinity)
-                    if(!oppSimPieces.find(p => p.type === '王' && p.owner === 'p2' && p.pos >= 0)) {
-                        minScoreForP2 = -Infinity; break;
-                    }
-
-                    // 점수 평가
-                    let score = 0;
-                    const vals = {'王': 10000, '將': 50, '侯': 40, '相': 30, '子': 10};
-                    oppSimPieces.forEach(p => {
-                        let val = vals[p.promoted ? '侯' : p.type];
-                        // 적진으로 전진하는 것에 약간의 보너스 점수 부여 (공격 유도)
-                        let posBonus = (p.pos >= 0) ? (p.owner === 'p2' ? Math.floor(p.pos/3)*2 : (3-Math.floor(p.pos/3))*2) : 0;
-                        if(p.owner === 'p2') score += (val + posBonus);
-                        else score -= (val + posBonus);
-                    });
-
-                    if(score < minScoreForP2) minScoreForP2 = score;
+                if(score > bestScore) {
+                    bestScore = score; bestMove = move;
                 }
-
-                if(minScoreForP2 > bestScore) { bestScore = minScoreForP2; bestMove = move; }
             }
 
-            if(!bestMove) bestMove = p2Moves[0]; // 다 질 것 같으면 아무거나
-
-            // 결정된 수 실행
-            if(bestMove.isDrop) executeMove(null, bestMove.targetPos, true, bestMove.pieceId);
-            else {
-                const originalPiece = pieces.find(p => p.id === bestMove.pieceId);
-                executeMove(originalPiece.pos, bestMove.targetPos, false);
+            if(bestMove) {
+                if(bestMove.isDrop) executeMove(null, bestMove.targetPos, true, bestMove.pieceId);
+                else {
+                    const originalPiece = pieces.find(p => p.id === bestMove.pieceId);
+                    executeMove(originalPiece.pos, bestMove.targetPos, false);
+                }
             }
         }
 
