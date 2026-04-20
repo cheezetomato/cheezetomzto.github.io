@@ -3,38 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>지뢰찾기 Pro - Dark Edition</title>
+    <title>지뢰찾기 Pro - Modern Dark</title>
     <style>
-        /* 기본 폰트 및 디지털 시계 폰트 로드 */
+        /* 폰트 로드 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DSDIGIT&family=VT323&display=swap');
 
         :root {
-            --bg-main: #181a1b; /* 전체 배경 */
-            --bg-sidebar: #222426; /* 사이드바 배경 */
-            --text-main: #a0aab2; /* 기본 텍스트 */
-            --text-highlight: #4da6ff; /* 사이드바 링크 색상 (블루) */
+            /* 모던 다크 테마 색상 */
+            --bg-body: #121316;          /* 가장 어두운 배경 */
+            --bg-sidebar: #1a1c20;       /* 사이드바 배경 */
+            --bg-panel: #22252a;         /* 게임 보드 래퍼 배경 */
             
-            /* 지뢰찾기 보드 색상 */
-            --board-bg: #555555;
-            --border-light: #7a7a7a;
-            --border-dark: #333333;
+            --text-main: #8f959e;        /* 부드러운 회색 텍스트 */
+            --text-highlight: #60a5fa;   /* 활성화 색상 (블루) */
             
-            /* 셀 색상 */
-            --cell-unrevealed: #5c5c5c;
-            --cell-revealed: #3b3b3b;
-            --cell-border-light: #7d7d7d;
-            --cell-border-dark: #2a2a2a;
-            --cell-border-revealed: #2d2d2d;
+            /* 지뢰찾기 격자 및 셀 색상 (플랫 디자인) */
+            --grid-gap-color: #121316;   /* 셀 사이 간격(선) 색상 */
+            --cell-unrevealed: #3a3f47;  /* 안 열린 칸 */
+            --cell-unrevealed-hover: #454b54; 
+            --cell-revealed: #22252a;    /* 열린 칸 */
+            --cell-highlight: #4d545e;   /* 클릭/드래그 시 눌린 효과 */
             
             /* 디지털 전광판 */
-            --digital-bg: #111111;
-            --digital-text: #ff1e1e;
+            --digital-bg: #090a0c;
+            --digital-text: #ef4444;
         }
 
         body {
             font-family: 'Pretendard', sans-serif;
-            background-color: var(--bg-main);
+            background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
             display: flex;
@@ -44,70 +42,67 @@
         }
 
         /* ---------------------------------
-           상단 로고 영역 (절대 위치)
+           상단 헤더
         --------------------------------- */
         .top-header {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 50px;
-            background-color: #1e1e1e;
-            border-bottom: 1px solid #333;
+            top: 0; left: 0; width: 100%; height: 60px;
+            background-color: rgba(26, 28, 32, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 30px;
             box-sizing: border-box;
             z-index: 10;
         }
         .top-header .logo {
-            font-size: 20px;
-            font-weight: bold;
-            color: #ccc;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
         }
 
         /* ---------------------------------
-           좌측 사이드바 (스크린샷 참고)
+           좌측 메뉴 사이드바
         --------------------------------- */
         .sidebar {
-            width: 250px;
+            width: 260px;
             background-color: var(--bg-sidebar);
-            border-right: 1px solid #333;
-            padding-top: 70px; /* 헤더 높이만큼 띄움 */
+            border-right: 1px solid rgba(255,255,255,0.05);
+            padding-top: 90px; 
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             box-sizing: border-box;
         }
         
         .sidebar-section {
             display: flex;
             flex-direction: column;
-            padding: 0 15px;
+            padding: 0 20px;
         }
 
         .menu-btn {
             background: none;
             border: none;
-            color: var(--text-highlight);
+            color: var(--text-main);
             text-align: left;
-            padding: 8px 10px;
-            font-size: 14px;
+            padding: 12px 15px;
+            font-size: 15px;
+            font-weight: 500;
             cursor: pointer;
-            border-radius: 4px;
-            transition: background 0.2s;
+            border-radius: 12px;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
-        .menu-btn:before { content: '»'; font-size: 16px; }
-        .menu-btn:hover { background-color: rgba(255,255,255,0.05); }
-        .menu-btn.active { color: #fff; font-weight: bold; }
-
-        .sidebar-divider {
-            height: 1px;
-            background-color: #333;
-            margin: 10px 15px;
+        .menu-btn:hover { background-color: rgba(255,255,255,0.03); color: #fff; }
+        .menu-btn.active { 
+            background-color: rgba(96, 165, 250, 0.1); 
+            color: var(--text-highlight); 
+            font-weight: 700; 
         }
 
         /* ---------------------------------
@@ -115,161 +110,163 @@
         --------------------------------- */
         .main-content {
             flex: 1;
-            padding-top: 70px;
+            padding-top: 90px;
             display: flex;
             flex-direction: column;
             align-items: center;
             overflow-y: auto;
         }
 
+        /* 부드러운 둥근 탭 버튼 (난이도 선택) */
         .diff-nav {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            background: var(--bg-sidebar);
+            padding: 6px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .diff-nav button {
-            background: none;
+            background: transparent;
             border: none;
-            color: var(--text-highlight);
-            font-size: 15px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 20px;
             cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        .diff-nav button.active { color: #fff; font-weight: bold; }
+        .diff-nav button:hover { color: #fff; }
+        .diff-nav button.active { 
+            background: var(--text-highlight); 
+            color: #fff; 
+            box-shadow: 0 2px 10px rgba(96, 165, 250, 0.3);
+        }
 
-        /* 게임 보드 컨테이너 (클래식 3D 테두리) */
+        /* 모던 스타일 보드 래퍼 */
         #game-wrapper {
-            background-color: var(--board-bg);
-            padding: 12px;
-            border-top: 3px solid var(--border-light);
-            border-left: 3px solid var(--border-light);
-            border-bottom: 3px solid var(--border-dark);
-            border-right: 3px solid var(--border-dark);
-            border-radius: 2px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background-color: var(--bg-panel);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
             display: inline-block;
         }
 
-        /* 상단 전광판 및 스마일 영역 */
+        /* 상단 전광판 영역 */
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 10px;
-            margin-bottom: 12px;
-            border-top: 2px solid var(--border-dark);
-            border-left: 2px solid var(--border-dark);
-            border-bottom: 2px solid var(--border-light);
-            border-right: 2px solid var(--border-light);
+            background: rgba(0,0,0,0.2);
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.02);
         }
 
         .digital-display {
             background-color: var(--digital-bg);
             color: var(--digital-text);
             font-family: 'VT323', monospace;
-            font-size: 34px;
+            font-size: 38px;
             line-height: 1;
-            padding: 2px 6px;
-            border-top: 2px solid var(--border-dark);
-            border-left: 2px solid var(--border-dark);
-            border-bottom: 2px solid var(--border-light);
-            border-right: 2px solid var(--border-light);
-            width: 50px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            width: 60px;
             text-align: center;
             letter-spacing: 2px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
         }
 
         #reset-btn {
-            width: 36px;
-            height: 36px;
-            font-size: 20px;
+            width: 45px;
+            height: 45px;
+            font-size: 24px;
             cursor: pointer;
-            background-color: #c0c0c0; /* 스마일 버튼은 클래식하게 밝은 회색 */
-            border-top: 2px solid #fff;
-            border-left: 2px solid #fff;
-            border-bottom: 2px solid #777;
-            border-right: 2px solid #777;
+            background: var(--cell-unrevealed);
+            border: none;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0;
-            margin: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.1s, background 0.2s;
         }
-        #reset-btn:active {
-            border-top: 2px solid #777;
-            border-left: 2px solid #777;
-            border-bottom: 2px solid #fff;
-            border-right: 2px solid #fff;
-        }
+        #reset-btn:active { transform: scale(0.92); }
+        #reset-btn:hover { background: var(--cell-unrevealed-hover); }
 
-        /* 지뢰찾기 격자 */
+        /* 딱딱한 테두리 대신 Gap(간격)을 활용한 모던 그리드 */
         #board {
             display: grid;
-            border-top: 2px solid var(--border-dark);
-            border-left: 2px solid var(--border-dark);
-            border-bottom: 2px solid var(--border-light);
-            border-right: 2px solid var(--border-light);
-            background-color: var(--cell-border-revealed);
+            gap: 1.5px; /* 셀 사이 간격 */
+            background-color: var(--grid-gap-color);
+            border: 1.5px solid var(--grid-gap-color);
+            border-radius: 8px;
+            overflow: hidden; /* 모서리 둥글게 */
         }
 
         .cell {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             background-color: var(--cell-unrevealed);
-            border-top: 2px solid var(--cell-border-light);
-            border-left: 2px solid var(--cell-border-light);
-            border-bottom: 2px solid var(--cell-border-dark);
-            border-right: 2px solid var(--cell-border-dark);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-weight: 900;
-            font-size: 16px;
+            font-weight: 800;
+            font-size: 17px;
             cursor: pointer;
             box-sizing: border-box;
+            /* 3D 대신 은은한 빛 반사 느낌만 추가 */
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,0.05);
+            transition: background-color 0.1s;
         }
-
-        /* 열린 셀 및 하이라이트 셀 */
+        .cell:hover:not(.revealed) { background-color: var(--cell-unrevealed-hover); }
+        
         .cell.revealed {
-            border: 1px solid var(--cell-border-revealed);
             background-color: var(--cell-revealed);
+            box-shadow: none; /* 열린 칸은 완전히 평평하게 */
             cursor: default;
         }
         .cell.highlight {
-            border: 1px solid var(--cell-border-revealed);
-            background-color: var(--cell-revealed);
+            background-color: var(--cell-highlight);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.4); /* 꾹 눌린 느낌 */
         }
-        .cell.mine {
-            background-color: #ff3333 !important;
-        }
+        .cell.mine { background-color: #ef4444 !important; }
 
-        /* 기록실 모달 디자인 통일 */
+        /* 모달창 디자인 변경 */
         #record-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
             justify-content: center;
             align-items: center;
             z-index: 2000;
         }
         .modal-content {
-            background: var(--bg-sidebar);
-            padding: 30px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            width: 450px;
+            background: var(--bg-panel);
+            padding: 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 480px;
             text-align: center;
             color: #ddd;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border-bottom: 1px solid #444; }
-        th { color: var(--text-highlight); }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th, td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 15px; }
+        th { color: var(--text-highlight); font-weight: 700; }
         .close-btn {
-            margin-top: 20px; padding: 8px 20px;
-            background: #333; color: #fff; border: 1px solid #555;
-            cursor: pointer; border-radius: 4px;
+            margin-top: 25px; padding: 12px 30px;
+            background: var(--text-highlight); color: #fff; border: none; font-weight: bold;
+            cursor: pointer; border-radius: 30px; font-size: 15px;
+            transition: opacity 0.2s;
         }
-        .close-btn:hover { background: #444; }
+        .close-btn:hover { opacity: 0.8; }
 
     </style>
 </head>
@@ -277,28 +274,27 @@
 
     <!-- 상단 헤더 -->
     <div class="top-header">
-        <div class="logo">⚙️ Minesweeper.Online 스타일</div>
+        <div class="logo">💣 Minesweeper Pro</div>
     </div>
 
     <!-- 좌측 사이드바 -->
     <div class="sidebar">
         <div class="sidebar-section">
-            <button class="menu-btn" onclick="location.href='index.html'">메인으로 돌아가기</button>
+            <button class="menu-btn" onclick="location.href='index.html'">🏠 메인으로 돌아가기</button>
         </div>
-        <div class="sidebar-divider"></div>
+        <div style="height:1px; background:rgba(255,255,255,0.05); margin: 5px 20px;"></div>
         <div class="sidebar-section">
-            <button class="menu-btn active" id="mode-standard" onclick="toggleMode(false)">표준 모드</button>
-            <button class="menu-btn" id="mode-noguess" onclick="toggleMode(true)">추측 없이 모드</button>
+            <button class="menu-btn active" id="mode-standard" onclick="toggleMode(false)">🎮 표준 모드</button>
+            <button class="menu-btn" id="mode-noguess" onclick="toggleMode(true)">🎯 추측 없이 모드</button>
         </div>
-        <div class="sidebar-divider"></div>
+        <div style="height:1px; background:rgba(255,255,255,0.05); margin: 5px 20px;"></div>
         <div class="sidebar-section">
-            <button class="menu-btn" onclick="openRecords()">역대 순위 (기록실)</button>
+            <button class="menu-btn" onclick="openRecords()">🏆 역대 순위 (기록실)</button>
         </div>
     </div>
 
-    <!-- 메인 게임 보드 영역 -->
+    <!-- 메인 게임 영역 -->
     <div class="main-content">
-        <!-- 난이도 선택 텍스트 메뉴 -->
         <div class="diff-nav">
             <button id="btn-초급" onclick="changeDiff('초급')">초급</button>
             <button id="btn-중급" onclick="changeDiff('중급')">중급</button>
@@ -343,8 +339,12 @@
         '최상급': { r: 24, c: 30, m: 160 }
     };
 
-    // 다크 모드용 시인성 좋은 넘버 컬러
-    const colors = ['', '#66b2ff', '#85e085', '#ff6666', '#c299ff', '#ff9933', '#33cccc', '#ff99cc', '#cccccc'];
+    // 다크 모드에 어울리게 밝기와 채도를 조정한 파스텔/네온톤 숫자 색상
+    const colors = [
+        '', '#60a5fa', '#4ade80', '#f87171', 
+        '#c084fc', '#fbbf24', '#2dd4bf', 
+        '#d1d5db', '#9ca3af'
+    ];
 
     let currentDiff = '초급';
     let isNoGuessMode = false;
@@ -359,10 +359,24 @@
     let timerInterval = null;
     let timeElapsed = 0;
 
+    // 드래그 상태 관리 변수 (요청하신 기능 핵심)
+    let isLeftMouseDown = false;
+    let chordingCell = null;
+    let highlightedCells = [];
+
     const boardElement = document.getElementById('board');
     const mineCountElement = document.getElementById('mine-count');
     const resetBtn = document.getElementById('reset-btn');
     const timerElement = document.getElementById('timer');
+
+    // 마우스 뗐을 때 드래그 상태 초기화 (보드 밖에서 떼는 경우 대비)
+    window.addEventListener('mouseup', (e) => {
+        if (e.button === 0) {
+            isLeftMouseDown = false;
+            if(!isGameOver) resetBtn.textContent = '🙂';
+            clearAllHighlights();
+        }
+    });
 
     function toggleMode(isNoGuess) {
         isNoGuessMode = isNoGuess;
@@ -387,7 +401,7 @@
         COLS = difficulties[currentDiff].c;
         MINES = difficulties[currentDiff].m;
 
-        boardElement.style.gridTemplateColumns = `repeat(${COLS}, 24px)`;
+        boardElement.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
         boardElement.innerHTML = '';
         
         board = [];
@@ -395,11 +409,12 @@
         isGameOver = false;
         minesLeft = MINES;
         revealedCount = 0;
+        isLeftMouseDown = false;
+        chordingCell = null;
+        highlightedCells = [];
         
         updateMineCount();
         resetBtn.textContent = '🙂';
-
-        // 초기 시작 시 난이도 버튼 활성화
         document.getElementById(`btn-${currentDiff}`).classList.add('active');
 
         for (let r = 0; r < ROWS; r++) {
@@ -411,9 +426,11 @@
                 cell.classList.add('cell');
                 cell.id = `cell-${r}-${c}`;
                 
+                // 드래그 및 클릭 이벤트 리스너
                 cell.addEventListener('mousedown', (e) => handleMouseDown(e, r, c));
-                cell.addEventListener('mouseup', (e) => handleMouseUp(e, r, c));
+                cell.addEventListener('mouseenter', () => handleMouseEnter(r, c));
                 cell.addEventListener('mouseleave', () => handleMouseLeave(r, c));
+                cell.addEventListener('mouseup', (e) => handleMouseUp(e, r, c));
                 cell.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     if(e.button === 2) handleRightClick(r, c);
@@ -444,13 +461,11 @@
             let c = Math.floor(Math.random() * COLS);
             
             if (board[r][c].isMine) continue;
-
             if (isNoGuessMode) {
                 if (Math.abs(r - firstR) <= 1 && Math.abs(c - firstC) <= 1) continue;
             } else {
                 if (r === firstR && c === firstC) continue;
             }
-
             board[r][c].isMine = true;
             placedMines++;
         }
@@ -462,9 +477,7 @@
             for (let c = 0; c < COLS; c++) {
                 if (board[r][c].isMine) continue;
                 let count = 0;
-                getNeighbors(r, c).forEach(n => {
-                    if (board[n.r][n.c].isMine) count++;
-                });
+                getNeighbors(r, c).forEach(n => { if (board[n.r][n.c].isMine) count++; });
                 board[r][c].neighborMines = count;
             }
         }
@@ -484,54 +497,79 @@
         return neighbors;
     }
 
-    let chordingCell = null;
+    /* ---------------------------------
+       드래그 하이라이트 (Chording) 로직
+    --------------------------------- */
+    function clearAllHighlights() {
+        highlightedCells.forEach(el => { if(el) el.classList.remove('highlight'); });
+        highlightedCells = [];
+    }
+
+    function addHighlight(r, c) {
+        let el = document.getElementById(`cell-${r}-${c}`);
+        if (el && !board[r][c].isRevealed && !board[r][c].isFlagged) {
+            el.classList.add('highlight');
+            highlightedCells.push(el);
+        }
+    }
+
+    function processDragHover(r, c) {
+        clearAllHighlights();
+        let cell = board[r][c];
+        
+        // 열린 숫자 칸 위로 지나가면 주변을 하이라이트
+        if (cell.isRevealed && cell.neighborMines > 0) {
+            chordingCell = {r, c};
+            getNeighbors(r, c).forEach(n => addHighlight(n.r, n.c));
+        } 
+        // 닫힌 칸 위로 지나가면 해당 칸만 하이라이트
+        else if (!cell.isRevealed && !cell.isFlagged) {
+            chordingCell = null;
+            addHighlight(r, c);
+        } else {
+            chordingCell = null;
+        }
+    }
 
     function handleMouseDown(e, r, c) {
         if (isGameOver) return;
-        if (e.button === 0) {
-            let cell = board[r][c];
+        if (e.button === 0) { // 좌클릭
+            isLeftMouseDown = true;
             resetBtn.textContent = '😮';
-            
-            if (cell.isRevealed && cell.neighborMines > 0) {
-                chordingCell = {r, c};
-                getNeighbors(r, c).forEach(n => {
-                    let nCell = board[n.r][n.c];
-                    if (!nCell.isRevealed && !nCell.isFlagged) {
-                        document.getElementById(`cell-${n.r}-${n.c}`).classList.add('highlight');
-                    }
-                });
-            } else if (!cell.isRevealed && !cell.isFlagged) {
-                document.getElementById(`cell-${r}-${c}`).classList.add('highlight');
-            }
+            processDragHover(r, c);
+        }
+    }
+
+    function handleMouseEnter(r, c) {
+        if (isGameOver) return;
+        if (isLeftMouseDown) { // 꾹 누른 상태로 드래그 중일 때
+            processDragHover(r, c);
         }
     }
 
     function handleMouseLeave(r, c) {
-        let el = document.getElementById(`cell-${r}-${c}`);
-        if(el) el.classList.remove('highlight');
-        
-        if (chordingCell && chordingCell.r === r && chordingCell.c === c) {
-            clearHighlight(r, c);
+        if (isGameOver) return;
+        if (isLeftMouseDown) {
+            clearAllHighlights();
             chordingCell = null;
         }
     }
 
     function handleMouseUp(e, r, c) {
         if (isGameOver) return;
-        resetBtn.textContent = '🙂';
-        let el = document.getElementById(`cell-${r}-${c}`);
-        if(el) el.classList.remove('highlight');
-
-        if (e.button === 0) {
-            let cell = board[r][c];
+        if (e.button === 0) { // 좌클릭 뗌
+            let cellData = board[r][c];
+            resetBtn.textContent = '🙂';
             
+            // 1. 숫자 위에서 드래그/클릭을 뗀 경우 (연속 열기)
             if (chordingCell && chordingCell.r === r && chordingCell.c === c) {
-                clearHighlight(r, c);
+                clearAllHighlights();
                 let flags = 0;
                 let neighbors = getNeighbors(r, c);
                 neighbors.forEach(n => { if (board[n.r][n.c].isFlagged) flags++; });
                 
-                if (flags === cell.neighborMines) {
+                // 깃발 개수가 주변 지뢰 개수와 일치하면 나머지 모두 오픈
+                if (flags === cellData.neighborMines) {
                     neighbors.forEach(n => {
                         if (!board[n.r][n.c].isRevealed && !board[n.r][n.c].isFlagged) {
                             revealCell(n.r, n.c);
@@ -540,7 +578,10 @@
                     checkWin();
                 }
                 chordingCell = null;
-            } else if (!cell.isRevealed && !cell.isFlagged) {
+            } 
+            // 2. 일반 닫힌 칸 위에서 뗀 경우 (해당 칸 열기)
+            else if (!cellData.isRevealed && !cellData.isFlagged) {
+                clearAllHighlights();
                 if (isFirstClick) {
                     isFirstClick = false;
                     startTimer();
@@ -548,15 +589,10 @@
                 }
                 revealCell(r, c);
                 checkWin();
+            } else {
+                clearAllHighlights();
             }
         }
-    }
-
-    function clearHighlight(r, c) {
-        getNeighbors(r, c).forEach(n => {
-            let el = document.getElementById(`cell-${n.r}-${n.c}`);
-            if (el) el.classList.remove('highlight');
-        });
     }
 
     function handleRightClick(r, c) {
@@ -566,7 +602,7 @@
 
         if (!cellData.isFlagged) {
             cellData.isFlagged = true;
-            cellElement.innerHTML = '<span style="color:#ff4d4d; font-size:14px;">🚩</span>';
+            cellElement.innerHTML = '<span style="color:#f87171; font-size:16px;">🚩</span>';
             minesLeft--;
         } else {
             cellData.isFlagged = false;
@@ -594,6 +630,7 @@
             cellElement.textContent = cellData.neighborMines;
             cellElement.style.color = colors[cellData.neighborMines];
         } else {
+            // 빈 공간(0)일 경우 연쇄 확장
             getNeighbors(r, c).forEach(n => revealCell(n.r, n.c));
         }
     }
@@ -608,6 +645,7 @@
         isGameOver = true;
         clearInterval(timerInterval);
         resetBtn.textContent = isWin ? '😎' : '😵';
+        clearAllHighlights();
         
         for (let r = 0; r < ROWS; r++) {
             for (let c = 0; c < COLS; c++) {
@@ -617,7 +655,7 @@
                         cellEl.classList.add('revealed');
                         cellEl.innerHTML = '💣';
                         if (triggerCell && triggerCell.id === cellEl.id) {
-                            cellEl.classList.add('mine');
+                            cellEl.classList.add('mine'); // 밟은 지뢰 강조
                         }
                     }
                 } else if (board[r][c].isFlagged) {
@@ -634,6 +672,9 @@
         }
     }
 
+    /* ---------------------------------
+       기록실 기능
+    --------------------------------- */
     function saveRecord() {
         let mode = isNoGuessMode ? 'noguess' : 'standard';
         let records = JSON.parse(localStorage.getItem('ms_records')) || {};
@@ -675,10 +716,7 @@
         document.getElementById('record-modal').style.display = 'none';
     }
 
-    // 창이 로드될 때 바로 게임 시작
-    window.onload = () => {
-        initGame();
-    };
+    window.onload = () => { initGame(); };
 </script>
 
 </body>
