@@ -3,888 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>지뢰찾기 Pro - Modern Dark (Cloud Save)</title>
-    <style>
-        /* 기존 CSS와 동일 (생략 없이 원본 유지) */
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        @import url('https://fonts.googleapis.com/css2?family=DSDIGIT&family=VT323&display=swap');
+    <title>My Cinema Archive</title>
+    <!-- 폰트 로드 -->
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- 아이콘용 -->
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
+    <style>
         :root {
-            --bg-body: #121316;          
-            --bg-sidebar: #1a1c20;       
-            --bg-panel: #22252a;         
-            
-            --text-main: #8f959e;        
-            --text-highlight: #60a5fa;   
-            
-            --grid-gap-color: #121316;   
-            --cell-unrevealed: #3a3f47;  
-            --cell-unrevealed-hover: #454b54; 
-            --cell-revealed: #22252a;    
-            --cell-highlight: #4d545e;   
-            
-            --digital-bg: #090a0c;
-            --digital-text: #ef4444;
+            --bg-color: #141414; /* 넷플릭스/레터박스 스타일 다크 톤 */
+            --header-bg: rgba(20, 20, 20, 0.9);
+            --text-light: #e5e5e5;
+            --text-muted: #808080;
+            --star-color: #00e054; /* 레터박스 그린 포인트 */
+            --border-color: #2c2c2c;
         }
 
         body {
             font-family: 'Pretendard', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
+            background-color: var(--bg-color);
+            color: var(--text-light);
             margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
+            padding: 0;
+            overflow-x: hidden;
         }
 
-        .top-header {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 60px;
-            background-color: rgba(26, 28, 32, 0.8);
+        /* 네비게이션 헤더 */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            background: var(--header-bg);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-sizing: border-box;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .header-controls {
             display: flex;
             align-items: center;
-            padding: 0 30px;
-            box-sizing: border-box;
-            z-index: 10;
-        }
-        .top-header .logo {
-            font-size: 22px;
-            font-weight: 800;
-            color: #fff;
-            letter-spacing: -0.5px;
+            gap: 20px;
         }
 
-        .sidebar {
-            width: 260px;
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid rgba(255,255,255,0.05);
-            padding-top: 90px; 
+        .search-bar {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: #222;
+            color: #fff;
+            font-family: 'Pretendard', sans-serif;
+            outline: none;
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+        .btn:hover { background: rgba(255,255,255,0.1); }
+
+        /* 5점 만점 히어로 슬라이더 */
+        .hero-slider {
+            margin-top: 70px;
+            height: 60vh;
+            background: #000;
+            position: relative;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-sizing: border-box;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
         
-        .sidebar-section {
-            display: flex;
-            flex-direction: column;
-            padding: 0 20px;
+        .hero-content {
+            position: absolute;
+            bottom: 40px;
+            left: 50px;
+            z-index: 10;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+        }
+        .hero-content h1 { font-size: 3rem; margin: 0 0 10px 0; }
+        .hero-content p { font-size: 1.2rem; margin: 0; color: var(--text-muted); }
+
+        .hero-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
         }
 
-        .menu-btn {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            text-align: left;
-            padding: 12px 15px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 12px;
-            transition: all 0.2s;
+        /* 섹션 및 캐러셀 레이아웃 */
+        .section-container {
+            padding: 40px 50px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        .menu-btn:hover { background-color: rgba(255,255,255,0.03); color: #fff; }
-        .menu-btn.active { 
-            background-color: rgba(96, 165, 250, 0.1); 
-            color: var(--text-highlight); 
-            font-weight: 700; 
-        }
 
-        .main-content {
-            flex: 1;
-            padding-top: 90px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-y: auto;
-        }
-
-        #game-view {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #record-view {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 600px;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .diff-nav {
-            display: flex;
-            background: var(--bg-sidebar);
-            padding: 6px;
-            border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .diff-nav button {
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 14px;
-            font-weight: 600;
-            padding: 8px 24px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        .diff-nav button:hover { color: #fff; }
-        .diff-nav button.active { 
-            background: var(--text-highlight); 
-            color: #fff; 
-            box-shadow: 0 2px 10px rgba(96, 165, 250, 0.3);
-        }
-
-        .panel-wrapper {
-            background-color: var(--bg-panel);
-            padding: 25px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-            display: inline-block;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.2);
-            padding: 12px 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-
-        .digital-display {
-            background-color: var(--digital-bg);
-            color: var(--digital-text);
-            font-family: 'VT323', monospace;
-            font-size: 38px;
-            line-height: 1;
-            padding: 4px 12px;
-            border-radius: 6px;
-            width: 60px;
-            text-align: center;
-            letter-spacing: 2px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
-        }
-
-        #reset-btn {
-            width: 45px;
-            height: 45px;
-            font-size: 24px;
-            cursor: pointer;
-            background: var(--cell-unrevealed);
-            border: none;
-            border-radius: 10px;
+        .carousel-wrapper {
+            position: relative;
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: transform 0.1s, background 0.2s;
         }
-        #reset-btn:active { transform: scale(0.92); }
-        #reset-btn:hover { background: var(--cell-unrevealed-hover); }
 
-        #board {
-            display: grid;
-            gap: 1.5px;
-            background-color: var(--grid-gap-color);
-            border: 1.5px solid var(--grid-gap-color);
+        .carousel {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 20px;
+            /* 6개씩 보이도록 아이템 크기 계산 (gap 포함) */
+        }
+        .carousel::-webkit-scrollbar { display: none; }
+
+        .movie-card {
+            flex: 0 0 calc((100% - 75px) / 6); /* 6 item grid */
+            position: relative;
             border-radius: 8px;
             overflow: hidden;
-        }
-
-        .cell {
-            width: 28px;
-            height: 28px;
-            background-color: var(--cell-unrevealed);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 800;
-            font-size: 17px;
+            transition: transform 0.3s ease;
             cursor: pointer;
-            box-sizing: border-box;
-            box-shadow: inset 1px 1px 0 rgba(255,255,255,0.05);
-            transition: background-color 0.1s;
+            border: 1px solid var(--border-color);
         }
-        .cell:hover:not(.revealed) { background-color: var(--cell-unrevealed-hover); }
         
-        .cell.revealed {
-            background-color: var(--cell-revealed);
-            box-shadow: none; 
-            cursor: default;
+        .movie-card:hover {
+            transform: scale(1.05);
+            z-index: 2;
+            border-color: var(--star-color);
         }
-        .cell.highlight {
-            background-color: var(--cell-highlight);
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.4); 
-        }
-        .cell.mine { background-color: #ef4444 !important; }
 
-        .record-header {
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: #fff;
-            font-size: 24px;
-            font-weight: 700;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 15px; text-align: center;}
-        th { color: var(--text-highlight); font-weight: 700; }
-        td { color: #ddd; }
-        
-        .btn-back-game {
+        .movie-poster {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
             display: block;
-            margin: 30px auto 0;
-            padding: 12px 30px;
-            background: rgba(255,255,255,0.05);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .movie-info {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 15px 10px 10px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .movie-card:hover .movie-info { opacity: 1; }
+
+        .movie-title { font-size: 14px; font-weight: bold; margin: 0 0 5px 0; }
+        .movie-director { font-size: 12px; color: var(--text-muted); }
+        .movie-rating { 
+            color: var(--star-color); 
+            font-size: 13px; 
+            margin-top: 5px; 
             font-weight: bold;
+        }
+
+        /* 페이지네이션 버튼 */
+        .nav-btn {
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            font-size: 24px;
             cursor: pointer;
-            border-radius: 30px;
-            font-size: 15px;
-            transition: all 0.2s;
+            position: absolute;
+            z-index: 10;
+            height: 100%;
+            padding: 0 15px;
+            transition: background 0.2s;
         }
-        .btn-back-game:hover { 
-            background: rgba(255,255,255,0.1); 
-        }
+        .nav-btn:hover { background: rgba(0,0,0,0.8); }
+        .nav-prev { left: -40px; }
+        .nav-next { right: -40px; }
+
     </style>
-    
-    <!-- 🟢 Firebase SDK 추가 -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-    <div class="top-header">
-        <div class="logo">💣 Minesweeper Pro</div>
+    <header>
+        <div class="logo" onclick="location.href='index.html'">🍿 CheezeTomato Archives</div>
+        <div class="header-controls">
+            <input type="text" class="search-bar" id="searchInput" placeholder="영화 제목 검색... (로컬/TMDB)">
+            <button class="btn" id="adminBtn" onclick="toggleAdmin()">관리자 로그인</button>
+            <button class="btn" onclick="location.href='index.html'">메인으로</button>
+        </div>
+    </header>
+
+    <!-- 5점 만점 마스터피스 히어로 섹션 -->
+    <div class="hero-slider" id="heroSlider">
+        <!-- JS로 채워질 영역 (예: 타오르는 여인의 초상, 버닝, 화양연화 등) -->
+        <img src="" alt="Hero Background" class="hero-bg" id="heroBg">
+        <div class="hero-content">
+            <h1 id="heroTitle">최고의 영화들</h1>
+            <p id="heroDesc">★★★★★ Masterpieces</p>
+        </div>
     </div>
 
-    <div class="sidebar">
-        <div class="sidebar-section">
-            <button class="menu-btn" onclick="location.href='index.html'">🏠 메인으로 돌아가기</button>
-        </div>
-        <div style="height:1px; background:rgba(255,255,255,0.05); margin: 5px 20px;"></div>
-        <div class="sidebar-section">
-            <button class="menu-btn active" id="btn-mode-standard" onclick="toggleMode(false)">🎮 표준 모드</button>
-            <button class="menu-btn" id="btn-mode-noguess" onclick="toggleMode(true)">🎯 추측 없이 모드</button>
-        </div>
-        <div style="height:1px; background:rgba(255,255,255,0.05); margin: 5px 20px;"></div>
-        <div class="sidebar-section">
-            <button class="menu-btn" id="btn-menu-record" onclick="openRecords()">🏆 역대 순위 (클라우드)</button>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div id="game-view">
-            <div class="diff-nav">
-                <button id="btn-초급" onclick="changeDiff('초급')">초급</button>
-                <button id="btn-중급" onclick="changeDiff('중급')">중급</button>
-                <button id="btn-고급" onclick="changeDiff('고급')">고급</button>
-                <button id="btn-최상급" onclick="changeDiff('최상급')">최상급</button>
-            </div>
-
-            <div class="panel-wrapper">
-                <div class="game-header">
-                    <div class="digital-display" id="mine-count">010</div>
-                    <button id="reset-btn" onclick="initGame()">🙂</button>
-                    <div class="digital-display" id="timer">000</div>
-                </div>
-                <div id="board" oncontextmenu="return false;" ondragstart="return false;"></div>
-            </div>
-        </div>
-
-        <div id="record-view">
-            <div class="panel-wrapper">
-                <h2 class="record-header">🏆 글로벌 최고 기록</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>난이도</th>
-                            <th>표준 모드</th>
-                            <th>추측 없이 모드</th>
-                        </tr>
-                    </thead>
-                    <tbody id="record-tbody">
-                        <tr><td colspan="3">데이터를 불러오는 중...</td></tr>
-                    </tbody>
-                </table>
-                <button class="btn-back-game" onclick="closeRecords()">⬅️ 게임으로 돌아가기</button>
-            </div>
-        </div>
+    <!-- 평점별 영화 캐러셀 영역 -->
+    <div id="movieSections">
+        <!-- JS가 평점별(5.0, 4.5, 4.0 등)로 섹션을 자동 생성합니다. -->
     </div>
 
 <script>
-    // 🟢 1. 파이어베이스 초기화 (아래 설정값을 본인의 프로젝트 정보로 변경해야 합니다)
+    // ---------------------------------
+    // 1. 설정 및 초기화 (본인 키로 변경 필수)
+    // ---------------------------------
+    const TMDB_API_KEY = "여기에_TMDB_API_KEY_입력";
+    
     const firebaseConfig = {
-        apiKey: "여기에_API_KEY_입력",
+        apiKey: "여기에_FIREBASE_API_KEY_입력",
         authDomain: "여기에_PROJECT_ID.firebaseapp.com",
-        databaseURL: "여기에_DATABASE_URL_입력", // 중요! Realtime Database URL
-        projectId: "여기에_PROJECT_ID",
-        storageBucket: "여기에_PROJECT_ID.appspot.com",
-        messagingSenderId: "여기에_SENDER_ID_입력",
-        appId: "여기에_APP_ID_입력"
+        databaseURL: "여기에_DATABASE_URL_입력",
+        projectId: "여기에_PROJECT_ID"
     };
     
-    // 파이어베이스 앱 초기화
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.database();
+    const auth = firebase.auth();
 
     // ---------------------------------
-    // 기존 지뢰찾기 로직
+    // 2. 데이터 불러오기 및 렌더링
     // ---------------------------------
-    const difficulties = {
-        '초급': { r: 9, c: 9, m: 10 },
-        '중급': { r: 16, c: 16, m: 40 },
-        '고급': { r: 16, c: 30, m: 99 },
-        '최상급': { r: 24, c: 30, m: 160 }
-    };
+    function loadMovies() {
+        db.ref('movies').once('value').then((snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
 
-    const colors = [
-        '', '#60a5fa', '#4ade80', '#f87171', 
-         '#c084fc', '#fbbf24', '#2dd4bf', 
-        '#d1d5db', '#9ca3af'
-    ];
+            // 영화 데이터를 배열로 변환
+            let movies = Object.keys(data).map(key => ({
+                id: key,
+                ...data[key]
+            }));
 
-    let currentDiff = '초급';
-    let isNoGuessMode = false;
-    
-    let ROWS, COLS, MINES;
-    let board = [];
-    let isFirstClick = true;
-    let isGameOver = false;
-    let minesLeft;
-    let revealedCount;
-    
-    let timerInterval = null;
-    let timeElapsed = 0;
+            // 평점 내림차순 정렬
+            movies.sort((a, b) => b.rating - a.rating);
 
-    let isLeftMouseDown = false;
-    let chordingCell = null;
-    let highlightedCells = [];
-
-    const boardElement = document.getElementById('board');
-    const mineCountElement = document.getElementById('mine-count');
-    const resetBtn = document.getElementById('reset-btn');
-    const timerElement = document.getElementById('timer');
-
-    window.addEventListener('mouseup', (e) => {
-        if (e.button === 0) {
-            isLeftMouseDown = false;
-            if(!isGameOver) resetBtn.textContent = '🙂';
-            clearAllHighlights();
-        }
-    });
-
-    function getSaveKey() {
-        return `ms_state_${currentDiff}_${isNoGuessMode ? 'noguess' : 'standard'}`;
-    }
-
-    function saveGameState() {
-        const gameState = {
-            board, isFirstClick, isGameOver, minesLeft, revealedCount, timeElapsed
-        };
-        localStorage.setItem(getSaveKey(), JSON.stringify(gameState));
-        localStorage.setItem('ms_lastConfig', JSON.stringify({ diff: currentDiff, isNoGuessMode }));
-    }
-
-    function loadGameState() {
-        const saved = localStorage.getItem(getSaveKey());
-        if (!saved) return false;
-        try {
-            const gameState = JSON.parse(saved);
-            board = gameState.board;
-            isFirstClick = gameState.isFirstClick;
-            isGameOver = gameState.isGameOver;
-            minesLeft = gameState.minesLeft;
-            revealedCount = gameState.revealedCount;
-            timeElapsed = gameState.timeElapsed;
-
-            ROWS = difficulties[currentDiff].r;
-            COLS = difficulties[currentDiff].c;
-            MINES = difficulties[currentDiff].m;
-
-            clearInterval(timerInterval);
-            boardElement.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
-            boardElement.innerHTML = '';
-            highlightedCells = [];
-            chordingCell = null;
-            isLeftMouseDown = false;
-
-            updateMineCount();
-            timerElement.textContent = String(timeElapsed).padStart(3, '0');
-            
-            if (isGameOver) {
-                resetBtn.textContent = revealedCount === (ROWS * COLS - MINES) ? '😎' : '😵';
-            } else {
-                resetBtn.textContent = '🙂';
-            }
-
-            document.querySelectorAll('.diff-nav button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn-${currentDiff}`).classList.add('active');
-            setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
-
-            for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < COLS; c++) {
-                    let cellData = board[r][c];
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.id = `cell-${r}-${c}`;
-
-                    cell.addEventListener('mousedown', (e) => handleMouseDown(e, r, c));
-                    cell.addEventListener('mouseenter', () => handleMouseEnter(r, c));
-                    cell.addEventListener('mouseleave', () => handleMouseLeave(r, c));
-                    cell.addEventListener('mouseup', (e) => handleMouseUp(e, r, c));
-                    cell.addEventListener('contextmenu', (e) => {
-                        e.preventDefault();
-                        if(e.button === 2) handleRightClick(r, c);
-                    });
-
-                    if (cellData.isRevealed) {
-                        cell.classList.add('revealed');
-                        if (cellData.isMine) {
-                            cell.innerHTML = '💣';
-                        } else if (cellData.neighborMines > 0) {
-                            cell.textContent = cellData.neighborMines;
-                            cell.style.color = colors[cellData.neighborMines];
-                        }
-                    } else if (cellData.isFlagged) {
-                        if (isGameOver && !cellData.isMine) {
-                            cell.innerHTML = '❌';
-                        } else {
-                            cell.innerHTML = '<span style="color:#f87171; font-size:16px;">🚩</span>';
-                        }
-                    } else if (isGameOver && cellData.isMine) {
-                        cell.classList.add('revealed');
-                        cell.innerHTML = '💣';
-                    }
-
-                    boardElement.appendChild(cell);
-                }
-            }
-
-            if (!isGameOver && !isFirstClick) {
-                startTimer();
-            }
-            return true;
-        } catch (e) {
-            console.error("저장된 게임을 불러오는 데 실패했습니다:", e);
-            return false;
-        }
-    }
-
-    function setMenuActive(mode) {
-        document.getElementById('btn-mode-standard').classList.remove('active');
-        document.getElementById('btn-mode-noguess').classList.remove('active');
-        document.getElementById('btn-menu-record').classList.remove('active');
-
-        if(mode === 'standard') document.getElementById('btn-mode-standard').classList.add('active');
-        else if(mode === 'noguess') document.getElementById('btn-mode-noguess').classList.add('active');
-        else if(mode === 'record') document.getElementById('btn-menu-record').classList.add('active');
-    }
-
-    function toggleMode(isNoGuess) {
-        document.getElementById('record-view').style.display = 'none';
-        document.getElementById('game-view').style.display = 'flex';
-        
-        isNoGuessMode = isNoGuess;
-        setMenuActive(isNoGuess ? 'noguess' : 'standard');
-        
-        if (!loadGameState()) {
-            initGame();
-        } else {
-            saveGameState(); 
-        }
-    }
-
-    function changeDiff(diff) {
-        currentDiff = diff;
-        document.querySelectorAll('.diff-nav button').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`btn-${diff}`).classList.add('active');
-        
-        if (!loadGameState()) {
-            initGame();
-        } else {
-            saveGameState(); 
-        }
-    }
-
-    function initGame() {
-        clearInterval(timerInterval);
-        timeElapsed = 0;
-        timerElement.textContent = '000';
-        
-        ROWS = difficulties[currentDiff].r;
-        COLS = difficulties[currentDiff].c;
-        MINES = difficulties[currentDiff].m;
-
-        boardElement.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
-        boardElement.innerHTML = '';
-        
-        board = [];
-        isFirstClick = true;
-        isGameOver = false;
-        minesLeft = MINES;
-        revealedCount = 0;
-        isLeftMouseDown = false;
-        chordingCell = null;
-        highlightedCells = [];
-        
-        updateMineCount();
-        resetBtn.textContent = '🙂';
-        document.getElementById(`btn-${currentDiff}`).classList.add('active');
-
-        for (let r = 0; r < ROWS; r++) {
-            let row = [];
-            for (let c = 0; c < COLS; c++) {
-                row.push({ isMine: false, isRevealed: false, isFlagged: false, neighborMines: 0 });
-                
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                cell.id = `cell-${r}-${c}`;
-                
-                cell.addEventListener('mousedown', (e) => handleMouseDown(e, r, c));
-                cell.addEventListener('mouseenter', () => handleMouseEnter(r, c));
-                cell.addEventListener('mouseleave', () => handleMouseLeave(r, c));
-                cell.addEventListener('mouseup', (e) => handleMouseUp(e, r, c));
-                cell.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    if(e.button === 2) handleRightClick(r, c);
-                });
-                
-                boardElement.appendChild(cell);
-            }
-            board.push(row);
-        }
-        
-        saveGameState(); 
-    }
-
-    function startTimer() {
-        timerInterval = setInterval(() => {
-            if(timeElapsed < 999) {
-                timeElapsed++;
-                timerElement.textContent = String(timeElapsed).padStart(3, '0');
-                saveGameState(); 
-            }
-        }, 1000);
-    }
-
-    function updateMineCount() {
-        let displayCount = minesLeft < 0 ? `-${String(Math.abs(minesLeft)).padStart(2, '0')}` : String(minesLeft).padStart(3, '0');
-        mineCountElement.textContent = displayCount;
-    }
-
-    function placeMines(firstR, firstC) {
-        let placedMines = 0;
-        while (placedMines < MINES) {
-            let r = Math.floor(Math.random() * ROWS);
-            let c = Math.floor(Math.random() * COLS);
-            
-            if (board[r][c].isMine) continue;
-            if (isNoGuessMode) {
-                if (Math.abs(r - firstR) <= 1 && Math.abs(c - firstC) <= 1) continue;
-            } else {
-                if (r === firstR && c === firstC) continue;
-            }
-            board[r][c].isMine = true;
-            placedMines++;
-        }
-        calculateNeighbors();
-    }
-
-    function calculateNeighbors() {
-        for (let r = 0; r < ROWS; r++) {
-            for (let c = 0; c < COLS; c++) {
-                if (board[r][c].isMine) continue;
-                let count = 0;
-                getNeighbors(r, c).forEach(n => { if (board[n.r][n.c].isMine) count++; });
-                board[r][c].neighborMines = count;
-            }
-        }
-    }
-
-    function getNeighbors(r, c) {
-        let neighbors = [];
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-                if (i === 0 && j === 0) continue;
-                let nr = r + i, nc = c + j;
-                if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
-                    neighbors.push({r: nr, c: nc});
-                }
-            }
-        }
-        return neighbors;
-    }
-
-    function clearAllHighlights() {
-        highlightedCells.forEach(el => { if(el) el.classList.remove('highlight'); });
-        highlightedCells = [];
-    }
-
-    function addHighlight(r, c) {
-        let el = document.getElementById(`cell-${r}-${c}`);
-        if (el && !board[r][c].isRevealed && !board[r][c].isFlagged) {
-            el.classList.add('highlight');
-            highlightedCells.push(el);
-        }
-    }
-
-    function processDragHover(r, c) {
-        clearAllHighlights();
-        let cell = board[r][c];
-        
-        if (cell.isRevealed && cell.neighborMines > 0) {
-            chordingCell = {r, c};
-            getNeighbors(r, c).forEach(n => addHighlight(n.r, n.c));
-        } else if (!cell.isRevealed && !cell.isFlagged) {
-            chordingCell = null;
-            addHighlight(r, c);
-        } else {
-            chordingCell = null;
-        }
-    }
-
-    function handleMouseDown(e, r, c) {
-        if (isGameOver) return;
-        if (e.button === 0) {
-            isLeftMouseDown = true;
-            resetBtn.textContent = '😮';
-            processDragHover(r, c);
-        }
-    }
-
-    function handleMouseEnter(r, c) {
-        if (isGameOver) return;
-        if (isLeftMouseDown) {
-            processDragHover(r, c);
-        }
-    }
-
-    function handleMouseLeave(r, c) {
-        if (isGameOver) return;
-        if (isLeftMouseDown) {
-            clearAllHighlights();
-            chordingCell = null;
-        }
-    }
-
-    function handleMouseUp(e, r, c) {
-        if (isGameOver) return;
-        if (e.button === 0) {
-            let cellData = board[r][c];
-            resetBtn.textContent = '🙂';
-            
-            if (chordingCell && chordingCell.r === r && chordingCell.c === c) {
-                clearAllHighlights();
-                let flags = 0;
-                let neighbors = getNeighbors(r, c);
-                neighbors.forEach(n => { if (board[n.r][n.c].isFlagged) flags++; });
-                
-                if (flags === cellData.neighborMines) {
-                    neighbors.forEach(n => {
-                        if (!board[n.r][n.c].isRevealed && !board[n.r][n.c].isFlagged) {
-                            revealCell(n.r, n.c);
-                        }
-                    });
-                    checkWin();
-                }
-                chordingCell = null;
-                saveGameState(); 
-            } else if (!cellData.isRevealed && !cellData.isFlagged) {
-                clearAllHighlights();
-                if (isFirstClick) {
-                    isFirstClick = false;
-                    startTimer();
-                    placeMines(r, c);
-                }
-                revealCell(r, c);
-                checkWin();
-                saveGameState(); 
-            } else {
-                clearAllHighlights();
-            }
-        }
-    }
-
-    function handleRightClick(r, c) {
-        if (isGameOver || board[r][c].isRevealed) return;
-        let cellData = board[r][c];
-        let cellElement = document.getElementById(`cell-${r}-${c}`);
-
-        if (!cellData.isFlagged) {
-            cellData.isFlagged = true;
-            cellElement.innerHTML = '<span style="color:#f87171; font-size:16px;">🚩</span>';
-            minesLeft--;
-        } else {
-            cellData.isFlagged = false;
-            cellElement.innerHTML = '';
-            minesLeft++;
-        }
-        updateMineCount();
-        saveGameState(); 
-    }
-
-    function revealCell(r, c) {
-        let cellData = board[r][c];
-        if (cellData.isRevealed || cellData.isFlagged) return;
-
-        cellData.isRevealed = true;
-        revealedCount++;
-        let cellElement = document.getElementById(`cell-${r}-${c}`);
-        cellElement.classList.add('revealed');
-
-        if (cellData.isMine) {
-            gameOver(false, cellElement);
-            return;
-        }
-
-        if (cellData.neighborMines > 0) {
-            cellElement.textContent = cellData.neighborMines;
-            cellElement.style.color = colors[cellData.neighborMines];
-        } else {
-            getNeighbors(r, c).forEach(n => revealCell(n.r, n.c));
-        }
-    }
-
-    function checkWin() {
-        if (!isGameOver && revealedCount === (ROWS * COLS - MINES)) {
-            gameOver(true);
-        }
-    }
-
-    function gameOver(isWin, triggerCell = null) {
-        isGameOver = true;
-        clearInterval(timerInterval);
-        resetBtn.textContent = isWin ? '😎' : '😵';
-        clearAllHighlights();
-        
-        for (let r = 0; r < ROWS; r++) {
-            for (let c = 0; c < COLS; c++) {
-                let cellEl = document.getElementById(`cell-${r}-${c}`);
-                if (board[r][c].isMine) {
-                    if (!board[r][c].isFlagged) {
-                        cellEl.classList.add('revealed');
-                        cellEl.innerHTML = '💣';
-                        if (triggerCell && triggerCell.id === cellEl.id) {
-                            cellEl.classList.add('mine'); 
-                        }
-                    }
-                } else if (board[r][c].isFlagged) {
-                    cellEl.innerHTML = '❌';
-                }
-            }
-        }
-
-        saveGameState(); 
-
-        if (isWin) {
-            setTimeout(() => {
-                alert(`승리하셨습니다! 기록: ${timeElapsed}초`);
-                saveRecordToCloud();
-            }, 100);
-        }
-    }
-
-    /* ---------------------------------
-        🟢 클라우드 기록실 로직 (수정됨)
-    --------------------------------- */
-    function saveRecordToCloud() {
-        let mode = isNoGuessMode ? 'noguess' : 'standard';
-        
-        // 데이터베이스 참조 경로 (예: minesweeper_records/초급/standard)
-        const recordRef = db.ref(`minesweeper_records/${currentDiff}/${mode}`);
-        
-        recordRef.once('value').then((snapshot) => {
-            let currentBest = snapshot.val();
-            // 기존 기록이 없거나, 현재 기록이 더 빠르면(작으면) 업데이트
-            if (currentBest === null || timeElapsed < currentBest) {
-                recordRef.set(timeElapsed)
-                    .then(() => console.log("새로운 클라우드 최고 기록 달성!"))
-                    .catch((error) => console.error("기록 저장 실패: ", error));
-            }
+            renderHeroSlider(movies.filter(m => m.rating === 5));
+            renderCarousels(movies);
         });
     }
 
-    function openRecords() {
-        document.getElementById('game-view').style.display = 'none';
-        document.getElementById('record-view').style.display = 'flex';
-        setMenuActive('record');
+    // 상단 5점 만점 히어로 렌더링
+    function renderHeroSlider(fiveStarMovies) {
+        if(fiveStarMovies.length === 0) return;
+        
+        // 간단히 첫 번째 5점 영화나 랜덤으로 하나를 메인에 표시
+        const hero = fiveStarMovies[Math.floor(Math.random() * fiveStarMovies.length)];
+        
+        document.getElementById('heroTitle').textContent = hero.title;
+        // TMDB 백드롭 이미지가 있다면 적용, 없으면 포스터
+        document.getElementById('heroBg').src = hero.backdropUrl || hero.posterUrl;
+    }
 
-        const tbody = document.getElementById('record-tbody');
-        tbody.innerHTML = '<tr><td colspan="3">클라우드에서 기록을 불러오는 중...</td></tr>';
+    // 평점별로 그룹화하여 캐러셀 생성
+    function renderCarousels(movies) {
+        const sectionsContainer = document.getElementById('movieSections');
+        sectionsContainer.innerHTML = '';
 
-        // 데이터베이스에서 모든 기록 가져오기
-        db.ref('minesweeper_records').once('value')
-            .then((snapshot) => {
-                let records = snapshot.val() || {};
-                tbody.innerHTML = ''; // 로딩 메시지 삭제
-                const diffList = ['초급', '중급', '고급', '최상급'];
+        // 평점(0.5 단위)으로 그룹화
+        const grouped = {};
+        movies.forEach(movie => {
+            if(!grouped[movie.rating]) grouped[movie.rating] = [];
+            grouped[movie.rating].push(movie);
+        });
 
-                diffList.forEach(d => {
-                    let tr = document.createElement('tr');
-                    let tdDiff = document.createElement('td'); tdDiff.textContent = d;
-                    let tdStd = document.createElement('td'); 
-                    tdStd.textContent = records[d]?.standard ? `${records[d].standard}초` : '-';
-                    let tdNoG = document.createElement('td'); 
-                    tdNoG.textContent = records[d]?.noguess ? `${records[d].noguess}초` : '-';
-                    
-                    tr.appendChild(tdDiff);
-                    tr.appendChild(tdStd);
-                    tr.appendChild(tdNoG);
-                    tbody.appendChild(tr);
-                });
-            })
-            .catch((error) => {
-                console.error("불러오기 실패:", error);
-                tbody.innerHTML = '<tr><td colspan="3">기록을 불러오지 못했습니다. DB 설정을 확인해주세요.</td></tr>';
+        // 5.0부터 역순으로 렌더링
+        Object.keys(grouped).sort((a, b) => b - a).forEach(rating => {
+            const section = document.createElement('div');
+            section.className = 'section-container';
+
+            // 별점 문자열 생성 (예: ★★★★☆)
+            let stars = '★'.repeat(Math.floor(rating));
+            if (rating % 1 !== 0) stars += '½';
+
+            let html = `
+                <div class="section-title">${stars} <span style="color:var(--text-muted); font-size:14px;">(${rating}점)</span></div>
+                <div class="carousel-wrapper">
+                    <button class="nav-btn nav-prev" onclick="scrollCarousel('${rating}', -1)">‹</button>
+                    <div class="carousel" id="carousel-${rating}">
+            `;
+
+            grouped[rating].forEach(movie => {
+                html += `
+                    <div class="movie-card">
+                        <img src="${movie.posterUrl}" alt="${movie.title}" class="movie-poster" onerror="this.src='https://via.placeholder.com/200x300?text=No+Poster'">
+                        <div class="movie-info">
+                            <p class="movie-title">${movie.title}</p>
+                            <p class="movie-director">${movie.director || '감독 미상'}</p>
+                            <p class="movie-rating">${stars}</p>
+                        </div>
+                    </div>
+                `;
             });
+
+            html += `
+                    </div>
+                    <button class="nav-btn nav-next" onclick="scrollCarousel('${rating}', 1)">›</button>
+                </div>
+            `;
+            section.innerHTML = html;
+            sectionsContainer.appendChild(section);
+        });
     }
 
-    function closeRecords() {
-        document.getElementById('record-view').style.display = 'none';
-        document.getElementById('game-view').style.display = 'flex';
-        setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
+    // 캐러셀 좌우 스크롤 로직
+    window.scrollCarousel = function(rating, direction) {
+        const carousel = document.getElementById(`carousel-${rating}`);
+        const scrollAmount = carousel.clientWidth * 0.8; // 너비의 80%만큼 이동
+        carousel.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' });
     }
 
-    window.onload = () => { 
-        const lastConfig = JSON.parse(localStorage.getItem('ms_lastConfig'));
-        if (lastConfig) {
-            currentDiff = lastConfig.diff || '초급';
-            isNoGuessMode = lastConfig.isNoGuessMode || false;
-        }
+    // ---------------------------------
+    // 3. TMDB 연동 및 검색기능 (퍼지 매칭)
+    // ---------------------------------
+    document.getElementById('searchInput').addEventListener('keyup', (e) => {
+        const keyword = e.target.value.toLowerCase();
+        // 검색 로직 (생략: 기존 코드처럼 로컬 movies 배열 filter 후 렌더링 수행)
+        // TMDB 연동이 필요한 경우 fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${keyword}`) 활용
+    });
 
-        if (!loadGameState()) {
-            setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
-            initGame(); 
+    // ---------------------------------
+    // 4. 관리자 로그인 로직
+    // ---------------------------------
+    window.toggleAdmin = function() {
+        const user = auth.currentUser;
+        if (user) {
+            auth.signOut().then(() => alert("로그아웃 되었습니다."));
+        } else {
+            const email = prompt("관리자 이메일을 입력하세요:");
+            const pwd = prompt("비밀번호를 입력하세요:");
+            if(email && pwd) {
+                auth.signInWithEmailAndPassword(email, pwd)
+                    .then(() => alert("관리자 로그인 성공! 영화 추가/수정 권한이 부여됩니다."))
+                    .catch(err => alert("로그인 실패: " + err.message));
+            }
         }
-    };
+    }
+
+    auth.onAuthStateChanged(user => {
+        document.getElementById('adminBtn').textContent = user ? "관리자 로그아웃" : "관리자 로그인";
+        // 로그인 시 우측 하단에 플로팅 '영화 추가(+)' 버튼 생성 등의 로직 추가 가능
+    });
+
+    // 초기 로드
+    window.onload = loadMovies;
+
 </script>
-
 </body>
 </html>
