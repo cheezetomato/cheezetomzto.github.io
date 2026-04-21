@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>지뢰찾기 Pro - Modern Dark</title>
+    <title>지뢰찾기 Pro - Modern Dark (Firestore)</title>
     <style>
         /* 폰트 로드 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         @import url('https://fonts.googleapis.com/css2?family=DSDIGIT&family=VT323&display=swap');
 
         :root {
-            /* 모던 다크 테마 색상 */
             --bg-body: #121316;          
             --bg-sidebar: #1a1c20;       
             --bg-panel: #22252a;         
@@ -18,14 +17,12 @@
             --text-main: #8f959e;        
             --text-highlight: #60a5fa;   
             
-            /* 지뢰찾기 격자 및 셀 색상 (플랫 디자인) */
             --grid-gap-color: #121316;   
             --cell-unrevealed: #3a3f47;  
             --cell-unrevealed-hover: #454b54; 
             --cell-revealed: #22252a;    
             --cell-highlight: #4d545e;   
             
-            /* 디지털 전광판 */
             --digital-bg: #090a0c;
             --digital-text: #ef4444;
         }
@@ -41,9 +38,6 @@
             user-select: none;
         }
 
-        /* ---------------------------------
-            상단 헤더
-        --------------------------------- */
         .top-header {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 60px;
@@ -63,9 +57,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* ---------------------------------
-            좌측 메뉴 사이드바
-        --------------------------------- */
         .sidebar {
             width: 260px;
             background-color: var(--bg-sidebar);
@@ -105,9 +96,6 @@
             font-weight: 700; 
         }
 
-        /* ---------------------------------
-            메인 콘텐츠 영역
-        --------------------------------- */
         .main-content {
             flex: 1;
             padding-top: 90px;
@@ -117,14 +105,12 @@
             overflow-y: auto;
         }
 
-        /* 게임 뷰 (기본 표시) */
         #game-view {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* 기록실 뷰 (기본 숨김) */
         #record-view {
             display: none;
             flex-direction: column;
@@ -139,7 +125,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 부드러운 둥근 탭 버튼 (난이도 선택) */
         .diff-nav {
             display: flex;
             background: var(--bg-sidebar);
@@ -167,7 +152,6 @@
             box-shadow: 0 2px 10px rgba(96, 165, 250, 0.3);
         }
 
-        /* 모던 스타일 보드 및 기록실 패널 래퍼 */
         .panel-wrapper {
             background-color: var(--bg-panel);
             padding: 25px;
@@ -179,7 +163,6 @@
             box-sizing: border-box;
         }
 
-        /* 상단 전광판 영역 */
         .game-header {
             display: flex;
             justify-content: space-between;
@@ -222,7 +205,6 @@
         #reset-btn:active { transform: scale(0.92); }
         #reset-btn:hover { background: var(--cell-unrevealed-hover); }
 
-        /* 딱딱한 테두리 대신 Gap(간격)을 활용한 모던 그리드 */
         #board {
             display: grid;
             gap: 1.5px;
@@ -259,7 +241,6 @@
         }
         .cell.mine { background-color: #ef4444 !important; }
 
-        /* 기록실 전용 스타일 */
         .record-header {
             text-align: center;
             margin-top: 0;
@@ -291,6 +272,11 @@
         }
 
     </style>
+
+    <!-- 🟢 Firebase SDK 추가 (Firestore용) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 </head>
 <body>
 
@@ -311,14 +297,14 @@
         </div>
         <div style="height:1px; background:rgba(255,255,255,0.05); margin: 5px 20px;"></div>
         <div class="sidebar-section">
-            <button class="menu-btn" id="btn-menu-record" onclick="openRecords()">🏆 역대 순위 (기록실)</button>
+            <button class="menu-btn" id="btn-menu-record" onclick="openRecords()">🏆 역대 순위 (클라우드)</button>
         </div>
     </div>
 
     <!-- 메인 콘텐츠 영역 -->
     <div class="main-content">
         
-        <!-- 게임 화면 (기본 활성화) -->
+        <!-- 게임 화면 -->
         <div id="game-view">
             <div class="diff-nav">
                 <button id="btn-초급" onclick="changeDiff('초급')">초급</button>
@@ -338,10 +324,10 @@
             </div>
         </div>
 
-        <!-- 기록실 화면 (페이지 형식으로 숨겨둠) -->
+        <!-- 기록실 화면 -->
         <div id="record-view">
             <div class="panel-wrapper">
-                <h2 class="record-header">🏆 내 최고 기록</h2>
+                <h2 class="record-header">🏆 글로벌 최고 기록</h2>
                 <table>
                     <thead>
                         <tr>
@@ -359,6 +345,27 @@
     </div>
 
 <script>
+    // ---------------------------------
+    // 🟢 1. 파이어베이스 초기화 (Firestore)
+    // ---------------------------------
+    const firebaseConfig = {
+        apiKey: "여기에_API_KEY_입력",
+        authDomain: "여기에_PROJECT_ID.firebaseapp.com",
+        projectId: "여기에_PROJECT_ID",
+        storageBucket: "여기에_PROJECT_ID.appspot.com",
+        messagingSenderId: "여기에_SENDER_ID_입력",
+        appId: "여기에_APP_ID_입력"
+    };
+    
+    // 파이어베이스 앱 초기화
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // ---------------------------------
+    // 기존 지뢰찾기 로직
+    // ---------------------------------
     const difficulties = {
         '초급': { r: 9, c: 9, m: 10 },
         '중급': { r: 16, c: 16, m: 40 },
@@ -402,27 +409,15 @@
         }
     });
 
-    /* ---------------------------------
-        진행 상황 저장 및 로드 로직
-    --------------------------------- */
-    // 난이도와 모드별로 고유한 저장 키를 생성합니다.
     function getSaveKey() {
         return `ms_state_${currentDiff}_${isNoGuessMode ? 'noguess' : 'standard'}`;
     }
 
     function saveGameState() {
         const gameState = {
-            board,
-            isFirstClick,
-            isGameOver,
-            minesLeft,
-            revealedCount,
-            timeElapsed
+            board, isFirstClick, isGameOver, minesLeft, revealedCount, timeElapsed
         };
-        // 각각의 난이도, 모드별로 저장
         localStorage.setItem(getSaveKey(), JSON.stringify(gameState));
-        
-        // 새로고침 시 마지막 플레이 설정을 불러오기 위한 정보
         localStorage.setItem('ms_lastConfig', JSON.stringify({ diff: currentDiff, isNoGuessMode }));
     }
 
@@ -479,7 +474,6 @@
                         if(e.button === 2) handleRightClick(r, c);
                     });
 
-                    // 저장된 셀 디자인 복구
                     if (cellData.isRevealed) {
                         cell.classList.add('revealed');
                         if (cellData.isMine) {
@@ -514,7 +508,6 @@
         }
     }
 
-    // 화면 전환 및 메뉴 활성화 관리
     function setMenuActive(mode) {
         document.getElementById('btn-mode-standard').classList.remove('active');
         document.getElementById('btn-mode-noguess').classList.remove('active');
@@ -532,11 +525,10 @@
         isNoGuessMode = isNoGuess;
         setMenuActive(isNoGuess ? 'noguess' : 'standard');
         
-        // 해당 모드의 저장된 게임이 있으면 이어서 진행하고 없으면 초기화
         if (!loadGameState()) {
             initGame();
         } else {
-            saveGameState(); // ms_lastConfig 업데이트
+            saveGameState(); 
         }
     }
 
@@ -545,11 +537,10 @@
         document.querySelectorAll('.diff-nav button').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`btn-${diff}`).classList.add('active');
         
-        // 해당 난이도의 저장된 게임이 있으면 이어서 진행하고 없으면 초기화
         if (!loadGameState()) {
             initGame();
         } else {
-            saveGameState(); // ms_lastConfig 업데이트
+            saveGameState(); 
         }
     }
 
@@ -601,7 +592,7 @@
             board.push(row);
         }
         
-        saveGameState(); // 게임 초기화 상태 저장
+        saveGameState(); 
     }
 
     function startTimer() {
@@ -609,7 +600,7 @@
             if(timeElapsed < 999) {
                 timeElapsed++;
                 timerElement.textContent = String(timeElapsed).padStart(3, '0');
-                saveGameState(); // 타이머 변경 시 진행상황 저장
+                saveGameState(); 
             }
         }, 1000);
     }
@@ -735,7 +726,7 @@
                     checkWin();
                 }
                 chordingCell = null;
-                saveGameState(); // 동작 후 상태 저장
+                saveGameState(); 
             } else if (!cellData.isRevealed && !cellData.isFlagged) {
                 clearAllHighlights();
                 if (isFirstClick) {
@@ -745,7 +736,7 @@
                 }
                 revealCell(r, c);
                 checkWin();
-                saveGameState(); // 동작 후 상태 저장
+                saveGameState(); 
             } else {
                 clearAllHighlights();
             }
@@ -767,7 +758,7 @@
             minesLeft++;
         }
         updateMineCount();
-        saveGameState(); // 우클릭(깃발) 후 상태 저장
+        saveGameState(); 
     }
 
     function revealCell(r, c) {
@@ -821,29 +812,37 @@
             }
         }
 
-        saveGameState(); // 게임 종료 상태 저장
+        saveGameState(); 
 
         if (isWin) {
             setTimeout(() => {
                 alert(`승리하셨습니다! 기록: ${timeElapsed}초`);
-                saveRecord();
+                saveRecordToCloud();
             }, 100);
         }
     }
 
     /* ---------------------------------
-        기록실 로직 (유지)
+        🟢 Cloud Firestore 전용 기록실 로직
     --------------------------------- */
-    function saveRecord() {
+    function saveRecordToCloud() {
         let mode = isNoGuessMode ? 'noguess' : 'standard';
-        let records = JSON.parse(localStorage.getItem('ms_records')) || {};
-        if (!records[currentDiff]) records[currentDiff] = {};
         
-        let currentBest = records[currentDiff][mode];
-        if (!currentBest || timeElapsed < currentBest) {
-            records[currentDiff][mode] = timeElapsed;
-            localStorage.setItem('ms_records', JSON.stringify(records));
-        }
+        const docRef = db.collection('minesweeper_records').doc(currentDiff);
+        
+        docRef.get().then((doc) => {
+            let data = doc.exists ? doc.data() : {};
+            let currentBest = data[mode];
+            
+            // 기존 기록이 없거나, 현재 기록이 더 빠르면 업데이트
+            if (currentBest === undefined || timeElapsed < currentBest) {
+                docRef.set({
+                    [mode]: timeElapsed
+                }, { merge: true })
+                .then(() => console.log("새로운 클라우드 최고 기록 달성! (Firestore)"))
+                .catch((error) => console.error("기록 저장 실패: ", error));
+            }
+        });
     }
 
     function openRecords() {
@@ -852,24 +851,37 @@
         setMenuActive('record');
 
         const tbody = document.getElementById('record-tbody');
-        tbody.innerHTML = '';
+        tbody.innerHTML = '<tr><td colspan="3">클라우드에서 기록을 불러오는 중...</td></tr>';
 
-        let records = JSON.parse(localStorage.getItem('ms_records')) || {};
-        const diffList = ['초급', '중급', '고급', '최상급'];
+        // Firestore에서 기록 가져오기
+        db.collection('minesweeper_records').get()
+            .then((querySnapshot) => {
+                let records = {};
+                querySnapshot.forEach((doc) => {
+                    records[doc.id] = doc.data(); 
+                });
 
-        diffList.forEach(d => {
-            let tr = document.createElement('tr');
-            let tdDiff = document.createElement('td'); tdDiff.textContent = d;
-            let tdStd = document.createElement('td'); 
-            tdStd.textContent = records[d]?.standard ? `${records[d].standard}초` : '-';
-            let tdNoG = document.createElement('td'); 
-            tdNoG.textContent = records[d]?.noguess ? `${records[d].noguess}초` : '-';
-            
-            tr.appendChild(tdDiff);
-            tr.appendChild(tdStd);
-            tr.appendChild(tdNoG);
-            tbody.appendChild(tr);
-        });
+                tbody.innerHTML = '';
+                const diffList = ['초급', '중급', '고급', '최상급'];
+
+                diffList.forEach(d => {
+                    let tr = document.createElement('tr');
+                    let tdDiff = document.createElement('td'); tdDiff.textContent = d;
+                    let tdStd = document.createElement('td'); 
+                    tdStd.textContent = records[d]?.standard ? `${records[d].standard}초` : '-';
+                    let tdNoG = document.createElement('td'); 
+                    tdNoG.textContent = records[d]?.noguess ? `${records[d].noguess}초` : '-';
+                    
+                    tr.appendChild(tdDiff);
+                    tr.appendChild(tdStd);
+                    tr.appendChild(tdNoG);
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch((error) => {
+                console.error("불러오기 실패:", error);
+                tbody.innerHTML = '<tr><td colspan="3">기록을 불러오지 못했습니다. DB 설정을 확인해주세요.</td></tr>';
+            });
     }
 
     function closeRecords() {
@@ -879,16 +891,13 @@
     }
 
     window.onload = () => { 
-        // 마지막에 플레이했던 설정(난이도 및 모드)을 불러옴
         const lastConfig = JSON.parse(localStorage.getItem('ms_lastConfig'));
         if (lastConfig) {
             currentDiff = lastConfig.diff || '초급';
             isNoGuessMode = lastConfig.isNoGuessMode || false;
         }
 
-        // 1순위: 해당 설정의 저장된 게임 상태가 있다면 불러오기
         if (!loadGameState()) {
-            // 저장된 상태가 없으면 새 게임으로 초기화
             setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
             initGame(); 
         }
