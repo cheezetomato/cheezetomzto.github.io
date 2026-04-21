@@ -42,7 +42,7 @@
         }
 
         /* ---------------------------------
-           상단 헤더
+            상단 헤더
         --------------------------------- */
         .top-header {
             position: absolute;
@@ -64,7 +64,7 @@
         }
 
         /* ---------------------------------
-           좌측 메뉴 사이드바
+            좌측 메뉴 사이드바
         --------------------------------- */
         .sidebar {
             width: 260px;
@@ -106,7 +106,7 @@
         }
 
         /* ---------------------------------
-           메인 콘텐츠 영역
+            메인 콘텐츠 영역
         --------------------------------- */
         .main-content {
             flex: 1;
@@ -402,6 +402,113 @@
         }
     });
 
+    /* ---------------------------------
+        진행 상황 저장 및 로드 로직 추가
+    --------------------------------- */
+    function saveGameState() {
+        const gameState = {
+            currentDiff,
+            isNoGuessMode,
+            board,
+            isFirstClick,
+            isGameOver,
+            minesLeft,
+            revealedCount,
+            timeElapsed
+        };
+        localStorage.setItem('ms_gameState', JSON.stringify(gameState));
+    }
+
+    function loadGameState() {
+        const saved = localStorage.getItem('ms_gameState');
+        if (!saved) return false;
+
+        try {
+            const gameState = JSON.parse(saved);
+            currentDiff = gameState.currentDiff;
+            isNoGuessMode = gameState.isNoGuessMode;
+            board = gameState.board;
+            isFirstClick = gameState.isFirstClick;
+            isGameOver = gameState.isGameOver;
+            minesLeft = gameState.minesLeft;
+            revealedCount = gameState.revealedCount;
+            timeElapsed = gameState.timeElapsed;
+
+            ROWS = difficulties[currentDiff].r;
+            COLS = difficulties[currentDiff].c;
+            MINES = difficulties[currentDiff].m;
+
+            clearInterval(timerInterval);
+            boardElement.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
+            boardElement.innerHTML = '';
+            highlightedCells = [];
+            chordingCell = null;
+            isLeftMouseDown = false;
+
+            updateMineCount();
+            timerElement.textContent = String(timeElapsed).padStart(3, '0');
+            
+            if (isGameOver) {
+                resetBtn.textContent = revealedCount === (ROWS * COLS - MINES) ? '😎' : '😵';
+            } else {
+                resetBtn.textContent = '🙂';
+            }
+
+            document.querySelectorAll('.diff-nav button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${currentDiff}`).classList.add('active');
+            setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    let cellData = board[r][c];
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.id = `cell-${r}-${c}`;
+
+                    cell.addEventListener('mousedown', (e) => handleMouseDown(e, r, c));
+                    cell.addEventListener('mouseenter', () => handleMouseEnter(r, c));
+                    cell.addEventListener('mouseleave', () => handleMouseLeave(r, c));
+                    cell.addEventListener('mouseup', (e) => handleMouseUp(e, r, c));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        if(e.button === 2) handleRightClick(r, c);
+                    });
+
+                    // 저장된 셀 디자인 복구
+                    if (cellData.isRevealed) {
+                        cell.classList.add('revealed');
+                        if (cellData.isMine) {
+                            cell.innerHTML = '💣';
+                        } else if (cellData.neighborMines > 0) {
+                            cell.textContent = cellData.neighborMines;
+                            cell.style.color = colors[cellData.neighborMines];
+                        }
+                    } else if (cellData.isFlagged) {
+                        if (isGameOver && !cellData.isMine) {
+                            cell.innerHTML = '❌';
+                        } else {
+                            cell.innerHTML = '<span style="color:#f87171; font-size:16px;">🚩</span>';
+                        }
+                    } else if (isGameOver && cellData.isMine) {
+                        cell.classList.add('revealed');
+                        cell.innerHTML = '💣';
+                    }
+
+                    boardElement.appendChild(cell);
+                }
+            }
+
+            if (!isGameOver && !isFirstClick) {
+                startTimer();
+            }
+            return true;
+
+        } catch (e) {
+            console.error("저장된 게임을 불러오는 데 실패했습니다:", e);
+            return false;
+        }
+    }
+
     // 화면 전환 및 메뉴 활성화 관리
     function setMenuActive(mode) {
         document.getElementById('btn-mode-standard').classList.remove('active');
@@ -414,7 +521,6 @@
     }
 
     function toggleMode(isNoGuess) {
-        // 기록실에서 모드 버튼을 누르면 즉시 게임 화면으로 전환
         document.getElementById('record-view').style.display = 'none';
         document.getElementById('game-view').style.display = 'flex';
         
@@ -477,12 +583,17 @@
             }
             board.push(row);
         }
+        
+        saveGameState(); // 게임 초기화 상태 저장
     }
 
     function startTimer() {
         timerInterval = setInterval(() => {
-            if(timeElapsed < 999) timeElapsed++;
-            timerElement.textContent = String(timeElapsed).padStart(3, '0');
+            if(timeElapsed < 999) {
+                timeElapsed++;
+                timerElement.textContent = String(timeElapsed).padStart(3, '0');
+                saveGameState(); // 타이머 변경 시 진행상황 저장
+            }
         }, 1000);
     }
 
@@ -607,6 +718,7 @@
                     checkWin();
                 }
                 chordingCell = null;
+                saveGameState(); // 동작 후 상태 저장
             } else if (!cellData.isRevealed && !cellData.isFlagged) {
                 clearAllHighlights();
                 if (isFirstClick) {
@@ -616,6 +728,7 @@
                 }
                 revealCell(r, c);
                 checkWin();
+                saveGameState(); // 동작 후 상태 저장
             } else {
                 clearAllHighlights();
             }
@@ -637,6 +750,7 @@
             minesLeft++;
         }
         updateMineCount();
+        saveGameState(); // 우클릭(깃발) 후 상태 저장
     }
 
     function revealCell(r, c) {
@@ -690,6 +804,8 @@
             }
         }
 
+        saveGameState(); // 게임 종료 상태 저장
+
         if (isWin) {
             setTimeout(() => {
                 alert(`승리하셨습니다! 기록: ${timeElapsed}초`);
@@ -699,7 +815,7 @@
     }
 
     /* ---------------------------------
-       페이지 전환 방식의 기록실
+        기록실 로직
     --------------------------------- */
     function saveRecord() {
         let mode = isNoGuessMode ? 'noguess' : 'standard';
@@ -714,7 +830,6 @@
     }
 
     function openRecords() {
-        // 게임 화면 숨기고, 기록실 화면 표시
         document.getElementById('game-view').style.display = 'none';
         document.getElementById('record-view').style.display = 'flex';
         setMenuActive('record');
@@ -741,15 +856,18 @@
     }
 
     function closeRecords() {
-        // 기록실 숨기고, 게임 화면 표시 및 이전 모드 버튼 활성화
         document.getElementById('record-view').style.display = 'none';
         document.getElementById('game-view').style.display = 'flex';
         setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
     }
 
     window.onload = () => { 
-        setMenuActive('standard');
-        initGame(); 
+        // 1순위: 저장된 게임 상태가 있다면 먼저 불러오기
+        if (!loadGameState()) {
+            // 저장된 상태가 없으면 새 게임으로 초기화
+            setMenuActive('standard');
+            initGame(); 
+        }
     };
 </script>
 
