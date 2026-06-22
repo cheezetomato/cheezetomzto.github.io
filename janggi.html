@@ -3,199 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>십이장기 - 지니어스 에디션</title>
+    <title>십이장기</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
         :root {
-            /* 🕹️ 지니어스 느낌의 색상 조합 */
-            --bg-body: #1a1a1a; /* 아주 어두운 회색 */
-            --text-main: #e8e6e3;
-            --table-bg: #1b5e20; /* 녹색 테이블 배경 */
-            --board-bg: #e0ac69; /* 밝은 나무색 장기판 */
-            --board-line: #333; /* 장기판 선 */
-            --piece-bg: #ffffff; /* 기물 배경 */
-            --piece-text: #000; /* 기물 글자색 */
-            --hand-bg: #2c2c2c;
-            --hand-border: #444;
+            /* ☀️ 라이트 모드 - 따뜻한 원목 테마 */
+            --bg-page-start: #fdf6ec;
+            --bg-page-end: #f1e3c8;
+            --text-main: #3b2f25;
+            --text-sub: #8a7a63;
 
-            /* 플레이어 색상 */
-            --p1-color: #2e7d32; /* P1 (녹색) - 지니어스 색상 */
-            --p2-color: #c62828; /* P2 (적색) - 지니어스 색상 */
+            --board-frame: #6d4c41;
+            --board-bg-a: #ecc888;
+            --board-bg-b: #dba968;
+            --cell-line: rgba(60, 40, 20, 0.22);
+            --cell-hover: rgba(255, 255, 255, 0.35);
+            --cell-highlight: rgba(46, 213, 115, 0.35);
+
+            --panel-bg: #fffaf0;
+            --panel-border: #e8d8b8;
+
+            --piece-bg: #ffffff;
+
+            --p1-color: #d4a017;
+            --p1-bg: #fff6da;
+            --p2-color: #2f6690;
+            --p2-bg: #e7f2f8;
+
+            --switch-track: #ccc;
+            --switch-knob: #fff;
         }
 
         body.dark-mode {
-            /* 어두운 모드 */
-            --bg-body: #111;
-            --table-bg: #0d3b14;
-            --board-bg: #c59154;
+            --bg-page-start: #15171c;
+            --bg-page-end: #0c0d10;
+            --text-main: #f0ede6;
+            --text-sub: #9aa0aa;
+
+            --board-frame: #4a3527;
+            --board-bg-a: #5b4636;
+            --board-bg-b: #46362a;
+            --cell-line: rgba(255, 255, 255, 0.08);
+            --cell-hover: rgba(255, 255, 255, 0.06);
+            --cell-highlight: rgba(46, 213, 115, 0.25);
+
+            --panel-bg: #1d2026;
+            --panel-border: #2a2e36;
+
+            --piece-bg: #2a2d33;
+
+            --p1-color: #e8c34a;
+            --p1-bg: #2a2410;
+            --p2-color: #5fb3e0;
+            --p2-bg: #10242b;
+
+            --switch-track: #000;
+            --switch-knob: #666;
         }
 
         * { box-sizing: border-box; }
-        body { 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            min-height: 100vh; margin: 0; font-family: 'Pretendard', sans-serif; 
-            background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.4s; 
+        body {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; margin: 0; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+            background: linear-gradient(135deg, var(--bg-page-start) 0%, var(--bg-page-end) 100%);
+            color: var(--text-main); transition: background 0.4s, color 0.4s;
             user-select: none; overflow: hidden;
         }
 
-        h1 { margin-bottom: 5px; font-size: 50px; color: #ff6b6b; font-family: 'Batang', serif; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.4); }
-        #turn-indicator { 
-            font-size: 24px; margin-bottom: 30px; font-weight: 800; transition: 0.3s; 
-            padding: 10px 30px; border-radius: 40px; background: var(--hand-bg); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 3px solid var(--hand-border);
+        h1 { margin: 0 0 6px 0; font-size: 42px; color: var(--text-main); letter-spacing: -1px; font-weight: 800; }
+        .subtitle { color: var(--text-sub); margin-bottom: 30px; font-size: 15px; }
+
+        #turn-indicator {
+            font-size: 20px; margin-bottom: 25px; font-weight: 800; transition: 0.3s;
+            padding: 10px 28px; border-radius: 40px; background: var(--panel-bg);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1); border: 2px solid var(--panel-border);
         }
 
-        /* 🌟 로비 화면 UI */
+        /* 🌟 로비 화면 */
         #lobby-screen {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: absolute; width: 100%; height: 100%; background: var(--bg-body); z-index: 2000;
-            transition: opacity 0.5s;
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--bg-page-start) 0%, var(--bg-page-end) 100%);
+            z-index: 2000; transition: opacity 0.5s;
+        }
+        .lobby-card {
+            background: var(--panel-bg); border: 2px solid var(--panel-border);
+            border-radius: 28px; padding: 50px 60px; box-shadow: 0 25px 60px rgba(0,0,0,0.12);
+            display: flex; flex-direction: column; align-items: center;
         }
         .menu-btn {
-            background: var(--hand-bg); color: var(--text-main); border: 2px solid var(--hand-border);
-            padding: 20px 50px; font-size: 22px; font-weight: 800; border-radius: 15px; margin: 15px;
-            cursor: pointer; box-shadow: 0 8px 0 var(--hand-border); transition: 0.2s; width: 360px;
+            background: var(--bg-page-start); color: var(--text-main); border: 2px solid var(--panel-border);
+            padding: 18px 40px; font-size: 17px; font-weight: 700; border-radius: 16px; margin: 8px 0;
+            cursor: pointer; transition: 0.2s; width: 320px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 4px 0 var(--panel-border);
         }
-        .menu-btn:hover { transform: translateY(2px); box-shadow: 0 6px 0 var(--hand-border); background: var(--table-bg); color: #fff; border-color: var(--board-border); }
-        .menu-btn:active { transform: translateY(8px); box-shadow: 0 0 0 var(--hand-border); }
-        
+        .menu-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.1); border-color: var(--p1-color); }
+        .menu-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--panel-border); }
+        .menu-btn .emoji { font-size: 24px; }
+
         #invite-box {
-            margin-top: 25px; padding: 20px; background: var(--hand-bg); border-radius: 20px; border: 3px dashed var(--table-bg);
-            text-align: center; display: none; width: 85%; max-width: 450px; word-break: break-all;
+            margin-top: 20px; padding: 18px; background: var(--p2-bg); border-radius: 16px;
+            border: 2px dashed var(--p2-color); text-align: center; display: none;
+            width: 85%; max-width: 420px; word-break: break-all; font-size: 14px;
         }
-        #invite-box a { color: #ff6b6b; font-weight: bold; }
+        #invite-box a { color: var(--p2-color); font-weight: bold; }
 
-        /* 게임 보드 및 말 CSS */
+        /* 게임 화면 */
         #game-screen { display: none; flex-direction: column; align-items: center; width: 100%; }
-        .game-layout { display: flex; align-items: stretch; gap: 40px; justify-content: center; width: 100%; max-width: 1100px; padding: 30px;}
-        
-        .side-panel { 
-            width: 160px; background: var(--hand-bg); border: 5px solid var(--hand-border); border-radius: 15px; 
-            padding: 20px 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; transition: 0.4s;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.1), 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .panel-title { font-weight: 900; font-size: 20px; margin-bottom: 12px; text-align: center; border-bottom: 3px solid var(--hand-border); padding-bottom: 10px; width: 100%;}
-        .p2-name { color: var(--p2-color); }
-        .p1-name { color: var(--p1-color); }
-        .hand-pieces-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; flex: 1; min-height: 450px; }
+        .game-layout { display: flex; align-items: stretch; gap: 24px; justify-content: center; width: 100%; max-width: 1100px; padding: 10px 20px; }
 
-        /* 🌟 녹색 테이블 및 나무 장기판 구현 */
+        .side-panel {
+            width: 140px; background: var(--panel-bg); border: 2px solid var(--panel-border); border-radius: 18px;
+            padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: 0.4s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+        }
+        .panel-title {
+            font-weight: 800; font-size: 14px; padding: 6px 14px; border-radius: 20px; width: 100%;
+            text-align: center; box-sizing: border-box;
+        }
+        .panel-title.p2 { color: var(--p2-color); background: var(--p2-bg); }
+        .panel-title.p1 { color: var(--p1-color); background: var(--p1-bg); }
+        .hand-pieces-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; min-height: 380px; }
+
+        /* 🌳 원목 보드 */
         #game-board-outer {
             display: flex; justify-content: center; align-items: center;
-            background-color: var(--table-bg); /* 녹색 테이블 천 */
-            padding: 40px; border-radius: 15px;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.4), 0 20px 40px rgba(0,0,0,0.5);
+            background: linear-gradient(160deg, var(--board-bg-a), var(--board-bg-b));
+            padding: 22px; border-radius: 18px;
+            border: 12px solid var(--board-frame);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.15), 0 20px 40px rgba(0,0,0,0.25);
         }
 
         #game-board {
-            display: grid; grid-template-columns: repeat(3, 110px); grid-template-rows: repeat(4, 110px); 
-            gap: 3px; background-color: var(--board-bg); /* 밝은 나무색 장기판 */
-            border: 15px solid #6d4c41; /* 나무 프레임 */
-            border-radius: 10px; padding: 8px; position: relative;
+            display: grid; grid-template-columns: repeat(3, 96px); grid-template-rows: repeat(4, 96px);
+            gap: 4px;
         }
 
-        .cell { 
-            background-color: transparent; border-radius: 5px; position: relative; 
-            box-shadow: inset 0 0 0 1px var(--board-line); transition: 0.2s; 
+        .cell {
+            background-color: transparent; border-radius: 8px; position: relative;
+            box-shadow: inset 0 0 0 1.5px var(--cell-line); transition: 0.2s;
             display: flex; justify-content: center; align-items: center;
         }
         .cell:hover { background-color: var(--cell-hover); cursor: pointer; }
-        .cell.highlight { background-color: var(--cell-highlight); box-shadow: inset 0 0 0 4px #2ed573; }
-        .cell.highlight::after { content: ''; position: absolute; width: 22px; height: 22px; background: rgba(255, 255, 255, 1); border-radius: 50%; box-shadow: 0 3px 6px rgba(0,0,0,0.4);}
+        .cell.highlight { background-color: var(--cell-highlight); box-shadow: inset 0 0 0 3px #2ed573; }
+        .cell.highlight::after {
+            content: ''; position: absolute; width: 18px; height: 18px;
+            background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
 
-        /* ♟️ 지니어스 스타일 기물 (말) 디자인 구현 */
+        /* 🐥 동물 말 디자인 (원형 칩) */
         .piece {
-            width: 96px; height: 96px; /* 직사각형 블록 */
-            aspect-ratio: 2/3; /* 직사각형 비율 */
-            background-color: var(--piece-bg); 
-            border: 4px solid; 
-            border-radius: 15px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 56px; font-weight: 900; font-family: 'Batang', 'Gungsuh', serif; 
-            box-shadow: 0 10px 0; /* 두꺼운 블록 느낌 */
-            cursor: grab; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s; 
+            width: 78px; height: 78px; border-radius: 50%;
+            background-color: var(--piece-bg);
+            border: 4px solid;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; line-height: 1;
+            box-shadow: 0 6px 0, 0 8px 16px rgba(0,0,0,0.25);
+            cursor: grab; transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s;
             touch-action: none; position: relative; z-index: 10;
         }
-        
-        /* 플레이어 색상 적용 */
-        .piece.p1 { 
-            border-color: var(--p1-color); 
-            box-shadow: 0 10px 0 var(--p1-color), 0 12px 20px rgba(0,0,0,0.5);
-            color: #000;
-        } 
-        .piece.p2 { 
-            border-color: var(--p2-color); 
-            box-shadow: 0 10px 0 var(--p2-color), 0 12px 20px rgba(0,0,0,0.5);
-            color: #000;
-        }
-        
-        .piece.on-board:active { cursor: grabbing; transform: translateY(8px); box-shadow: 0 2px 0 var(--piece-shadow), 0 5px 10px rgba(0,0,0,0.5); transition: 0.1s;}
-        .piece.selected { transform: translateY(-10px) scale(1.15); box-shadow: 0 15px 0 #e1b12c, 0 18px 30px rgba(0,0,0,0.6); border-color: #fbc531; z-index: 20;}
-        
-        /* 한자 크기 조정 */
-        .piece.king { font-size: 60px; } /* 王 */
-        .piece.promoted { font-size: 50px; } /* 侯 */
-        .piece.child { font-size: 40px; } /* 子 */
-        
-        /* 🌟 이동 방향 화살표 구현 (CSS 삼각형) */
-        .arrow {
-            position: absolute;
-            width: 0; height: 0;
-            border-style: solid;
-            pointer-events: none;
-        }
-        /* 각 방향 화살표 스타일 */
-        .arrow.top { border-width: 0 10px 10px 10px; border-color: transparent transparent #000 transparent; top: -15px; left: 50%; transform: translateX(-50%); }
-        .arrow.bottom { border-width: 10px 10px 0 10px; border-color: #000 transparent transparent transparent; bottom: -15px; left: 50%; transform: translateX(-50%); }
-        .arrow.left { border-width: 10px 10px 10px 0; border-color: transparent #000 transparent transparent; left: -15px; top: 50%; transform: translateY(-50%); }
-        .arrow.right { border-width: 10px 0 10px 10px; border-color: transparent transparent transparent #000; right: -15px; top: 50%; transform: translateY(-50%); }
-        .arrow.top-left { border-width: 10px 10px 0 0; border-color: #000 transparent transparent transparent; top: -15px; left: -15px; transform: rotate(-45deg); }
-        .arrow.top-right { border-width: 0 10px 10px 0; border-color: transparent #000 transparent transparent; top: -15px; right: -15px; transform: rotate(45deg); }
-        .arrow.bottom-left { border-width: 10px 0 0 10px; border-color: transparent transparent transparent #000; bottom: -15px; left: -15px; transform: rotate(45deg); }
-        .arrow.bottom-right { border-width: 0 0 10px 10px; border-color: transparent transparent #000 transparent; bottom: -15px; right: -15px; transform: rotate(-45deg); }
+        .piece.king { font-size: 44px; }
+        .piece.promoted { font-size: 36px; }
+        .piece.child { font-size: 34px; }
 
-        .piece.p2-rotate { transform: rotate(180deg); } 
-        .piece.on-board.p2-rotate:active { transform: rotate(180deg) translateY(-8px); }
-        .piece.selected.p2-rotate { transform: rotate(180deg) translateY(10px) scale(1.15); box-shadow: 0 -15px 0 #e1b12c, 0 -18px 30px rgba(0,0,0,0.6); }
+        .piece.p1 { border-color: var(--p1-color); box-shadow: 0 6px 0 var(--p1-color), 0 8px 16px rgba(0,0,0,0.25); }
+        .piece.p2 { border-color: var(--p2-color); box-shadow: 0 6px 0 var(--p2-color), 0 8px 16px rgba(0,0,0,0.25); }
 
-        .piece.dragging { 
-            position: fixed !important; z-index: 9999 !important; pointer-events: none !important; 
-            transform: scale(1.2) rotate(5deg) !important; cursor: grabbing !important; 
-            box-shadow: 0 25px 50px rgba(0,0,0,0.7) !important; margin: 0 !important; transition: none !important; 
+        .piece.on-board:active { cursor: grabbing; transform: translateY(5px); box-shadow: 0 1px 0, 0 4px 8px rgba(0,0,0,0.3); transition: 0.1s; }
+        .piece.selected {
+            transform: translateY(-8px) scale(1.12);
+            box-shadow: 0 12px 0 #e1b12c, 0 16px 26px rgba(0,0,0,0.3) !important;
+            border-color: #fbc531 !important; z-index: 20;
+        }
+
+        .piece.p2-rotate { transform: rotate(180deg); }
+        .piece.on-board.p2-rotate:active { transform: rotate(180deg) translateY(-5px); }
+        .piece.selected.p2-rotate {
+            transform: rotate(180deg) translateY(8px) scale(1.12);
+            box-shadow: 0 -12px 0 #e1b12c, 0 -16px 26px rgba(0,0,0,0.3) !important;
+        }
+
+        .piece.dragging {
+            position: fixed !important; z-index: 9999 !important; pointer-events: none !important;
+            transform: scale(1.15) !important; cursor: grabbing !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important; margin: 0 !important; transition: none !important;
         }
 
         #effect-overlay {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            font-size: 110px; font-weight: 900; color: #ff4757; font-family: 'Batang', serif;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px #fff;
-            z-index: 5000; pointer-events: none; opacity: 0; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
-            text-align: center; line-height: 1.1; letter-spacing: -2px;
+            font-size: 80px; font-weight: 900; color: #e74c3c; font-family: 'Pretendard', sans-serif;
+            text-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            z-index: 5000; pointer-events: none; opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            text-align: center; line-height: 1.1; background: var(--panel-bg);
+            padding: 30px 50px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
         #effect-overlay.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        #effect-overlay small { font-size: 45px; display: block; margin-top: 10px; font-weight: 700; letter-spacing: 0; text-shadow: none; font-family: 'Pretendard', sans-serif;}
+        #effect-overlay small { font-size: 30px; display: block; margin-top: 8px; font-weight: 700; color: var(--text-main); }
 
-        /* 공통 UI (다크모드 & 홈 버튼) */
-        .top-ui-container { position: fixed; top: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 40px; z-index: 3000; pointer-events: none; }
+        /* 공통 UI (다크모드 & 상단 버튼) */
+        .top-ui-container { position: fixed; top: 20px; width: 100%; display: flex; justify-content: space-between; padding: 0 30px; z-index: 3000; pointer-events: none; box-sizing: border-box; }
         .theme-switch-wrapper { display: flex; align-items: center; pointer-events: auto; }
-        .theme-switch { display: inline-block; height: 38px; position: relative; width: 70px; }
+        .theme-switch { display: inline-block; height: 30px; position: relative; width: 60px; }
         .theme-switch input { display: none; }
-        .slider { background-color: #bdc3c7; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 38px; border: 2px solid rgba(0,0,0,0.1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 30px; left: 2px; position: absolute; transition: .4s; width: 30px; border-radius: 50%; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
-        .slider::after { content: '🌙'; position: absolute; left: 10px; bottom: 8px; transition: .4s; color: #000; font-size: 16px; opacity: 0.5; }
-        input:checked + .slider { background-color: #34495e; }
-        input:checked + .slider:before { transform: translateX(34px); }
-        input:checked + .slider::after { transform: translateX(34px); opacity: 1; color: #fff; }
-        
-        .home-btn { 
-            background-color: var(--hand-bg); color: var(--text-main); border: 2px solid var(--hand-border); 
-            padding: 10px 30px; border-radius: 40px; font-weight: 800; font-size: 18px; transition: 0.2s; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; pointer-events: auto;
+        .slider { background-color: var(--switch-track); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 30px; border: 2px solid rgba(255,255,255,0.1); }
+        .slider:before { background-color: var(--switch-knob); bottom: 2px; content: ""; height: 26px; left: 2px; position: absolute; transition: .4s; width: 26px; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .slider::after { content: '🌙'; position: absolute; left: 6px; bottom: 5px; transition: .4s; font-size: 14px; opacity: 0.5; }
+        input:checked + .slider:before { transform: translateX(30px); }
+        input:checked + .slider::after { transform: translateX(30px); opacity: 1; }
+
+        .top-btn-group { display: flex; gap: 10px; pointer-events: auto; }
+        .home-btn {
+            background-color: var(--panel-bg); color: var(--text-main); border: 2px solid var(--panel-border);
+            padding: 8px 22px; border-radius: 30px; font-weight: 700; font-size: 14px; transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); cursor: pointer;
         }
-        .home-btn:hover { background-color: var(--text-main); color: var(--bg-body); transform: translateY(-3px);}
-        
-        #loading-text { font-size: 22px; color: #c0392b; font-weight: bold; display: none; margin-top: 25px; }
+        .home-btn:hover { background-color: var(--p1-color); color: #fff; border-color: var(--p1-color); transform: translateY(-2px); }
+
+        #loading-text { font-size: 16px; color: var(--p2-color); font-weight: bold; display: none; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -207,26 +234,32 @@
                 <div class="slider round"></div>
             </label>
         </div>
-        <button class="home-btn" onclick="location.href=window.location.pathname">🏠 처음으로</button>
+        <div class="top-btn-group">
+            <button class="home-btn" onclick="location.href='games.html'">🎮 게임 목록</button>
+            <button class="home-btn" onclick="location.href='index.html'">🏠 메인으로</button>
+        </div>
     </div>
 
     <div id="lobby-screen">
-        <h1 style="font-size: 80px; margin-bottom: 60px;">십이장기</h1>
-        <button class="menu-btn" onclick="startGame('local')">👤 1기기 2인 플레이</button>
-        <button class="menu-btn" onclick="startGame('ai')">🤖 AI와 대결 (싱글)</button>
-        <button class="menu-btn" onclick="createMultiplayerRoom()">🌐 친구와 대결 (방장)</button>
-        <div id="loading-text">연결 중입니다... 잠시만 기다려주세요.</div>
-        <div id="invite-box"></div>
+        <div class="lobby-card">
+            <h1>🦁 십이장기</h1>
+            <div class="subtitle">동물 말로 두는 3x4 미니 장기</div>
+            <button class="menu-btn" onclick="startGame('local')"><span class="emoji">👥</span> 1기기 2인 플레이</button>
+            <button class="menu-btn" onclick="startGame('ai')"><span class="emoji">🤖</span> AI와 대결 (싱글)</button>
+            <button class="menu-btn" onclick="createMultiplayerRoom()"><span class="emoji">🌐</span> 친구와 대결 (방장)</button>
+            <div id="loading-text">연결 중입니다... 잠시만 기다려주세요.</div>
+            <div id="invite-box"></div>
+        </div>
     </div>
 
     <div id="game-screen">
-        <h1>십이장기</h1>
-        <div id="turn-indicator" style="color: var(--p1-color); border-color: var(--p1-color);">🔴 Player 1의 턴</div>
+        <h1 style="font-size:30px; margin-bottom: 14px;">🦁 십이장기</h1>
+        <div id="turn-indicator" style="color: var(--p1-color); border-color: var(--p1-color);">🟡 Player 1의 턴</div>
         <div id="effect-overlay">장군!</div>
 
         <div class="game-layout">
             <div class="side-panel" id="hand-p2">
-                <div class="panel-title p2-name">P2 대기석</div>
+                <div class="panel-title p2">P2 보유 말</div>
                 <div id="p2-pieces-container" class="hand-pieces-container"></div>
             </div>
 
@@ -235,7 +268,7 @@
             </div>
 
             <div class="side-panel" id="hand-p1">
-                <div class="panel-title p1-name">P1 대기석</div>
+                <div class="panel-title p1">P1 보유 말</div>
                 <div id="p1-pieces-container" class="hand-pieces-container"></div>
             </div>
         </div>
@@ -256,15 +289,15 @@
             { id: 1, type: '將', owner: 'p2', pos: 0, promoted: false }, { id: 2, type: '王', owner: 'p2', pos: 1, promoted: false }, { id: 3, type: '相', owner: 'p2', pos: 2, promoted: false }, { id: 4, type: '子', owner: 'p2', pos: 4, promoted: false },
             { id: 5, type: '子', owner: 'p1', pos: 7, promoted: false }, { id: 6, type: '相', owner: 'p1', pos: 9, promoted: false }, { id: 7, type: '王', owner: 'p1', pos: 10, promoted: false }, { id: 8, type: '將', owner: 'p1', pos: 11, promoted: false }
         ];
-        
-        let board = Array(12).fill(null); 
-        let currentTurn = 'p1'; 
-        let selectedIndex = -1; 
-        let validMoves = [];    
+
+        let board = Array(12).fill(null);
+        let currentTurn = 'p1';
+        let selectedIndex = -1;
+        let validMoves = [];
         let gameActive = false;
-        
-        let gameMode = 'local'; 
-        let myRole = 'both'; 
+
+        let gameMode = 'local';
+        let myRole = 'both';
         let peer = null;
         let conn = null;
 
@@ -325,7 +358,7 @@
             conn.on('data', (data) => {
                 if(data.type === 'sync') {
                     pieces = data.pieces; currentTurn = data.currentTurn;
-                    updateBoardState(); renderAll(); checkWinCondition(); 
+                    updateBoardState(); renderAll(); checkWinCondition();
                 }
             });
         }
@@ -346,7 +379,7 @@
                 boardEl.appendChild(cell);
             }
             updateBoardState();
-            renderAll(); 
+            renderAll();
         }
 
         function updateBoardState() {
@@ -354,11 +387,22 @@
             pieces.forEach(p => { if(p.pos >= 0 && p.pos < 12) board[p.pos] = p.id; });
         }
 
-        /* 🌟 화살표 추가를 위한 renderAll 함수 수정 */
+        // 🦁 동물 이모지로 말 표현
+        function getPieceEmoji(piece) {
+            if (piece.promoted) return '🐔'; // 닭 (승급한 자)
+            switch (piece.type) {
+                case '王': return '🦁'; // 사자(왕)
+                case '將': return '🦒'; // 기린(장)
+                case '相': return '🐘'; // 코끼리(상)
+                case '子': return '🐥'; // 병아리(자)
+                default: return '❓';
+            }
+        }
+
         function renderAll() {
             for (let i = 0; i < 12; i++) {
                 const cell = document.getElementById(`cell-${i}`);
-                cell.innerHTML = ''; 
+                cell.innerHTML = '';
                 if (validMoves.includes(i)) cell.classList.add('highlight');
                 else cell.classList.remove('highlight');
             }
@@ -371,22 +415,13 @@
                 const pieceEl = document.createElement('div');
                 pieceEl.id = `piece-${pieceData.id}`;
                 pieceEl.className = `piece ${pieceData.owner}`;
-                pieceEl.innerText = pieceData.promoted ? '侯' : pieceData.type;
+                pieceEl.innerText = getPieceEmoji(pieceData);
 
-                // 한자 크기 조정을 위한 클래스 추가
                 if (pieceData.type === '王') pieceEl.classList.add('king');
                 else if (pieceData.promoted) pieceEl.classList.add('promoted');
                 else if (pieceData.type === '子') pieceEl.classList.add('child');
 
                 if (pieceData.owner === 'p2') pieceEl.classList.add('p2-rotate');
-
-                // 🌟 화살표 추가
-                const directions = getPieceDirections(pieceData);
-                directions.forEach(dir => {
-                    const arrow = document.createElement('div');
-                    arrow.className = `arrow ${dir}`;
-                    pieceEl.appendChild(arrow);
-                });
 
                 if (pieceData.pos >= 0) {
                     pieceEl.classList.add('on-board');
@@ -402,24 +437,9 @@
 
             let roleText = myRole === 'p1' ? '(당신)' : (myRole === 'p2' ? '(상대)' : '');
             let roleText2 = myRole === 'p2' ? '(당신)' : (myRole === 'p1' ? '(상대)' : '');
-            
-            if(currentTurn === 'p1') { turnIndicator.innerHTML = `🔴 Player 1의 턴 ${roleText}`; turnIndicator.style.color = "var(--p1-color)"; turnIndicator.style.borderColor = "var(--p1-color)"; } 
-            else { turnIndicator.innerHTML = `🟢 Player 2의 턴 ${roleText2}`; turnIndicator.style.color = "var(--p2-color)"; turnIndicator.style.borderColor = "var(--p2-color)"; }
-        }
 
-        /* 🌟 각 기물의 이동 방향을 가져오는 함수 추가 */
-        function getPieceDirections(piece) {
-            const type = piece.promoted ? '侯' : piece.type;
-            let dirs = [];
-            if (type === '王') dirs = ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'];
-            else if (type === '將') dirs = ['top', 'bottom', 'left', 'right'];
-            else if (type === '相') dirs = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-            else if (type === '子') dirs = piece.owner === 'p1' ? ['top'] : ['bottom'];
-            else if (type === '侯') {
-                dirs = ['top', 'bottom', 'left', 'right'];
-                dirs = piece.owner === 'p1' ? dirs.concat(['top-left', 'top-right']) : dirs.concat(['bottom-left', 'bottom-right']);
-            }
-            return dirs;
+            if(currentTurn === 'p1') { turnIndicator.innerHTML = `🟡 Player 1의 턴 ${roleText}`; turnIndicator.style.color = "var(--p1-color)"; turnIndicator.style.borderColor = "var(--p1-color)"; }
+            else { turnIndicator.innerHTML = `🔵 Player 2의 턴 ${roleText2}`; turnIndicator.style.color = "var(--p2-color)"; turnIndicator.style.borderColor = "var(--p2-color)"; }
         }
 
         function handleCellClick(index) {
@@ -436,9 +456,9 @@
             if (clickedPieceId) {
                 const piece = pieces.find(p => p.id === clickedPieceId);
                 if (piece.owner === currentTurn) {
-                    if (selectedIndex === index) { selectedIndex = -1; validMoves = []; } 
+                    if (selectedIndex === index) { selectedIndex = -1; validMoves = []; }
                     else { selectedIndex = index; validMoves = getValidMoves(index, piece); }
-                    renderAll(); 
+                    renderAll();
                     return;
                 }
             }
@@ -454,17 +474,17 @@
             } else {
                 attacker = pieces.find(p => p.id === board[fromIndex]);
                 const targetId = board[toIndex];
-                
+
                 if (targetId) {
                     const captured = pieces.find(p => p.id === targetId);
-                    if(captured.type === '王') { 
-                        attacker.pos = toIndex; captured.pos = -1; 
+                    if(captured.type === '王') {
+                        attacker.pos = toIndex; captured.pos = -1;
                         updateBoardState(); renderAll(); syncState();
                         endGame(`${currentTurn === 'p1' ? 'P1' : 'P2'} 승리!`, "적의 왕을 쟁취했습니다.");
-                        return; 
+                        return;
                     }
                     captured.pos = -1;
-                    captured.owner = currentTurn; 
+                    captured.owner = currentTurn;
                     captured.promoted = false;
                 }
 
@@ -481,8 +501,8 @@
 
         function startDrag(e, pieceData) {
             if(!gameActive || pieceData.owner !== currentTurn) return;
-            if(myRole !== 'both' && myRole !== currentTurn) return; 
-            
+            if(myRole !== 'both' && myRole !== currentTurn) return;
+
             draggedPiece = pieceData;
             draggedEl = document.getElementById(`piece-${pieceData.id}`);
             const rect = draggedEl.getBoundingClientRect();
@@ -506,7 +526,7 @@
         function dropPiece(e) {
             document.removeEventListener('pointermove', dragMove); document.removeEventListener('pointerup', dropPiece); document.removeEventListener('pointercancel', dropPiece);
             if(!draggedPiece || !draggedEl) return;
-            draggedEl.style.display = 'none'; 
+            draggedEl.style.display = 'none';
             const targetCell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
             draggedEl.style.display = 'flex';
             let dropped = false;
@@ -514,10 +534,10 @@
             if (targetCell) {
                 const targetIndex = parseInt(targetCell.dataset.index);
                 if (board[targetIndex] === null) {
-                    if (currentTurn === 'p1' && targetIndex <= 2) { 
-                        showOverlay("금수!", "#d35400", "<small>적진 끝줄엔 바로 놓을 수 없습니다.</small>", 1500); 
-                    } else if (currentTurn === 'p2' && targetIndex >= 9) { 
-                        showOverlay("금수!", "#d35400", "<small>적진 끝줄엔 바로 놓을 수 없습니다.</small>", 1500); 
+                    if (currentTurn === 'p1' && targetIndex <= 2) {
+                        showOverlay("금수!", "#d35400", "<small>적진 끝줄엔 바로 놓을 수 없습니다.</small>", 1500);
+                    } else if (currentTurn === 'p2' && targetIndex >= 9) {
+                        showOverlay("금수!", "#d35400", "<small>적진 끝줄엔 바로 놓을 수 없습니다.</small>", 1500);
                     } else {
                         executeMove(null, targetIndex, true, draggedPiece.id); dropped = true;
                     }
@@ -542,15 +562,15 @@
             };
 
             const type = piece.promoted ? '侯' : piece.type;
-            if (type === '王') { for(let r=-1; r<=1; r++) for(let c=-1; c<=1; c++) if(r!==0||c!==0) addMove(r, c); } 
-            else if (type === '將') { addMove(-1, 0); addMove(1, 0); addMove(0, -1); addMove(0, 1); } 
-            else if (type === '相') { addMove(-1, -1); addMove(-1, 1); addMove(1, -1); addMove(1, 1); } 
-            else if (type === '子') { if (piece.owner === 'p1') addMove(-1, 0); else addMove(1, 0); } 
+            if (type === '王') { for(let r=-1; r<=1; r++) for(let c=-1; c<=1; c++) if(r!==0||c!==0) addMove(r, c); }
+            else if (type === '將') { addMove(-1, 0); addMove(1, 0); addMove(0, -1); addMove(0, 1); }
+            else if (type === '相') { addMove(-1, -1); addMove(-1, 1); addMove(1, -1); addMove(1, 1); }
+            else if (type === '子') { if (piece.owner === 'p1') addMove(-1, 0); else addMove(1, 0); }
             else if (type === '侯') { addMove(-1, 0); addMove(1, 0); addMove(0, -1); addMove(0, 1); if (piece.owner === 'p1') { addMove(-1, -1); addMove(-1, 1); } else { addMove(1, -1); addMove(1, 1); } }
             return moves;
         }
 
-        function getPiecesCopy() { return JSON.parse(JSON.stringify(pieces)); }
+        function getPiecesCopy() { return pieces.map(p => ({ id: p.id, type: p.type, owner: p.owner, pos: p.pos, promoted: p.promoted })); }
 
         function isJanggun(attacker, targetPieces) {
             const defender = attacker === 'p1' ? 'p2' : 'p1';
@@ -563,11 +583,11 @@
                     const row = Math.floor(p.pos / 3); const col = p.pos % 3;
                     let canAttack = false;
                     const checkAttack = (rO, cO) => { const nR = row+rO; const nC = col+cO; if(nR>=0 && nR<4 && nC>=0 && nC<3 && (nR*3+nC) === king.pos) canAttack = true; }
-                    
-                    if (type === '王') { for(let r=-1; r<=1; r++) for(let c=-1; c<=1; c++) if(r!==0||c!==0) checkAttack(r, c); } 
-                    else if (type === '將') { checkAttack(-1, 0); checkAttack(1, 0); checkAttack(0, -1); checkAttack(0, 1); } 
-                    else if (type === '相') { checkAttack(-1, -1); checkAttack(-1, 1); checkAttack(1, -1); checkAttack(1, 1); } 
-                    else if (type === '子') { if (p.owner === 'p1') checkAttack(-1, 0); else checkAttack(1, 0); } 
+
+                    if (type === '王') { for(let r=-1; r<=1; r++) for(let c=-1; c<=1; c++) if(r!==0||c!==0) checkAttack(r, c); }
+                    else if (type === '將') { checkAttack(-1, 0); checkAttack(1, 0); checkAttack(0, -1); checkAttack(0, 1); }
+                    else if (type === '相') { checkAttack(-1, -1); checkAttack(-1, 1); checkAttack(1, -1); checkAttack(1, 1); }
+                    else if (type === '子') { if (p.owner === 'p1') checkAttack(-1, 0); else checkAttack(1, 0); }
                     else if (type === '侯') { checkAttack(-1, 0); checkAttack(1, 0); checkAttack(0, -1); checkAttack(0, 1); if (p.owner === 'p1') { checkAttack(-1, -1); checkAttack(-1, 1); } else { checkAttack(1, -1); checkAttack(1, 1); } }
                     if(canAttack) return true;
                 }
@@ -585,7 +605,7 @@
                     const targetPiece = pCopy.find(cp => cp.pos === move);
                     if(targetPiece) { targetPiece.pos = -1; targetPiece.owner = defender; }
                     movingPiece.pos = move;
-                    if (!isJanggun(defender === 'p1' ? 'p2' : 'p1', pCopy)) return false; 
+                    if (!isJanggun(defender === 'p1' ? 'p2' : 'p1', pCopy)) return false;
                 }
             }
 
@@ -596,7 +616,7 @@
                         if ((defender === 'p1' && i <= 2) || (defender === 'p2' && i >= 9)) continue;
                         const pCopy = getPiecesCopy();
                         pCopy.find(cp => cp.id === p.id).pos = i;
-                        if (!isJanggun(defender === 'p1' ? 'p2' : 'p1', pCopy)) return false; 
+                        if (!isJanggun(defender === 'p1' ? 'p2' : 'p1', pCopy)) return false;
                     }
                 }
             }
@@ -614,7 +634,7 @@
 
             const p1King = pieces.find(p => p.type === '王' && p.owner === 'p1');
             const p2King = pieces.find(p => p.type === '王' && p.owner === 'p2');
-            
+
             if (p2King && p2King.pos >= 9 && currentTurn === 'p1') { endGame(`P2 승리!`, "왕이 적진에서 턴을 무사히 버텨냈습니다."); return; }
             if (p1King && p1King.pos <= 2 && currentTurn === 'p2') { endGame(`P1 승리!`, "왕이 적진에서 턴을 무사히 버텨냈습니다."); return; }
 
@@ -625,81 +645,154 @@
                 } else { showEffect("장군!", currentTurn === 'p1' ? '#c0392b' : '#218c74'); }
             }
 
-            if (gameMode === 'ai' && currentTurn === 'p2') setTimeout(playAITurn, 600);
+            if (gameMode === 'ai' && currentTurn === 'p2') setTimeout(playAITurn, 500);
         }
 
-        // --- 🧠 향상된 AI (미니맥스 기초 / 탐욕 알고리즘) ---
-        function playAITurn() {
-            if(!gameActive) return;
-            
-            // 시뮬레이션을 위한 헬퍼 함수
-            const getMovesFor = (player, simPieces, simBoard) => {
-                let allMoves = [];
-                let playerPieces = simPieces.filter(p => p.owner === player);
-                for(let p of playerPieces) {
-                    if(p.pos >= 0) {
-                        let moves = getValidMoves(p.pos, p, simBoard, simPieces);
-                        moves.forEach(m => allMoves.push({pieceId: p.id, targetPos: m, isDrop: false}));
-                    } else {
-                        for(let i=0; i<12; i++) {
-                            // 적진 드롭 금지 규칙 적용
-                            if(simBoard[i] === null && ((player==='p2' && i<9) || (player==='p1' && i>2))) {
-                                allMoves.push({pieceId: p.id, targetPos: i, isDrop: true});
-                            }
+        // ---------------------------------------------------------
+        // 🧠 향상된 AI: 미니맥스 + 알파베타 가지치기
+        // ---------------------------------------------------------
+        const AI_DEPTH = 6; // 보드가 매우 작아 6수 앞까지 봐도 매우 빠르게 계산됩니다.
+        const PIECE_VALUES = { '王': 1000, '將': 40, '相': 35, '子': 10, '侯': 55 };
+
+        function clonePieces(pcs) {
+            return pcs.map(p => ({ id: p.id, type: p.type, owner: p.owner, pos: p.pos, promoted: p.promoted }));
+        }
+
+        function buildBoardFromPieces(pcs) {
+            const b = Array(12).fill(null);
+            pcs.forEach(p => { if (p.pos >= 0) b[p.pos] = p.id; });
+            return b;
+        }
+
+        function generateMoves(player, pcs, brd) {
+            let moves = [];
+            pcs.filter(p => p.owner === player).forEach(p => {
+                if (p.pos >= 0) {
+                    getValidMoves(p.pos, p, brd, pcs).forEach(m => moves.push({ pieceId: p.id, target: m, isDrop: false }));
+                } else {
+                    for (let i = 0; i < 12; i++) {
+                        if (brd[i] === null) {
+                            if ((player === 'p1' && i <= 2) || (player === 'p2' && i >= 9)) continue;
+                            moves.push({ pieceId: p.id, target: i, isDrop: true });
                         }
                     }
                 }
-                return allMoves;
-            };
+            });
+            return moves;
+        }
 
-            const applyMove = (move, simPieces, simBoard, player) => {
-                let piece = simPieces.find(p => p.id === move.pieceId);
-                if(!move.isDrop) {
-                    let target = simPieces.find(p => p.pos === move.targetPos);
-                    if(target) { target.pos = -1; target.owner = player; target.promoted = false; }
-                    const targetRow = Math.floor(move.targetPos / 3);
-                    if(piece.type === '子' && !piece.promoted && ((player==='p2'&&targetRow===3) || (player==='p1'&&targetRow===0))) piece.promoted = true;
-                }
-                piece.pos = move.targetPos;
-                simBoard.fill(null);
-                simPieces.forEach(p => { if(p.pos >= 0) simBoard[p.pos] = p.id; });
-            };
-
-            let p2Moves = getMovesFor('p2', pieces, board);
-            if(p2Moves.length === 0) return;
-            
-            p2Moves.sort(() => Math.random() - 0.5); // 랜덤성 부여
-            let bestMove = null; let bestScore = -Infinity;
-
-            for(let move of p2Moves) {
-                let simPieces = getPiecesCopy();
-                let simBoard = [...board];
-                applyMove(move, simPieces, simBoard, 'p2');
-
-                // 1. 내가 둬서 상대 왕을 잡으면 무조건 최상
-                if(!simPieces.find(p => p.type === '王' && p.owner === 'p1' && p.pos >= 0)) { bestMove = move; break; }
-                // 2. 내가 뒀는데 내 왕이 잡히는 자살수면 스킵
-                if(!simPieces.find(p => p.type === '王' && p.owner === 'p2' && p.pos >= 0)) continue;
-
-                // 점수 평가 (P2 관점)
-                let score = 0;
-                const vals = {'王': 10000, '將': 50, '侯': 40, '相': 30, '子': 10};
-                simPieces.forEach(p => {
-                    let val = vals[p.promoted ? '侯' : p.type];
-                    if(p.owner === 'p2') score += val; else score -= val;
-                });
-
-                if(score > bestScore) {
-                    bestScore = score; bestMove = move;
+        function applyMoveToPieces(move, pcs, player) {
+            const piece = pcs.find(p => p.id === move.pieceId);
+            if (!move.isDrop) {
+                const captured = pcs.find(p => p.pos === move.target);
+                if (captured) { captured.pos = -1; captured.owner = player; captured.promoted = false; }
+                const targetRow = Math.floor(move.target / 3);
+                if (piece.type === '子' && !piece.promoted) {
+                    if ((player === 'p1' && targetRow === 0) || (player === 'p2' && targetRow === 3)) piece.promoted = true;
                 }
             }
+            piece.pos = move.target;
+        }
 
-            if(bestMove) {
-                if(bestMove.isDrop) executeMove(null, bestMove.targetPos, true, bestMove.pieceId);
-                else {
-                    const originalPiece = pieces.find(p => p.id === bestMove.pieceId);
-                    executeMove(originalPiece.pos, bestMove.targetPos, false);
+        function evaluatePosition(pcs, aiPlayer) {
+            let score = 0;
+            pcs.forEach(p => {
+                const key = p.promoted ? '侯' : p.type;
+                let val = PIECE_VALUES[key];
+                if (p.pos >= 0) {
+                    val += 2; // 보드 위에 있는 기물(손에 든 것보다)을 약간 더 우대
+                    if (key === '子') {
+                        const row = Math.floor(p.pos / 3);
+                        const advancement = p.owner === 'p1' ? (3 - row) : row; // 승급 줄까지 얼마나 전진했는지
+                        val += advancement * 3;
+                    }
                 }
+                score += (p.owner === aiPlayer ? val : -val);
+            });
+
+            // 이동 가능 수(기동력) 차이도 점수에 반영
+            const opp = aiPlayer === 'p1' ? 'p2' : 'p1';
+            const brd = buildBoardFromPieces(pcs);
+            const aiMoves = generateMoves(aiPlayer, pcs, brd).length;
+            const oppMoves = generateMoves(opp, pcs, brd).length;
+            score += (aiMoves - oppMoves) * 2;
+
+            return score;
+        }
+
+        function minimax(pcs, brd, player, depth, alpha, beta, aiPlayer) {
+            const p1KingAlive = pcs.some(p => p.type === '王' && p.owner === 'p1' && p.pos >= 0);
+            const p2KingAlive = pcs.some(p => p.type === '王' && p.owner === 'p2' && p.pos >= 0);
+            if (!p1KingAlive) return (aiPlayer === 'p2') ? 100000 + depth : -100000 - depth;
+            if (!p2KingAlive) return (aiPlayer === 'p1') ? 100000 + depth : -100000 - depth;
+
+            if (depth === 0) return evaluatePosition(pcs, aiPlayer);
+
+            const moves = generateMoves(player, pcs, brd);
+            if (moves.length === 0) {
+                // 둘 수가 전혀 없으면 그 쪽이 불리한 것으로 처리
+                return player === aiPlayer ? -90000 - depth : 90000 + depth;
+            }
+
+            const oppPlayer = player === 'p1' ? 'p2' : 'p1';
+            const maximizing = (player === aiPlayer);
+            let bestVal = maximizing ? -Infinity : Infinity;
+
+            for (const move of moves) {
+                const pcsCopy = clonePieces(pcs);
+                applyMoveToPieces(move, pcsCopy, player);
+                const brdCopy = buildBoardFromPieces(pcsCopy);
+                const val = minimax(pcsCopy, brdCopy, oppPlayer, depth - 1, alpha, beta, aiPlayer);
+
+                if (maximizing) {
+                    if (val > bestVal) bestVal = val;
+                    if (val > alpha) alpha = val;
+                } else {
+                    if (val < bestVal) bestVal = val;
+                    if (val < beta) beta = val;
+                }
+                if (alpha >= beta) break;
+            }
+            return bestVal;
+        }
+
+        function pickBestMove(player, depth) {
+            const brd = buildBoardFromPieces(pieces);
+            let moves = generateMoves(player, pieces, brd);
+            if (moves.length === 0) return null;
+            moves.sort(() => Math.random() - 0.5); // 동점일 때 매번 다른 수를 골라 변화를 줌
+
+            const opp = player === 'p1' ? 'p2' : 'p1';
+            let bestMoves = []; let bestScore = -Infinity;
+
+            for (const move of moves) {
+                const pcsCopy = clonePieces(pieces);
+                applyMoveToPieces(move, pcsCopy, player);
+
+                const oppKingAlive = pcsCopy.some(p => p.type === '王' && p.owner === opp && p.pos >= 0);
+                let val;
+                if (!oppKingAlive) {
+                    val = 999999; // 왕을 바로 잡는 수는 항상 최우선
+                } else {
+                    const brdCopy = buildBoardFromPieces(pcsCopy);
+                    val = minimax(pcsCopy, brdCopy, opp, depth - 1, -Infinity, Infinity, player);
+                }
+
+                if (val > bestScore) { bestScore = val; bestMoves = [move]; }
+                else if (val === bestScore) bestMoves.push(move);
+            }
+            return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+        }
+
+        function playAITurn() {
+            if (!gameActive) return;
+            const move = pickBestMove('p2', AI_DEPTH);
+            if (!move) return; // 둘 수가 없으면(외통수 등) 그대로 둠 - checkWinCondition에서 이미 처리됨
+
+            if (move.isDrop) executeMove(null, move.target, true, move.pieceId);
+            else {
+                const originalPiece = pieces.find(p => p.id === move.pieceId);
+                executeMove(originalPiece.pos, move.target, false);
             }
         }
 
@@ -709,7 +802,7 @@
             setTimeout(() => { effectOverlay.classList.remove('show'); }, time);
         }
         function showOverlay(title, color, text, time) { showEffect(`<strong>${title}</strong>${text}`, color, time); }
-        function endGame(title, msg) { gameActive = false; setTimeout(() => { alert(`🏁 게임 종료 🏁\n\n${title}\n${msg}`); location.href=window.location.pathname; }, 800); }
+        function endGame(title, msg) { gameActive = false; setTimeout(() => { alert(`🏁 게임 종료 🏁\n\n${title}\n${msg}`); location.href = window.location.pathname; }, 800); }
 
     </script>
 </body>
