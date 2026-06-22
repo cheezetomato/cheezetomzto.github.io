@@ -27,10 +27,10 @@
 
             --piece-bg: #ffffff;
 
-            --p1-color: #d4a017;
-            --p1-bg: #fff6da;
-            --p2-color: #2f6690;
-            --p2-bg: #e7f2f8;
+            --p1-color: #b13b3b;
+            --p1-bg: #f8e3e3;
+            --p2-color: #1e7145;
+            --p2-bg: #dff0e6;
 
             --switch-track: #ccc;
             --switch-knob: #fff;
@@ -52,12 +52,12 @@
             --panel-bg: #1d2026;
             --panel-border: #2a2e36;
 
-            --piece-bg: #2a2d33;
+            --piece-bg: #232629;
 
-            --p1-color: #e8c34a;
-            --p1-bg: #2a2410;
-            --p2-color: #5fb3e0;
-            --p2-bg: #10242b;
+            --p1-color: #e06262;
+            --p1-bg: #3a2222;
+            --p2-color: #4fc488;
+            --p2-bg: #1b3327;
 
             --switch-track: #000;
             --switch-knob: #666;
@@ -153,23 +153,24 @@
             background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 3px 6px rgba(0,0,0,0.3);
         }
 
-        /* 🐥 동물 말 디자인 (원형 칩) */
+        /* ♟️ 사진처럼 - 사각 카드 + 한자 + 이동방향 화살표 */
         .piece {
-            width: 78px; height: 78px; border-radius: 50%;
+            width: 84px; height: 84px; border-radius: 14px;
             background-color: var(--piece-bg);
-            border: 4px solid;
+            border: 5px solid;
             display: flex; align-items: center; justify-content: center;
-            font-size: 40px; line-height: 1;
-            box-shadow: 0 6px 0, 0 8px 16px rgba(0,0,0,0.25);
+            font-size: 50px; line-height: 1; font-weight: 900;
+            font-family: 'Batang', 'Gungsuh', serif;
+            box-shadow: 0 6px 0, 0 8px 16px rgba(0,0,0,0.2);
             cursor: grab; transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s;
             touch-action: none; position: relative; z-index: 10;
         }
-        .piece.king { font-size: 44px; }
-        .piece.promoted { font-size: 36px; }
-        .piece.child { font-size: 34px; }
+        .piece.king { font-size: 56px; }
+        .piece.promoted { font-size: 46px; }
+        .piece.child { font-size: 38px; }
 
-        .piece.p1 { border-color: var(--p1-color); box-shadow: 0 6px 0 var(--p1-color), 0 8px 16px rgba(0,0,0,0.25); }
-        .piece.p2 { border-color: var(--p2-color); box-shadow: 0 6px 0 var(--p2-color), 0 8px 16px rgba(0,0,0,0.25); }
+        .piece.p1 { border-color: var(--p1-color); color: var(--p1-color); box-shadow: 0 6px 0 var(--p1-color), 0 8px 16px rgba(0,0,0,0.2); }
+        .piece.p2 { border-color: var(--p2-color); color: var(--p2-color); box-shadow: 0 6px 0 var(--p2-color), 0 8px 16px rgba(0,0,0,0.2); }
 
         .piece.on-board:active { cursor: grabbing; transform: translateY(5px); box-shadow: 0 1px 0, 0 4px 8px rgba(0,0,0,0.3); transition: 0.1s; }
         .piece.selected {
@@ -190,6 +191,20 @@
             transform: scale(1.15) !important; cursor: grabbing !important;
             box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important; margin: 0 !important; transition: none !important;
         }
+
+        /* 🌟 이동 방향 화살표 (사진처럼 말 색깔과 동일하게) */
+        .arrow {
+            position: absolute; width: 0; height: 0; border-style: solid;
+            pointer-events: none; color: inherit;
+        }
+        .arrow.top { border-width: 0 8px 9px 8px; border-color: transparent transparent currentColor transparent; top: -13px; left: 50%; transform: translateX(-50%); }
+        .arrow.bottom { border-width: 9px 8px 0 8px; border-color: currentColor transparent transparent transparent; bottom: -13px; left: 50%; transform: translateX(-50%); }
+        .arrow.left { border-width: 8px 9px 8px 0; border-color: transparent currentColor transparent transparent; left: -13px; top: 50%; transform: translateY(-50%); }
+        .arrow.right { border-width: 8px 0 8px 9px; border-color: transparent transparent transparent currentColor; right: -13px; top: 50%; transform: translateY(-50%); }
+        .arrow.top-left { border-width: 9px 9px 0 0; border-color: currentColor transparent transparent transparent; top: -13px; left: -13px; transform: rotate(-45deg); }
+        .arrow.top-right { border-width: 0 9px 9px 0; border-color: transparent currentColor transparent transparent; top: -13px; right: -13px; transform: rotate(45deg); }
+        .arrow.bottom-left { border-width: 9px 0 0 9px; border-color: transparent transparent transparent currentColor; bottom: -13px; left: -13px; transform: rotate(45deg); }
+        .arrow.bottom-right { border-width: 0 0 9px 9px; border-color: transparent transparent currentColor transparent; bottom: -13px; right: -13px; transform: rotate(-45deg); }
 
         #effect-overlay {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
@@ -242,8 +257,8 @@
 
     <div id="lobby-screen">
         <div class="lobby-card">
-            <h1>🦁 십이장기</h1>
-            <div class="subtitle">동물 말로 두는 3x4 미니 장기</div>
+            <h1>♟️ 십이장기</h1>
+            <div class="subtitle">3x4 보드에서 즐기는 미니 장기</div>
             <button class="menu-btn" onclick="startGame('local')"><span class="emoji">👥</span> 1기기 2인 플레이</button>
             <button class="menu-btn" onclick="startGame('ai')"><span class="emoji">🤖</span> AI와 대결 (싱글)</button>
             <button class="menu-btn" onclick="createMultiplayerRoom()"><span class="emoji">🌐</span> 친구와 대결 (방장)</button>
@@ -253,7 +268,7 @@
     </div>
 
     <div id="game-screen">
-        <h1 style="font-size:30px; margin-bottom: 14px;">🦁 십이장기</h1>
+        <h1 style="font-size:30px; margin-bottom: 14px;">♟️ 십이장기</h1>
         <div id="turn-indicator" style="color: var(--p1-color); border-color: var(--p1-color);">🟡 Player 1의 턴</div>
         <div id="effect-overlay">장군!</div>
 
@@ -387,18 +402,6 @@
             pieces.forEach(p => { if(p.pos >= 0 && p.pos < 12) board[p.pos] = p.id; });
         }
 
-        // 🦁 동물 이모지로 말 표현
-        function getPieceEmoji(piece) {
-            if (piece.promoted) return '🐔'; // 닭 (승급한 자)
-            switch (piece.type) {
-                case '王': return '🦁'; // 사자(왕)
-                case '將': return '🦒'; // 기린(장)
-                case '相': return '🐘'; // 코끼리(상)
-                case '子': return '🐥'; // 병아리(자)
-                default: return '❓';
-            }
-        }
-
         function renderAll() {
             for (let i = 0; i < 12; i++) {
                 const cell = document.getElementById(`cell-${i}`);
@@ -415,13 +418,20 @@
                 const pieceEl = document.createElement('div');
                 pieceEl.id = `piece-${pieceData.id}`;
                 pieceEl.className = `piece ${pieceData.owner}`;
-                pieceEl.innerText = getPieceEmoji(pieceData);
+                pieceEl.innerText = pieceData.promoted ? '侯' : pieceData.type;
 
                 if (pieceData.type === '王') pieceEl.classList.add('king');
                 else if (pieceData.promoted) pieceEl.classList.add('promoted');
                 else if (pieceData.type === '子') pieceEl.classList.add('child');
 
                 if (pieceData.owner === 'p2') pieceEl.classList.add('p2-rotate');
+
+                // 🌟 이동 가능 방향을 작은 화살표로 표시 (말 색상과 동일)
+                getPieceDirections(pieceData).forEach(dir => {
+                    const arrow = document.createElement('div');
+                    arrow.className = `arrow ${dir}`;
+                    pieceEl.appendChild(arrow);
+                });
 
                 if (pieceData.pos >= 0) {
                     pieceEl.classList.add('on-board');
@@ -438,8 +448,23 @@
             let roleText = myRole === 'p1' ? '(당신)' : (myRole === 'p2' ? '(상대)' : '');
             let roleText2 = myRole === 'p2' ? '(당신)' : (myRole === 'p1' ? '(상대)' : '');
 
-            if(currentTurn === 'p1') { turnIndicator.innerHTML = `🟡 Player 1의 턴 ${roleText}`; turnIndicator.style.color = "var(--p1-color)"; turnIndicator.style.borderColor = "var(--p1-color)"; }
-            else { turnIndicator.innerHTML = `🔵 Player 2의 턴 ${roleText2}`; turnIndicator.style.color = "var(--p2-color)"; turnIndicator.style.borderColor = "var(--p2-color)"; }
+            if(currentTurn === 'p1') { turnIndicator.innerHTML = `🔴 Player 1의 턴 ${roleText}`; turnIndicator.style.color = "var(--p1-color)"; turnIndicator.style.borderColor = "var(--p1-color)"; }
+            else { turnIndicator.innerHTML = `🟢 Player 2의 턴 ${roleText2}`; turnIndicator.style.color = "var(--p2-color)"; turnIndicator.style.borderColor = "var(--p2-color)"; }
+        }
+
+        // 🌟 각 기물의 이동 방향을 가져오는 함수 (화살표 표시용)
+        function getPieceDirections(piece) {
+            const type = piece.promoted ? '侯' : piece.type;
+            let dirs = [];
+            if (type === '王') dirs = ['top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right'];
+            else if (type === '將') dirs = ['top', 'bottom', 'left', 'right'];
+            else if (type === '相') dirs = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+            else if (type === '子') dirs = piece.owner === 'p1' ? ['top'] : ['bottom'];
+            else if (type === '侯') {
+                dirs = ['top', 'bottom', 'left', 'right'];
+                dirs = piece.owner === 'p1' ? dirs.concat(['top-left', 'top-right']) : dirs.concat(['bottom-left', 'bottom-right']);
+            }
+            return dirs;
         }
 
         function handleCellClick(index) {
