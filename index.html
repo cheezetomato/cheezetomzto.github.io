@@ -1,318 +1,280 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Web Portal - Pro</title>
-    <style>
-        /* 기본 웹 폰트 로드 */
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Web Portal - Pro</title>
+<style>
+/* 기본 웹 폰트 로드 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
-        /* ---------------------------------------------------- */
-        /* [1. 테마 변수 설정] - 여기서 색상을 한 번에 관리합니다. */
-        /* ---------------------------------------------------- */
-        :root {
-            /* ☀️ 라이트 모드 (기본) 색상 */
-            --bg-body-start: #f5f7fa;
-            --bg-body-end: #c3cfe2;
-            --text-header: #2c3e50;
-            --text-desc: #576574;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --card-border-default: transparent;
-            --card-text-title: #333;
-            --card-text-desc: #777;
-            --card-shadow: rgba(0, 0, 0, 0.08);
+/* ---------------------------------------------------- */
+/* [1. 테마 변수 설정] - 여기서 색상을 한 번에 관리합니다. */
+/* ---------------------------------------------------- */
+:root {
+  /* ☀️ 라이트 모드 (기본) 색상 */
+  --bg-body-start: #f5f7fa;
+  --bg-body-end: #c3cfe2;
+  --text-header: #2c3e50;
+  --text-desc: #576574;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border-default: transparent;
+  --card-text-title: #333;
+  --card-text-desc: #777;
+  --card-shadow: rgba(0, 0, 0, 0.08);
 
-            /* 🌙 토글 스위치 자체 색상 (라이트 모드일 때) */
-            --switch-track: #ccc;
-            --switch-knob: #fff;
-            --switch-icon: #777;
-        }
+  /* 🌙 토글 스위치 자체 색상 (라이트 모드일 때) */
+  --switch-track: #ccc;
+  --switch-knob: #fff;
+  --switch-icon: #777;
+}
 
-        body.dark-mode {
-            /* 🌙 다크 모드 새로운 회색 계열 색상 설정 */
-            --bg-body-start: #181818; 
-            --bg-body-end: #121212;
-            --text-header: #f0f0f0;
-            --text-desc: #b0b0b0;
+body.dark-mode {
+  /* 🌙 다크 모드 새로운 회색 계열 색상 설정 */
+  --bg-body-start: #181818;
+  --bg-body-end: #121212;
+  --text-header: #f0f0f0;
+  --text-desc: #b0b0b0;
+  --card-bg: #232323;
+  --card-border-default: #232323;
+  --card-text-title: #f0f0f0;
+  --card-text-desc: #b0b0b0;
+  --card-shadow: rgba(0, 0, 0, 0.3);
 
-            --card-bg: #232323;       
-            --card-border-default: #232323; 
-            --card-text-title: #f0f0f0;
-            --card-text-desc: #b0b0b0;
-            --card-shadow: rgba(0, 0, 0, 0.3);
+  /* 🌙 토글 스위치 자체 색상 (다크 모드일 때) */
+  --switch-track: #000;
+  --switch-knob: #666;
+  --switch-icon: #fff;
+}
 
-            /* 🌙 토글 스위치 자체 색상 (다크 모드일 때) */
-            --switch-track: #000;
-            --switch-knob: #666;
-            --switch-icon: #fff;
-        }
+/* ---------------------------------------------------- */
+/* [2. 기본 CSS 설정] */
+/* ---------------------------------------------------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+  background: linear-gradient(135deg, var(--bg-body-start) 0%, var(--bg-body-end) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  transition: background 0.5s, color 0.5s;
+}
 
-        /* ---------------------------------------------------- */
-        /* [2. 기본 CSS 설정] */
-        /* ---------------------------------------------------- */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
-            background: linear-gradient(135deg, var(--bg-body-start) 0%, var(--bg-body-end) 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            transition: background 0.5s, color 0.5s;
-        }
+/* ---------------------------------------------------- */
+/* [3. 다크모드 토글 스위치 디자인] */
+/* ---------------------------------------------------- */
+.theme-switch-wrapper {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+}
+.theme-switch {
+  display: inline-block;
+  height: 30px;
+  position: relative;
+  width: 60px;
+}
+.theme-switch input { display: none; }
+.slider {
+  background-color: var(--switch-track);
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .4s;
+  border-radius: 30px;
+  border: 2px solid rgba(255,255,255,0.1);
+}
+.slider:before {
+  background-color: var(--switch-knob);
+  bottom: 2px;
+  content: "";
+  height: 26px;
+  left: 2px;
+  position: absolute;
+  transition: .4s;
+  width: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.slider::after {
+  content: '🌙';
+  position: absolute;
+  left: 6px;
+  bottom: 5px;
+  transition: .4s;
+  color: var(--switch-icon);
+  font-size: 14px;
+  opacity: 0.5;
+}
+input:checked + .slider:before {
+  transform: translateX(30px);
+}
+input:checked + .slider::after {
+  transform: translateX(30px);
+  opacity: 1;
+}
 
-        /* ---------------------------------------------------- */
-        /* [3. 다크모드 토글 스위치 디자인] */
-        /* ---------------------------------------------------- */
-        .theme-switch-wrapper {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-        }
+/* ---------------------------------------------------- */
+/* [4. 메인 콘텐츠 디자인] */
+/* ---------------------------------------------------- */
+.header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+.header h1 {
+  font-size: 2.5rem;
+  color: var(--text-header);
+  margin: 0 0 10px 0;
+  letter-spacing: -1px;
+  transition: color 0.5s;
+}
+.header p {
+  color: var(--text-desc);
+  font-size: 1.1rem;
+  margin: 0;
+  transition: color 0.5s;
+}
 
-        .theme-switch {
-            display: inline-block;
-            height: 30px;
-            position: relative;
-            width: 60px;
-        }
+.menu-container {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
+  max-width: 700px; /* 카드가 2개로 줄었으므로 너비를 줄였습니다 */
+}
 
-        .theme-switch input {
-            display: none;
-        }
+.menu-card {
+  text-decoration: none;
+  background: var(--card-bg);
+  width: 280px;
+  height: 320px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px var(--card-shadow);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--card-border-default);
+}
 
-        .slider {
-            background-color: var(--switch-track);
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 30px;
-            border: 2px solid rgba(255,255,255,0.1);
-        }
+/* 호버 효과 (라이트 모드) */
+.card-movie:hover {
+  border-color: #a29bfe;
+  box-shadow: 0 15px 35px rgba(162, 155, 254, 0.2);
+  transform: translateY(-5px);
+}
 
-        .slider:before {
-            background-color: var(--switch-knob);
-            bottom: 2px;
-            content: "";
-            height: 26px;
-            left: 2px;
-            position: absolute;
-            transition: .4s;
-            width: 26px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+/* 🎮 게임 허브 카드 호버 효과 (오렌지 톤) */
+.card-games:hover {
+  border-color: #ff9f43;
+  box-shadow: 0 15px 35px rgba(255, 159, 67, 0.2);
+  transform: translateY(-5px);
+}
 
-        .slider::after {
-            content: '🌙';
-            position: absolute;
-            left: 6px;
-            bottom: 5px;
-            transition: .4s;
-            color: var(--switch-icon);
-            font-size: 14px;
-            opacity: 0.5;
-        }
+.menu-card:active {
+  transform: scale(0.95);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
 
-        input:checked + .slider:before {
-            transform: translateX(30px);
-        }
+.icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  transition: transform 0.3s;
+}
+.menu-card:hover .icon {
+  transform: scale(1.1);
+}
 
-        input:checked + .slider::after {
-            transform: translateX(30px);
-            opacity: 1;
-        }
-
-        /* ---------------------------------------------------- */
-        /* [4. 메인 콘텐츠 디자인] */
-        /* ---------------------------------------------------- */
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            color: var(--text-header);
-            margin: 0 0 10px 0;
-            letter-spacing: -1px;
-            transition: color 0.5s;
-        }
-
-        .header p {
-            color: var(--text-desc);
-            font-size: 1.1rem;
-            margin: 0;
-            transition: color 0.5s;
-        }
-
-        .menu-container {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 20px;
-            max-width: 1200px; /* 카드가 4개가 되었으므로 최대 너비를 살짝 늘렸습니다 */
-        }
-
-        .menu-card {
-            text-decoration: none;
-            background: var(--card-bg);
-            width: 280px;
-            height: 320px;
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 30px var(--card-shadow);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative;
-            overflow: hidden;
-            border: 2px solid var(--card-border-default);
-        }
-
-        /* 호버 효과 (라이트 모드) */
-        .card-movie:hover {
-            border-color: #a29bfe;
-            box-shadow: 0 15px 35px rgba(162, 155, 254, 0.2);
-            transform: translateY(-5px);
-        }
-        
-        .card-apple:hover {
-            border-color: #ff8787;
-            box-shadow: 0 15px 35px rgba(255, 135, 135, 0.2);
-            transform: translateY(-5px);
-        }
-
-        .card-janggi:hover {
-            border-color: #fbc531;
-            box-shadow: 0 15px 35px rgba(251, 197, 49, 0.2);
-            transform: translateY(-5px);
-        }
-
-        /* 💣 새로 추가된 지뢰찾기 호버 효과 (민트/그린 톤) */
-        .card-minesweeper:hover {
-            border-color: #00b894;
-            box-shadow: 0 15px 35px rgba(0, 184, 148, 0.2);
-            transform: translateY(-5px);
-        }
-
-        .menu-card:active {
-            transform: scale(0.95);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            transition: transform 0.3s;
-        }
-
-        .menu-card:hover .icon {
-            transform: scale(1.1);
-        }
-
-        .title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--card-text-title);
-            margin-bottom: 10px;
-            transition: color 0.5s;
-        }
-
-        .desc {
-            font-size: 0.95rem;
-            color: var(--card-text-desc);
-            text-align: center;
-            padding: 0 20px;
-            transition: color 0.5s;
-            line-height: 1.4;
-        }
-    </style>
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--card-text-title);
+  margin-bottom: 10px;
+  transition: color 0.5s;
+}
+.desc {
+  font-size: 0.95rem;
+  color: var(--card-text-desc);
+  text-align: center;
+  padding: 0 20px;
+  transition: color 0.5s;
+  line-height: 1.4;
+}
+</style>
 </head>
 <body>
 
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider round"></div>
-        </label>
-    </div>
+<div class="theme-switch-wrapper">
+  <label class="theme-switch" for="checkbox">
+    <input type="checkbox" id="checkbox" />
+    <div class="slider round"></div>
+  </label>
+</div>
 
-    <div class="header">
-        <h1>Welcome to My Space</h1>
-        <p>원하는 메뉴를 선택해주세요!</p>
-    </div>
+<div class="header">
+  <h1>Welcome to My Space</h1>
+  <p>원하는 메뉴를 선택해주세요!</p>
+</div>
 
-    <div class="menu-container">
-        <a href="movie.html" class="menu-card card-movie">
-            <div class="icon">🍿</div>
-            <div class="title">영화 컬렉션</div>
-            <div class="desc">내가 본 영화들의 기록과 평점을 확인해보세요.</div>
-        </a>
+<div class="menu-container">
+  <a href="movie.html" class="menu-card card-movie">
+    <div class="icon">🍿</div>
+    <div class="title">영화 컬렉션</div>
+    <div class="desc">내가 본 영화들의 기록과 평점을 확인해보세요.</div>
+  </a>
 
-        <a href="apple.html" class="menu-card card-apple">
-            <div class="icon">🍎</div>
-            <div class="title">사과 게임</div>
-            <div class="desc">120초 동안 180개의 사과를 수확하는 기록 경쟁!</div>
-        </a>
+  <!-- 🎮 게임 허브로 통합된 카드 (사과/십이장기/지뢰찾기) -->
+  <a href="games.html" class="menu-card card-games">
+    <div class="icon">🎮</div>
+    <div class="title">게임</div>
+    <div class="desc">사과 게임, 십이장기, 지뢰찾기를 한곳에서 즐겨보세요!</div>
+  </a>
+</div>
 
-        <a href="janggi.html" class="menu-card card-janggi">
-            <div class="icon">♟️</div>
-            <div class="title">십이장기</div>
-            <div class="desc">상대방의 왕(王)을 잡고 승리하는 치열한 두뇌 싸움!</div>
-        </a>
+<script>
+// 토글 스위치 요소를 가져옵니다.
+const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
 
-        <!-- 새롭게 추가된 지뢰찾기 카드 -->
-        <a href="minesweeper.html" class="menu-card card-minesweeper">
-            <div class="icon">💣</div>
-            <div class="title">지뢰찾기</div>
-            <div class="desc">숨겨진 지뢰를 피해 모든 빈칸을 찾아내는 클래식 퍼즐 게임!</div>
-        </a>
-    </div>
+// 스위치 상태가 바뀔 때마다 실행되는 함수
+function switchTheme(e) {
+  if (e.target.checked) {
+    document.body.classList.add('dark-mode');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem('theme', 'light');
+  }
+}
 
-    <script>
-        // 토글 스위치 요소를 가져옵니다.
-        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+// 스위치에 클릭(change) 이벤트 리스너 추가
+toggleSwitch.addEventListener('change', switchTheme, false);
 
-        // 스위치 상태가 바뀔 때마다 실행되는 함수
-        function switchTheme(e) {
-            if (e.target.checked) {
-                document.body.classList.add('dark-mode');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                document.body.classList.remove('dark-mode');
-                localStorage.setItem('theme', 'light');
-            }
-        }
-
-        // 스위치에 클릭(change) 이벤트 리스너 추가
-        toggleSwitch.addEventListener('change', switchTheme, false);
-
-        // 페이지 로드 시 이전에 저장된 테마 설정을 불러와 적용합니다.
-        const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
-        if (currentTheme) {
-            if (currentTheme === 'dark') {
-                toggleSwitch.checked = true;
-                document.body.classList.add('dark-mode');
-            }
-        }
-    </script>
+// 페이지 로드 시 이전에 저장된 테마 설정을 불러와 적용합니다.
+const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+if (currentTheme) {
+  if (currentTheme === 'dark') {
+    toggleSwitch.checked = true;
+    document.body.classList.add('dark-mode');
+  }
+}
+</script>
 
 </body>
 </html>
