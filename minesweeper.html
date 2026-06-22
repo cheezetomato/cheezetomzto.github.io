@@ -25,17 +25,23 @@
             
             --digital-bg: #090a0c;
             --digital-text: #ef4444;
+
+            /* 🟢 동적 셀 크기 (자바스크립트에서 난이도/화면크기에 맞춰 갱신) */
+            --cell-size: 28px;
         }
 
-        body {
+        html, body {
             font-family: 'Pretendard', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
-            display: flex;
             height: 100vh;
             overflow: hidden;
             user-select: none;
+        }
+
+        body {
+            display: flex;
         }
 
         .top-header {
@@ -59,6 +65,7 @@
 
         .sidebar {
             width: 260px;
+            flex-shrink: 0;
             background-color: var(--bg-sidebar);
             border-right: 1px solid rgba(255,255,255,0.05);
             padding-top: 90px; 
@@ -66,6 +73,7 @@
             flex-direction: column;
             gap: 15px;
             box-sizing: border-box;
+            height: 100vh;
         }
         
         .sidebar-section {
@@ -96,19 +104,39 @@
             font-weight: 700; 
         }
 
+        /* 🟢 현재 모드를 보여주는 정적 라벨 (버튼 아님) */
+        .mode-label {
+            padding: 10px 15px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-highlight);
+            background-color: rgba(96, 165, 250, 0.08);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .main-content {
             flex: 1;
+            min-width: 0;
+            height: 100vh;
+            box-sizing: border-box;
             padding-top: 90px;
+            padding-bottom: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-y: auto;
+            justify-content: flex-start;
+            overflow: hidden;
         }
 
         #game-view {
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100%;
+            box-sizing: border-box;
         }
 
         #record-view {
@@ -131,8 +159,9 @@
             padding: 6px;
             border-radius: 30px;
             border: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            flex-shrink: 0;
         }
         .diff-nav button {
             background: transparent;
@@ -154,13 +183,16 @@
 
         .panel-wrapper {
             background-color: var(--bg-panel);
-            padding: 25px;
+            padding: 20px;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.05);
             box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-            display: inline-block;
-            width: 100%;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
             box-sizing: border-box;
+            max-width: calc(100vw - 320px);
+            max-height: calc(100vh - 200px);
         }
 
         .game-header {
@@ -170,8 +202,11 @@
             background: rgba(0,0,0,0.2);
             padding: 12px 20px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.02);
+            width: 100%;
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         .digital-display {
@@ -215,14 +250,14 @@
         }
 
         .cell {
-            width: 28px;
-            height: 28px;
+            width: var(--cell-size);
+            height: var(--cell-size);
             background-color: var(--cell-unrevealed);
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: 800;
-            font-size: 17px;
+            font-size: calc(var(--cell-size) * 0.6);
             cursor: pointer;
             box-sizing: border-box;
             box-shadow: inset 1px 1px 0 rgba(255,255,255,0.05);
@@ -240,6 +275,21 @@
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.4); 
         }
         .cell.mine { background-color: #ef4444 !important; }
+
+        /* 🟢 게임 시작 전 클릭해야 하는 시작 칸 표시 */
+        .cell.start-cell {
+            background-color: rgba(96, 165, 250, 0.18);
+            color: var(--text-highlight);
+            font-weight: 900;
+            box-shadow: inset 0 0 0 2px var(--text-highlight);
+        }
+
+        /* 🟢 게임 시작 전에는 시작 칸 외 다른 칸은 클릭 불가 */
+        #board.pre-game .cell:not(.start-cell) {
+            pointer-events: none;
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
 
         .record-header {
             text-align: center;
@@ -289,11 +339,11 @@
     <div class="sidebar">
         <div class="sidebar-section">
             <button class="menu-btn" onclick="location.href='index.html'">🏠 메인으로 돌아가기</button>
+            <button class="menu-btn" onclick="location.href='games.html'">🎮 게임 목록으로</button>
         </div>
         <div style="height:1px; background:rgba(255,255,255,0.05); margin: 5px 20px;"></div>
         <div class="sidebar-section">
-            <button class="menu-btn active" id="btn-mode-standard" onclick="toggleMode(false)">🎮 표준 모드</button>
-            <button class="menu-btn" id="btn-mode-noguess" onclick="toggleMode(true)">🎯 추측 없이 모드</button>
+            <div class="mode-label">🎯 추측 없이 모드</div>
         </div>
         <div style="height:1px; background:rgba(255,255,255,0.05); margin: 5px 20px;"></div>
         <div class="sidebar-section">
@@ -327,13 +377,12 @@
         <!-- 기록실 화면 -->
         <div id="record-view">
             <div class="panel-wrapper">
-                <h2 class="record-header">🏆 글로벌 최고 기록</h2>
+                <h2 class="record-header">🏆 글로벌 최고 기록 (추측 없이 모드)</h2>
                 <table>
                     <thead>
                         <tr>
                             <th>난이도</th>
-                            <th>표준 모드</th>
-                            <th>추측 없이 모드</th>
+                            <th>최고 기록</th>
                         </tr>
                     </thead>
                     <tbody id="record-tbody"></tbody>
@@ -380,7 +429,8 @@
     ];
 
     let currentDiff = '초급';
-    let isNoGuessMode = false;
+    // 🟢 이제 모드는 항상 "추측 없이"로 고정됩니다.
+    const isNoGuessMode = true;
     
     let ROWS, COLS, MINES;
     let board = [];
@@ -395,6 +445,7 @@
     let isLeftMouseDown = false;
     let chordingCell = null;
     let highlightedCells = [];
+    let startCell = null; // 🟢 게임 시작 전 클릭해야 하는 칸 (X 표시)
 
     const boardElement = document.getElementById('board');
     const mineCountElement = document.getElementById('mine-count');
@@ -409,8 +460,56 @@
         }
     });
 
+    // ---------------------------------
+    // 🟢 2. 화면 크기에 맞춰 셀 크기를 자동으로 계산 (스크롤 없이 한 화면에 표시)
+    // ---------------------------------
+    function calcCellSize(rows, cols) {
+        const sidebarWidth = 260;
+        const horizontalBuffer = 100;  // panel padding + 여백
+        const verticalBuffer = 90 + 50 + 90 + 40; // top-header + diff-nav + game-header + 여백
+
+        const availWidth = window.innerWidth - sidebarWidth - horizontalBuffer;
+        const availHeight = window.innerHeight - verticalBuffer;
+
+        let size = Math.floor(Math.min(availWidth / cols, availHeight / rows));
+        size = Math.max(13, Math.min(28, size)); // 13px ~ 28px 사이로 제한
+        return size;
+    }
+
+    function updateCellSize() {
+        if (!ROWS || !COLS) return;
+        const size = calcCellSize(ROWS, COLS);
+        document.documentElement.style.setProperty('--cell-size', size + 'px');
+        boardElement.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
+    }
+
+    window.addEventListener('resize', updateCellSize);
+
+    // ---------------------------------
+    // 🟢 3. 시작 칸(X) 표시 및 게임 시작 전 클릭 차단
+    // ---------------------------------
+    function getStartCell(rows, cols) {
+        return { r: Math.floor(rows / 2), c: Math.floor(cols / 2) };
+    }
+
+    // 시작 칸에 X 마커를 표시하고, 보드에 pre-game 클래스를 달아 다른 칸 클릭을 막습니다.
+    function applyPreGameMarker() {
+        startCell = getStartCell(ROWS, COLS);
+        boardElement.classList.add('pre-game');
+        const el = document.getElementById(`cell-${startCell.r}-${startCell.c}`);
+        if (el) {
+            el.classList.add('start-cell');
+            el.textContent = '✕';
+        }
+    }
+
+    // 첫 클릭이 일어나면 더 이상 칸을 막지 않습니다.
+    function clearPreGameBlocking() {
+        boardElement.classList.remove('pre-game');
+    }
+
     function getSaveKey() {
-        return `ms_state_${currentDiff}_${isNoGuessMode ? 'noguess' : 'standard'}`;
+        return `ms_state_${currentDiff}_noguess`;
     }
 
     function saveGameState() {
@@ -418,7 +517,7 @@
             board, isFirstClick, isGameOver, minesLeft, revealedCount, timeElapsed
         };
         localStorage.setItem(getSaveKey(), JSON.stringify(gameState));
-        localStorage.setItem('ms_lastConfig', JSON.stringify({ diff: currentDiff, isNoGuessMode }));
+        localStorage.setItem('ms_lastConfig', JSON.stringify({ diff: currentDiff }));
     }
 
     function loadGameState() {
@@ -439,7 +538,7 @@
             MINES = difficulties[currentDiff].m;
 
             clearInterval(timerInterval);
-            boardElement.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
+            updateCellSize();
             boardElement.innerHTML = '';
             highlightedCells = [];
             chordingCell = null;
@@ -456,7 +555,6 @@
 
             document.querySelectorAll('.diff-nav button').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`btn-${currentDiff}`).classList.add('active');
-            setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
 
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
@@ -486,7 +584,7 @@
                         if (isGameOver && !cellData.isMine) {
                             cell.innerHTML = '❌';
                         } else {
-                            cell.innerHTML = '<span style="color:#f87171; font-size:16px;">🚩</span>';
+                            cell.innerHTML = '<span style="color:#f87171; font-size:0.9em;">🚩</span>';
                         }
                     } else if (isGameOver && cellData.isMine) {
                         cell.classList.add('revealed');
@@ -500,6 +598,11 @@
             if (!isGameOver && !isFirstClick) {
                 startTimer();
             }
+
+            // 🟢 아직 첫 클릭 전이면 시작 칸(X) 표시 및 다른 칸 클릭 차단
+            if (!isGameOver && isFirstClick) {
+                applyPreGameMarker();
+            }
             return true;
 
         } catch (e) {
@@ -509,27 +612,8 @@
     }
 
     function setMenuActive(mode) {
-        document.getElementById('btn-mode-standard').classList.remove('active');
-        document.getElementById('btn-mode-noguess').classList.remove('active');
         document.getElementById('btn-menu-record').classList.remove('active');
-
-        if(mode === 'standard') document.getElementById('btn-mode-standard').classList.add('active');
-        else if(mode === 'noguess') document.getElementById('btn-mode-noguess').classList.add('active');
-        else if(mode === 'record') document.getElementById('btn-menu-record').classList.add('active');
-    }
-
-    function toggleMode(isNoGuess) {
-        document.getElementById('record-view').style.display = 'none';
-        document.getElementById('game-view').style.display = 'flex';
-        
-        isNoGuessMode = isNoGuess;
-        setMenuActive(isNoGuess ? 'noguess' : 'standard');
-        
-        if (!loadGameState()) {
-            initGame();
-        } else {
-            saveGameState(); 
-        }
+        if(mode === 'record') document.getElementById('btn-menu-record').classList.add('active');
     }
 
     function changeDiff(diff) {
@@ -553,7 +637,7 @@
         COLS = difficulties[currentDiff].c;
         MINES = difficulties[currentDiff].m;
 
-        boardElement.style.gridTemplateColumns = `repeat(${COLS}, 28px)`;
+        updateCellSize();
         boardElement.innerHTML = '';
         
         board = [];
@@ -592,6 +676,9 @@
             board.push(row);
         }
         
+        // 🟢 시작 칸(X) 표시 및 다른 칸 클릭 차단
+        applyPreGameMarker();
+
         saveGameState(); 
     }
 
@@ -617,11 +704,8 @@
             let c = Math.floor(Math.random() * COLS);
             
             if (board[r][c].isMine) continue;
-            if (isNoGuessMode) {
-                if (Math.abs(r - firstR) <= 1 && Math.abs(c - firstC) <= 1) continue;
-            } else {
-                if (r === firstR && c === firstC) continue;
-            }
+            // 추측 없이 모드: 첫 클릭 주변 3x3은 항상 안전
+            if (Math.abs(r - firstR) <= 1 && Math.abs(c - firstC) <= 1) continue;
             board[r][c].isMine = true;
             placedMines++;
         }
@@ -733,6 +817,7 @@
                     isFirstClick = false;
                     startTimer();
                     placeMines(r, c);
+                    clearPreGameBlocking();
                 }
                 revealCell(r, c);
                 checkWin();
@@ -745,12 +830,13 @@
 
     function handleRightClick(r, c) {
         if (isGameOver || board[r][c].isRevealed) return;
+        if (isFirstClick) return; // 🟢 첫 클릭(시작 칸) 전에는 깃발도 표시할 수 없음
         let cellData = board[r][c];
         let cellElement = document.getElementById(`cell-${r}-${c}`);
 
         if (!cellData.isFlagged) {
             cellData.isFlagged = true;
-            cellElement.innerHTML = '<span style="color:#f87171; font-size:16px;">🚩</span>';
+            cellElement.innerHTML = '<span style="color:#f87171; font-size:0.9em;">🚩</span>';
             minesLeft--;
         } else {
             cellData.isFlagged = false;
@@ -768,7 +854,9 @@
         cellData.isRevealed = true;
         revealedCount++;
         let cellElement = document.getElementById(`cell-${r}-${c}`);
+        cellElement.classList.remove('start-cell'); // 🟢 X 마커 흔적 제거
         cellElement.classList.add('revealed');
+        cellElement.textContent = ''; // 🟢 X 텍스트도 확실히 비워줌 (0칸일 때 안 지워지는 버그 방지)
 
         if (cellData.isMine) {
             gameOver(false, cellElement);
@@ -823,21 +911,19 @@
     }
 
     /* ---------------------------------
-        🟢 Cloud Firestore 전용 기록실 로직
+        🟢 Cloud Firestore 전용 기록실 로직 (추측 없이 모드만 기록)
     --------------------------------- */
     function saveRecordToCloud() {
-        let mode = isNoGuessMode ? 'noguess' : 'standard';
-        
         const docRef = db.collection('minesweeper_records').doc(currentDiff);
         
         docRef.get().then((doc) => {
             let data = doc.exists ? doc.data() : {};
-            let currentBest = data[mode];
+            let currentBest = data.noguess;
             
             // 기존 기록이 없거나, 현재 기록이 더 빠르면 업데이트
             if (currentBest === undefined || timeElapsed < currentBest) {
                 docRef.set({
-                    [mode]: timeElapsed
+                    noguess: timeElapsed
                 }, { merge: true })
                 .then(() => console.log("새로운 클라우드 최고 기록 달성! (Firestore)"))
                 .catch((error) => console.error("기록 저장 실패: ", error));
@@ -851,7 +937,7 @@
         setMenuActive('record');
 
         const tbody = document.getElementById('record-tbody');
-        tbody.innerHTML = '<tr><td colspan="3">클라우드에서 기록을 불러오는 중...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="2">클라우드에서 기록을 불러오는 중...</td></tr>';
 
         // Firestore에서 기록 가져오기
         db.collection('minesweeper_records').get()
@@ -867,38 +953,33 @@
                 diffList.forEach(d => {
                     let tr = document.createElement('tr');
                     let tdDiff = document.createElement('td'); tdDiff.textContent = d;
-                    let tdStd = document.createElement('td'); 
-                    tdStd.textContent = records[d]?.standard ? `${records[d].standard}초` : '-';
                     let tdNoG = document.createElement('td'); 
                     tdNoG.textContent = records[d]?.noguess ? `${records[d].noguess}초` : '-';
                     
                     tr.appendChild(tdDiff);
-                    tr.appendChild(tdStd);
                     tr.appendChild(tdNoG);
                     tbody.appendChild(tr);
                 });
             })
             .catch((error) => {
                 console.error("불러오기 실패:", error);
-                tbody.innerHTML = '<tr><td colspan="3">기록을 불러오지 못했습니다. DB 설정을 확인해주세요.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="2">기록을 불러오지 못했습니다. DB 설정을 확인해주세요.</td></tr>';
             });
     }
 
     function closeRecords() {
         document.getElementById('record-view').style.display = 'none';
         document.getElementById('game-view').style.display = 'flex';
-        setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
+        setMenuActive(null);
     }
 
     window.onload = () => { 
         const lastConfig = JSON.parse(localStorage.getItem('ms_lastConfig'));
         if (lastConfig) {
             currentDiff = lastConfig.diff || '초급';
-            isNoGuessMode = lastConfig.isNoGuessMode || false;
         }
 
         if (!loadGameState()) {
-            setMenuActive(isNoGuessMode ? 'noguess' : 'standard');
             initGame(); 
         }
     };
