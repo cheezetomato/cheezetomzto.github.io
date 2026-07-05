@@ -251,6 +251,7 @@
             
             <div class="header-right">
                 <input type="text" class="local-search-input" id="local-search-input" placeholder="내 영화 검색 (Enter)" onkeypress="if(event.key === 'Enter') window.executeLocalSearch()">
+                <button class="admin-btn" id="export-btn" onclick="window.exportData()" style="background-color: #22c55e; color: white;">📥 백업</button>
                 <button class="admin-btn" id="auto-update-btn" onclick="window.autoFixPosters()" style="background-color: #3b82f6; color: white;">✨ Fix Posters</button>
                 <button class="admin-btn" id="add-movie-btn" onclick="window.openModal()">+ LOG FILM</button>
                 <button class="logout-btn" id="logout-btn" onclick="window.doLogout()">LOGOUT</button>
@@ -486,6 +487,7 @@
                 document.getElementById('add-movie-btn').style.display = 'block';
                 document.getElementById('logout-btn').style.display = 'block';
                 document.getElementById('auto-update-btn').style.display = 'block';
+                document.getElementById('export-btn').style.display = 'block';
                 document.getElementById('secret-login-btn').style.display = 'none';
                 document.getElementById('nav-user-name').innerHTML = '👤 cheezetomato ▾';
             } else {
@@ -493,6 +495,7 @@
                 document.getElementById('add-movie-btn').style.display = 'none';
                 document.getElementById('logout-btn').style.display = 'none';
                 document.getElementById('auto-update-btn').style.display = 'none';
+                document.getElementById('export-btn').style.display = 'none';
                 document.getElementById('secret-login-btn').style.display = 'block';
                 document.getElementById('nav-user-name').innerHTML = '👤 Guest ▾';
             }
@@ -853,6 +856,20 @@
             alert(`완료! ${updatedCount}편 복구.`); btn.innerText = "✨ Fix Posters"; btn.style.display = 'none'; renderView(); 
         };
 
+        // 🌏 TMDB 제작 국가 정보를 내 카테고리(한국/서양/일본/홍콩/기타)로 변환
+        function mapCountryToRegion(movie) {
+            let codes = [];
+            if (Array.isArray(movie.origin_country)) codes = codes.concat(movie.origin_country);
+            if (Array.isArray(movie.production_countries)) codes = codes.concat(movie.production_countries.map(c => c.iso_3166_1));
+            if (codes.length === 0) return '';
+            const WESTERN = ['US','GB','FR','DE','IT','ES','CA','AU','NZ','IE','AT','BE','CH','DK','FI','GR','IS','LU','NL','NO','PT','SE','PL','CZ','HU'];
+            if (codes.includes('KR')) return '한국';
+            if (codes.includes('JP')) return '일본';
+            if (codes.includes('HK')) return '홍콩';
+            if (codes.some(c => WESTERN.includes(c))) return '서양';
+            return '기타';
+        }
+
         window.searchTMDB = async function() {
             const query = document.getElementById('search-title-input').value.trim();
             if (!query) return;
@@ -890,19 +907,20 @@
                             <img src="${posterSrc}" alt="" class="tmdb-poster-small">
                             <div class="tmdb-info-small"><span class="tmdb-item-title-small">${movie.title}</span><span class="tmdb-item-meta-small">${year} • ${directorName}</span></div>
                         `;
-                        item.onclick = () => window.fillFormData(movie.title, year, directorName, genreName, movie.poster_path);
+                        item.onclick = () => window.fillFormData(movie.title, year, directorName, genreName, movie.poster_path, mapCountryToRegion(movie));
                         resultsContainer.appendChild(item);
                     });
                 } else { resultsContainer.innerHTML = `<div style="color:#788a9e; text-align:center; padding:20px;">검색 결과가 없습니다.</div>`; }
             } catch (e) { resultsContainer.innerHTML = '<div style="color:red; text-align:center; padding:20px;">오류 발생</div>'; }
         }
 
-        window.fillFormData = function(title, year, director, genre, posterPath) {
+        window.fillFormData = function(title, year, director, genre, posterPath, region) {
             document.getElementById('input-title').value = title;
             if (year !== '-') document.getElementById('input-year').value = year;
             if (director !== '-') document.getElementById('input-director').value = director;
             if (genre !== '') document.getElementById('input-genre').value = genre;
             if (posterPath) document.getElementById('edit-index').setAttribute('data-poster-path', posterPath);
+            if (region) document.getElementById('input-region').value = region; // 🌏 국가 자동 선택
             document.getElementById('search-title-input').value = '';
             window.closeSearchOverlay();
         }
@@ -957,6 +975,17 @@
                 window.closeModal(); renderView(); 
             } catch (error) { alert("저장 에러 발생"); } finally { btn.innerText = "Save"; btn.disabled = false; }
         }
+
+        // 📥 영화 데이터 JSON 백업 다운로드
+        window.exportData = function() {
+            if (movies.length === 0) { alert('내보낼 데이터가 없습니다!'); return; }
+            const blob = new Blob([JSON.stringify(movies, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `movies_backup_${getTodayString()}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        };
 
         loadMoviesFromFirebase();
     </script>
