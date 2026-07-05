@@ -252,6 +252,7 @@
             <div class="header-right">
                 <input type="text" class="local-search-input" id="local-search-input" placeholder="내 영화 검색 (Enter)" onkeypress="if(event.key === 'Enter') window.executeLocalSearch()">
                 <button class="admin-btn" id="export-btn" onclick="window.exportData()" style="background-color: #22c55e; color: white;">📥 Back-up</button>
+                <button class="admin-btn" id="cleanup-btn" onclick="window.cleanupData()" style="background-color: #f59e0b; color: white;">🧹 정리</button>
                 <button class="admin-btn" id="auto-update-btn" onclick="window.autoFixPosters()" style="background-color: #3b82f6; color: white;">✨ Fix Posters</button>
                 <button class="admin-btn" id="add-movie-btn" onclick="window.openModal()">+ LOG FILM</button>
                 <button class="logout-btn" id="logout-btn" onclick="window.doLogout()">LOGOUT</button>
@@ -488,6 +489,7 @@
                 document.getElementById('logout-btn').style.display = 'block';
                 document.getElementById('auto-update-btn').style.display = 'block';
                 document.getElementById('export-btn').style.display = 'block';
+                document.getElementById('cleanup-btn').style.display = 'block';
                 document.getElementById('secret-login-btn').style.display = 'none';
                 document.getElementById('nav-user-name').innerHTML = '👤 cheezetomato ▾';
             } else {
@@ -496,6 +498,7 @@
                 document.getElementById('logout-btn').style.display = 'none';
                 document.getElementById('auto-update-btn').style.display = 'none';
                 document.getElementById('export-btn').style.display = 'none';
+                document.getElementById('cleanup-btn').style.display = 'none';
                 document.getElementById('secret-login-btn').style.display = 'block';
                 document.getElementById('nav-user-name').innerHTML = '👤 Guest ▾';
             }
@@ -975,6 +978,30 @@
                 window.closeModal(); renderView(); 
             } catch (error) { alert("저장 에러 발생"); } finally { btn.innerText = "Save"; btn.disabled = false; }
         }
+
+        // 🧹 일회성 데이터 정리 (실행 후 이 코드와 버튼은 삭제해도 됨)
+        window.cleanupData = async function() {
+            if (!isAdmin) { alert('관리자만 실행할 수 있습니다.'); return; }
+            if (!confirm('데이터 정리를 실행할까요? (제목 따옴표 제거, 장르/감독 통일, recommended 채우기)')) return;
+            const GENRE_FIX = { '드라마/코미디': '코미디/드라마', '로맨틱코미디': '코미디/로맨스' };
+            const DIRECTOR_FIX = { '만약에 우리': '김도영', '신의 한 수': '조범구', '신의 한 수: 귀수편': '리건' };
+            let fixed = 0;
+            for (const m of movies) {
+                const changes = {};
+                const cleanTitle = (m.title || '').replace(/^["\s]+|["\s]+$/g, '');
+                if (cleanTitle && cleanTitle !== m.title) changes.title = cleanTitle;
+                if (m.recommended === undefined) changes.recommended = false;
+                if (GENRE_FIX[m.genre]) changes.genre = GENRE_FIX[m.genre];
+                if (DIRECTOR_FIX[cleanTitle]) changes.director = DIRECTOR_FIX[cleanTitle];
+                if (Object.keys(changes).length > 0) {
+                    await updateDoc(doc(db, "myMoviesGallery", m.id), changes);
+                    Object.assign(m, changes);
+                    fixed++;
+                }
+            }
+            alert(`정리 완료! ${fixed}편 수정됨.`);
+            renderView();
+};
 
         // 📥 영화 데이터 JSON 백업 다운로드
         window.exportData = function() {
