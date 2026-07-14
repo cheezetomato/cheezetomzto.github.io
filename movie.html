@@ -320,6 +320,7 @@
                             <span class="d-tag" id="detail-region">Region</span>
                             <span class="d-tag" id="detail-genre">Genre</span>
                             <span class="d-tag" id="detail-date">Date</span>
+                            <span class="d-tag" id="detail-type" style="display:none; border-color: rgba(229,9,20,0.5); color: #ff8a8f;">📺 시리즈</span>
                         </div>
                     </div>
                 </div>
@@ -601,6 +602,7 @@
             document.getElementById('detail-region').innerText = movie.region || '기타';
             document.getElementById('detail-genre').innerText = movie.genre || '장르미상';
             document.getElementById('detail-date').innerText = movie.watchDate ? `👀 ${movie.watchDate}` : '날짜미상';
+            document.getElementById('detail-type').style.display = movie.media_type === 'tv' ? 'inline-block' : 'none';
             document.getElementById('detail-memo').innerText = movie.memo || '기록된 한줄평이 없습니다.';
             document.getElementById('detail-overview-sec').style.display = 'none';
             document.getElementById('detail-cast-sec').style.display = 'none';
@@ -611,7 +613,8 @@
             // 🎬 TMDB 상세 정보(스틸컷/줄거리/출연진) 불러오기
             if (movie.tmdb_id) {
                 try {
-                    const data = await fetch(`https://api.themoviedb.org/3/movie/${movie.tmdb_id}?api_key=${TMDB_API_KEY}&language=ko-KR&append_to_response=credits`).then(res => res.json());
+                    const mType = movie.media_type === 'tv' ? 'tv' : 'movie';
+                    const data = await fetch(`https://api.themoviedb.org/3/${mType}/${movie.tmdb_id}?api_key=${TMDB_API_KEY}&language=ko-KR&append_to_response=credits`).then(res => res.json());
                     if (window.currentDetailIndex !== index) return;
                     if (data.backdrop_path) document.getElementById('detail-banner').style.backgroundImage = `url('https://image.tmdb.org/t/p/w1280${data.backdrop_path}')`;
                     if (data.overview) {
@@ -965,10 +968,10 @@
             try {
                 let searchQueries = [query];
                 if (!query.includes(' ')) searchQueries = searchQueries.concat(getSpaceVariations(query));
-                const fetchPromises = searchQueries.map(q => fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(q)}&page=1`).then(res => res.json()));
+                const fetchPromises = searchQueries.map(q => fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(q)}&page=1`).then(res => res.json()));
                 const responses = await Promise.all(fetchPromises);
                 let allMovies = [];
-                responses.forEach(data => { if (data.results) allMovies.push(...data.results); });
+                responses.forEach(data => { if (data.results) allMovies.push(...data.results.filter(r => r.media_type === 'movie' || r.media_type === 'tv')); });
                 const uniqueMovies = []; const seenIds = new Set();
                 for (const movie of allMovies) { if (!seenIds.has(movie.id)) { seenIds.add(movie.id); uniqueMovies.push(movie); } }
                 uniqueMovies.sort((a, b) => b.popularity - a.popularity);
@@ -976,30 +979,38 @@
                 if (uniqueMovies.length > 0) {
                     const top10 = uniqueMovies.slice(0, 10);
                     const detailedResults = await Promise.all(top10.map(async movie => {
-                        return await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}&language=ko-KR&append_to_response=credits`).then(res => res.json());
+                        const d = await fetch(`https://api.themoviedb.org/3/${movie.media_type}/${movie.id}?api_key=${TMDB_API_KEY}&language=ko-KR&append_to_response=credits`).then(res => res.json());
+                        d.media_type = movie.media_type;
+                        return d;
                     }));
                     resultsContainer.innerHTML = ''; 
                     detailedResults.forEach(movie => {
-                        const year = movie.release_date ? movie.release_date.split('-')[0] : '-';
+                        const isTv = movie.media_type === 'tv';
+                        const displayTitle = isTv ? (movie.name || movie.title) : movie.title;
+                        const dateStr = isTv ? movie.first_air_date : movie.release_date;
+                        const year = dateStr ? dateStr.split('-')[0] : '-';
                         const posterSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : 'https://via.placeholder.com/92x138/1a1e24/788a9e?text=No+Img'; 
                         let directorName = '-';
-                        if (movie.credits && movie.credits.crew) {
+                        if (isTv) {
+                            if (movie.created_by && movie.created_by.length > 0) directorName = movie.created_by.map(p => p.name).join(', ');
+                        } else if (movie.credits && movie.credits.crew) {
                             const dir = movie.credits.crew.find(p => p.job === 'Director'); if (dir) directorName = dir.name;
                         }
                         let genreName = movie.genres && movie.genres.length > 0 ? movie.genres[0].name : '';
                         const item = document.createElement('div'); item.className = 'tmdb-item';
+                        const typeBadge = isTv ? '📺 ' : '🎬 ';
                         item.innerHTML = `
                             <img src="${posterSrc}" alt="" class="tmdb-poster-small">
-                            <div class="tmdb-info-small"><span class="tmdb-item-title-small">${movie.title}</span><span class="tmdb-item-meta-small">${year} • ${directorName}</span></div>
+                            <div class="tmdb-info-small"><span class="tmdb-item-title-small">${typeBadge}${displayTitle}</span><span class="tmdb-item-meta-small">${year} • ${directorName}</span></div>
                         `;
-                        item.onclick = () => window.fillFormData(movie.title, year, directorName, genreName, movie.poster_path, mapCountryToRegion(movie), movie.id);
+                        item.onclick = () => window.fillFormData(displayTitle, year, directorName, genreName, movie.poster_path, mapCountryToRegion(movie), movie.id, movie.media_type);
                         resultsContainer.appendChild(item);
                     });
                 } else { resultsContainer.innerHTML = `<div style="color:#788a9e; text-align:center; padding:20px;">검색 결과가 없습니다.</div>`; }
             } catch (e) { resultsContainer.innerHTML = '<div style="color:red; text-align:center; padding:20px;">오류 발생</div>'; }
         }
 
-        window.fillFormData = function(title, year, director, genre, posterPath, region, tmdbId) {
+        window.fillFormData = function(title, year, director, genre, posterPath, region, tmdbId, mediaType) {
             document.getElementById('input-title').value = title;
             if (year !== '-') document.getElementById('input-year').value = year;
             if (director !== '-') document.getElementById('input-director').value = director;
@@ -1007,6 +1018,7 @@
             if (posterPath) document.getElementById('edit-index').setAttribute('data-poster-path', posterPath);
             if (region) document.getElementById('input-region').value = region; // 🌏 국가 자동 선택
             if (tmdbId) document.getElementById('edit-index').setAttribute('data-tmdb-id', tmdbId); // 🔗 TMDB ID 저장
+            document.getElementById('edit-index').setAttribute('data-media-type', mediaType === 'tv' ? 'tv' : 'movie'); // 📺 영화/시리즈 구분
             document.getElementById('search-title-input').value = '';
             window.closeSearchOverlay();
         }
@@ -1016,7 +1028,7 @@
 
         window.openModal = function(index = -1) {
             document.getElementById('movie-modal').style.display = 'flex';
-            window.closeSearchOverlay(); document.getElementById('search-title-input').value = ''; document.getElementById('edit-index').removeAttribute('data-poster-path'); document.getElementById('edit-index').removeAttribute('data-tmdb-id');
+            window.closeSearchOverlay(); document.getElementById('search-title-input').value = ''; document.getElementById('edit-index').removeAttribute('data-poster-path'); document.getElementById('edit-index').removeAttribute('data-tmdb-id'); document.getElementById('edit-index').removeAttribute('data-media-type');
             if(index >= 0) {
                 document.getElementById('modal-title').innerText = 'Edit Film ✏️'; document.getElementById('edit-index').value = index;
                 document.getElementById('input-title').value = movies[index].title || ''; document.getElementById('input-region').value = movies[index].region || '한국';
@@ -1030,6 +1042,7 @@
 
                 if (movies[index].poster_path) document.getElementById('edit-index').setAttribute('data-poster-path', movies[index].poster_path);
                 if (movies[index].tmdb_id) document.getElementById('edit-index').setAttribute('data-tmdb-id', movies[index].tmdb_id);
+                if (movies[index].media_type) document.getElementById('edit-index').setAttribute('data-media-type', movies[index].media_type);
             } else {
                 document.getElementById('modal-title').innerText = 'Log a New Film 🍿'; document.getElementById('edit-index').value = '';
                 document.getElementById('input-title').value = ''; document.getElementById('input-region').value = '한국'; document.getElementById('input-genre').value = '';
@@ -1049,6 +1062,7 @@
                 director: document.getElementById('input-director').value, year: parseInt(document.getElementById('input-year').value), rating: parseFloat(document.getElementById('input-rating').value),
                 watchDate: document.getElementById('input-watchDate').value, memo: document.getElementById('input-memo').value, poster_path: document.getElementById('edit-index').getAttribute('data-poster-path') || null,
                 tmdb_id: parseInt(document.getElementById('edit-index').getAttribute('data-tmdb-id')) || null,
+                media_type: document.getElementById('edit-index').getAttribute('data-media-type') || 'movie',
                 // 🌟 수정: 저장할 때 체크박스 상태도 함께 Firebase에 저장 🌟
                 recommended: document.getElementById('input-recommended').checked
             };
@@ -1075,15 +1089,18 @@
                 try {
                     let queries = [m.title];
                     if (!m.title.includes(' ')) queries = queries.concat(getSpaceVariations(m.title));
-                    const responses = await Promise.all(queries.map(q => fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(q)}&page=1`).then(res => res.json())));
+                    const responses = await Promise.all(queries.map(q => fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&language=ko-KR&query=${encodeURIComponent(q)}&page=1`).then(res => res.json())));
                     let all = [];
-                    responses.forEach(d => { if (d.results) all.push(...d.results); });
+                    responses.forEach(d => { if (d.results) all.push(...d.results.filter(r => r.media_type === 'movie' || r.media_type === 'tv')); });
                     all.sort((a, b) => b.popularity - a.popularity);
-                    const yearMatches = all.filter(x => x.release_date && Math.abs(parseInt(x.release_date.split('-')[0]) - m.year) <= 1);
+                    const getYear = x => { const ds = x.release_date || x.first_air_date; return ds ? parseInt(ds.split('-')[0]) : null; };
+                    const yearMatches = all.filter(x => getYear(x) !== null && Math.abs(getYear(x) - m.year) <= 1);
                     const best = yearMatches[0] || all[0] || null;
                     if (best) {
-                        await updateDoc(doc(db, "myMoviesGallery", m.id), { tmdb_id: best.id });
-                        m.tmdb_id = best.id; matchedCount++;
+                        const changes = { tmdb_id: best.id, media_type: best.media_type };
+                        if (!m.poster_path && best.poster_path) changes.poster_path = best.poster_path;
+                        await updateDoc(doc(db, "myMoviesGallery", m.id), changes);
+                        Object.assign(m, changes); matchedCount++;
                     } else { failed.push(m.title); }
                 } catch (e) { failed.push(m.title); }
             }
